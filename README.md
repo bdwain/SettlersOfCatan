@@ -4,7 +4,7 @@ SettlersOfCatan
 ## Setup
 Clone the repo
 
-copy config/database.yml.example todatabase.yml. fill in your db info. create your db, grant access to your db user
+copy config/database.yml.example todatabase.yml. fill in your db info. run db:create
 
 copy config/initializers/secret_token.rb.example to secret_token.rb and generate a secret token by following the instructions.
 
