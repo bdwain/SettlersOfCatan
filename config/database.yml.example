@@ -12,9 +12,9 @@ development:
   adapter: mysql2
   encoding: utf8
   reconnect: false
-  database: SettlersOfCatan_development
+  database: SettlersOfCatan
   pool: 5
-  username: settlers
+  username: root
   password: 
   host: localhost
 
@@ -27,7 +27,7 @@ test:
   reconnect: false
   database: SettlersOfCatan_test
   pool: 5
-  username: settlers
+  username: root
   password: 
   host: localhost
 

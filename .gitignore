@@ -73,8 +73,5 @@ pickle-email-*.html
 # vim artifacts
 **.swp
 
-#secret_token.rb
-/config/initializers/secret_token.rb
-
-#production env.rb
-/config/environments/production.rb
+#stores personal private settings. template in settings.yaml.example
+/config/settings.yml

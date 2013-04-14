@@ -1,0 +1,13 @@
+#REQUIRED: Generate a key by saying "rake secret" on the command line secret_token: SET_ME
+
+#REQUIRED: The default should be fine though
+dev_default_url: localhost:3000
+
+#REQUIRED: The default should be fine though
+test_default_url: localhost:3000
+
+#REQUIRED: Set this to the actual host of your production site before running in prod
+prod_default_url: SET_ME
+
+#OPTIONAL: only needed if you enable config.pepper in devise.rb. use rake secret
+devise_config_pepper: SET_ME

@@ -5,5 +5,4 @@
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
 
-#Generate a key by saying "rake secret" on the command line, and use that as the secret token
-SettlersOfCatan::Application.config.secret_token = 'INSERT_KEY_HERE'
+SettlersOfCatan::Application.config.secret_token = SETTINGS["secret_token"]
