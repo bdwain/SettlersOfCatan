@@ -10,7 +10,9 @@ run "bundle install"
 
 copy config/initializers/secret_token.rb.example to secret_token.rb and generate a secret token by following the instructions.
 
-copy config/database.yml.example todatabase.yml. fill in your db info. run db:create
+copy config/database.yml.example to database.yml. fill in your db info. run db:create
+
+copy config/environments/production.rb.example to production.rb. set config.action_mailer.default_url_options to your actual host
 
 run "rails server"
 

@@ -75,3 +75,6 @@ pickle-email-*.html
 
 #secret_token.rb
 /config/initializers/secret_token.rb
+
+#production env.rb
+/config/environments/production.rb
