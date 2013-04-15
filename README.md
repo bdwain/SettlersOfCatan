@@ -8,7 +8,7 @@ Clone the repo
 
 run "bundle install"
 
-copy config/settings.yml.example to config/settings.yml and set all of the values
+copy config/application.yml.example to config/application.yml and set all of the values
 
 copy config/database.yml.example to database.yml. fill in your db info. run db:create
 
