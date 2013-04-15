@@ -5,4 +5,4 @@
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
 
-SettlersOfCatan::Application.config.secret_token = SETTINGS["secret_token"]
+SettlersOfCatan::Application.config.secret_token = ENV["app_secret_token"]

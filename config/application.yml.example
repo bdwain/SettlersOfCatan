@@ -1,14 +1,13 @@
-#REQUIRED: Generate a key by saying "rake secret" on the command line
-secret_token: SET_ME
-
-#REQUIRED: The default should be fine though
-development_default_url: localhost:3000
-
-#REQUIRED: The default should be fine though
-test_default_url: localhost:3000
-
-#REQUIRED: Set this to the actual host of your production site before running in prod
-production_default_url: SET_ME
+# Add application configuration variables here, as shown below.
 
 #REQUIRED: Generate a key by saying "rake secret" on the command line
+app_secret_token: SET_ME
 devise_pepper: SET_ME
+
+#REQUIRED: The default URL for your website. This value will probably be fine for dev and test, 
+#but if you'd like to change it for specific configurations, do it like production does below
+default_url: localhost:3000
+
+production:
+   #REQUIRED: Set this to the actual host of your production site before running in prod
+   default_url: SET_ME

@@ -36,5 +36,5 @@ SettlersOfCatan::Application.configure do
 
   # Mailer settings
   config.action_mailer.perform_deliveries = false 
-  config.action_mailer.default_url_options = { :host => SETTINGS["development_default_url"] }
+  config.action_mailer.default_url_options = { :host => ENV["default_url"] }
 end
