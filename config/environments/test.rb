@@ -35,5 +35,7 @@ SettlersOfCatan::Application.configure do
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
 
+  # Mailer settings
+  config.action_mailer.perform_deliveries = false 
   config.action_mailer.default_url_options = { :host => SETTINGS["test_default_url"] }
 end
