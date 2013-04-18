@@ -2,7 +2,7 @@ SettlersOfCatan
 ===============
 
 ## Setup
-Set up rvm, ruby, and rubygems. I followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used the latest version of ruby. No need to manually install rails. 
+Set up ruby 2.0.0p0 and rubygems. I followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.0.0p0. 
 
 Clone the repo
 
