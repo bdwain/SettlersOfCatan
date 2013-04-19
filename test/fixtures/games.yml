@@ -1,0 +1,14 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+valid_test_game:
+  num_players: 3
+  game_status: 1
+  winner: nil
+  map: 1
+  robber_x: 0
+  robber_y: 0
+  middle_row_width: 5
+  num_rows: 5
+  num_middle_rows: 1
+
+

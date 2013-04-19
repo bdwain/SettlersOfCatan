@@ -11,7 +11,30 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130414121114) do
+ActiveRecord::Schema.define(:version => 20130418090530) do
+
+  create_table "games", :force => true do |t|
+    t.integer  "num_players",      :null => false
+    t.integer  "game_status",      :null => false
+    t.integer  "winner_id"
+    t.integer  "map_id",           :null => false
+    t.integer  "robber_x",         :null => false
+    t.integer  "robber_y",         :null => false
+    t.integer  "middle_row_width", :null => false
+    t.integer  "num_rows",         :null => false
+    t.integer  "num_middle_rows",  :null => false
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+  end
+
+  add_index "games", ["map_id"], :name => "index_games_on_map_id"
+  add_index "games", ["winner_id"], :name => "index_games_on_winner_id"
+
+  create_table "maps", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "users", :force => true do |t|
     t.string   "displayname",            :limit => 20,                 :null => false
