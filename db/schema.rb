@@ -11,7 +11,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420043819) do
+ActiveRecord::Schema.define(:version => 20130420045235) do
+
+  create_table "game_development_cards", :force => true do |t|
+    t.integer  "game_player_id"
+    t.integer  "game_id"
+    t.integer  "card_type",      :null => false
+    t.integer  "card_position",  :null => false
+    t.boolean  "was_used",       :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
+
+  add_index "game_development_cards", ["game_id"], :name => "index_game_development_cards_on_game_id"
+  add_index "game_development_cards", ["game_player_id"], :name => "index_game_development_cards_on_game_player_id"
 
   create_table "game_harbors", :force => true do |t|
     t.integer  "game_id",       :null => false

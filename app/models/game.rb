@@ -3,6 +3,7 @@ class Game < ActiveRecord::Base
   has_many :game_hexes, :inverse_of => :game
   has_many :game_harbors, :inverse_of => :game
   has_many :game_players, :inverse_of => :game
+  has_many :game_development_cards, :inverse_of => :game
 
   attr_accessible :game_status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
   
