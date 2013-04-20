@@ -4,7 +4,6 @@ class CreateGames < ActiveRecord::Migration
       t.integer :num_players, :null => false
       t.integer :game_status, :null => false
       t.integer :winner_id, :null => true
-      t.references :map, :null => false
       t.integer :robber_x, :null => false
       t.integer :robber_y, :null => false
       t.integer :middle_row_width, :null => false
@@ -14,6 +13,5 @@ class CreateGames < ActiveRecord::Migration
       t.timestamps
     end
     add_index :games, :winner_id
-    add_index :games, :map_id
   end
 end
