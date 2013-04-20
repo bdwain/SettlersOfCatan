@@ -6,16 +6,20 @@ Set up ruby 2.0.0p0 and rubygems. I followed the instructions [here](https://www
 
 Clone the repo
 
-run "bundle install"
+Run "bundle install"
 
-copy config/application.yml.example to config/application.yml and set all of the values
+Copy config/application.yml.example to config/application.yml and set all of the values
 
-copy config/database.yml.example to database.yml. fill in your db info. run db:create
+Copy config/database.yml.example to database.yml and fill in your db info. 
 
-run "rails server"
+Rake db:create and rake db:schema:load
 
-to generate a pdf of the model, you need to install the package [graphviz](http://rails-erd.rubyforge.org/install.html)
+Run the server
 
+## Other
+
+To generate a pdf of the model, you need to install the package [graphviz](http://rails-erd.rubyforge.org/install.html).
 Then you can run "rake erd" to generate a pdf
 
-this does not work on windows yet as the gemfile contains therubyracer, which can't be installed on windows. However, if you'd like to run it on windows, the gemfile just needs to have therubyracer removed, because windows has an alternative.
+This does not work on windows yet as the gemfile contains therubyracer, which can't be installed on windows. 
+However, if you'd like to run it on windows, the gemfile just needs to have therubyracer removed, because windows has an alternative.
