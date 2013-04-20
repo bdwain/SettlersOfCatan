@@ -11,7 +11,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420035150) do
+ActiveRecord::Schema.define(:version => 20130420042058) do
+
+  create_table "game_harbors", :force => true do |t|
+    t.integer  "game_id",    :null => false
+    t.integer  "edge_x",     :null => false
+    t.integer  "edge_y",     :null => false
+    t.integer  "hex_type"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "game_harbors", ["game_id"], :name => "index_game_harbors_on_game_id"
 
   create_table "game_hexes", :force => true do |t|
     t.integer  "game_id",    :null => false
