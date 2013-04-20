@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420050552) do
+ActiveRecord::Schema.define(:version => 20130420052235) do
 
   create_table "game_development_cards", :force => true do |t|
     t.integer  "game_player_id"
@@ -85,6 +85,16 @@ ActiveRecord::Schema.define(:version => 20130420050552) do
   end
 
   add_index "games", ["winner_id"], :name => "index_games_on_winner_id"
+
+  create_table "player_roads", :force => true do |t|
+    t.integer  "game_player_id", :null => false
+    t.integer  "edge_x",         :null => false
+    t.integer  "edge_y",         :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
+
+  add_index "player_roads", ["game_player_id"], :name => "index_player_roads_on_game_player_id"
 
   create_table "player_settlements", :force => true do |t|
     t.integer  "game_player_id"
