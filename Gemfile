@@ -54,3 +54,10 @@ gem 'validates_timeliness', '~> 3.0'
 group :development do
   gem "rails-erd"
 end
+group :development, :test do
+  gem "rspec-rails", "~> 2.12"
+end
+group :test do
+  gem 'shoulda-matchers'
+  gem 'factory_girl_rails'
+end
