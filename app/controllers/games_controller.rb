@@ -1,7 +1,7 @@
 class GamesController < ApplicationController
   before_filter :authenticate_user!
+  
   # GET /games
-  # GET /games.json
   def index
     @games = Game.all
 
@@ -11,7 +11,6 @@ class GamesController < ApplicationController
   end
 
   # GET /games/1
-  # GET /games/1.json
   def show
     @game = Game.find(params[:id])
 
@@ -21,7 +20,6 @@ class GamesController < ApplicationController
   end
 
   # GET /games/new
-  # GET /games/new.json
   def new
     @game = Game.new
 
@@ -36,7 +34,6 @@ class GamesController < ApplicationController
   end
 
   # POST /games
-  # POST /games.json
   def create
     @game = Game.new(params[:game])
 
@@ -50,17 +47,14 @@ class GamesController < ApplicationController
   end
 
   # PUT /games/1
-  # PUT /games/1.json
   def update
     @game = Game.find(params[:id])
 
     respond_to do |format|
       if @game.update_attributes(params[:game])
         format.html { redirect_to @game, notice: 'Game was successfully updated.' }
-        format.json { head :no_content }
       else
         format.html { render action: "edit" }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
       end
     end
   end
