@@ -11,16 +11,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420045235) do
+ActiveRecord::Schema.define(:version => 20130420050552) do
 
   create_table "game_development_cards", :force => true do |t|
     t.integer  "game_player_id"
     t.integer  "game_id"
-    t.integer  "card_type",      :null => false
-    t.integer  "card_position",  :null => false
-    t.boolean  "was_used",       :null => false
-    t.datetime "created_at",     :null => false
-    t.datetime "updated_at",     :null => false
+    t.integer  "card_type",                         :null => false
+    t.integer  "card_position",                     :null => false
+    t.boolean  "was_used",       :default => false, :null => false
+    t.datetime "created_at",                        :null => false
+    t.datetime "updated_at",                        :null => false
   end
 
   add_index "game_development_cards", ["game_id"], :name => "index_game_development_cards_on_game_id"
@@ -72,19 +72,30 @@ ActiveRecord::Schema.define(:version => 20130420045235) do
   add_index "game_players", ["user_id"], :name => "index_game_players_on_user_id"
 
   create_table "games", :force => true do |t|
-    t.integer  "num_players",      :null => false
-    t.integer  "game_status",      :null => false
+    t.integer  "num_players",      :default => 3, :null => false
+    t.integer  "game_status",      :default => 0, :null => false
     t.integer  "winner_id"
-    t.integer  "robber_x",         :null => false
-    t.integer  "robber_y",         :null => false
-    t.integer  "middle_row_width", :null => false
-    t.integer  "num_rows",         :null => false
-    t.integer  "num_middle_rows",  :null => false
-    t.datetime "created_at",       :null => false
-    t.datetime "updated_at",       :null => false
+    t.integer  "robber_x",                        :null => false
+    t.integer  "robber_y",                        :null => false
+    t.integer  "middle_row_width",                :null => false
+    t.integer  "num_rows",                        :null => false
+    t.integer  "num_middle_rows",                 :null => false
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
   end
 
   add_index "games", ["winner_id"], :name => "index_games_on_winner_id"
+
+  create_table "player_settlements", :force => true do |t|
+    t.integer  "game_player_id"
+    t.integer  "vertex_x",                          :null => false
+    t.integer  "vertex_y",                          :null => false
+    t.boolean  "is_city",        :default => false, :null => false
+    t.datetime "created_at",                        :null => false
+    t.datetime "updated_at",                        :null => false
+  end
+
+  add_index "player_settlements", ["game_player_id"], :name => "index_player_settlements_on_game_player_id"
 
   create_table "users", :force => true do |t|
     t.string   "displayname",            :limit => 20,                 :null => false

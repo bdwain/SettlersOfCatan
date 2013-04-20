@@ -5,7 +5,7 @@ class CreateGameDevelopmentCards < ActiveRecord::Migration
       t.references :game, :null => true
       t.integer :card_type, :null => false
       t.integer :card_position, :null => false
-      t.boolean :was_used, :null => false
+      t.boolean :was_used, :null => false, :default => false
 
       t.timestamps
     end
