@@ -6,6 +6,7 @@ class CreateGamePlayers < ActiveRecord::Migration
       t.integer :turn_num, :null => false
       t.integer :turn_status, :null => false
       t.integer :color, :null => false
+      t.datetime :turn_deadline, :null => true
 
       t.timestamps
     end

@@ -6,7 +6,7 @@ class GamePlayer < ActiveRecord::Base
   has_many :player_settlements, :inverse_of => :game_player
   has_many :player_roads, :inverse_of => :game_player
 
-  attr_accessible :color, :turn_num, :turn_status
+  attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 
   validates :color, :presence => true, :numericality => {:only_integer => true}
   
@@ -15,4 +15,5 @@ class GamePlayer < ActiveRecord::Base
 
   validates :turn_status, :presence => true, :numericality => {:only_integer => true}
 
+  validates :turn_deadline, :allow_nil => true, :timeliness => {:type => :datetime}
 end

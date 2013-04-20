@@ -59,13 +59,14 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "game_player_resources", ["game_player_id"], :name => "index_game_player_resources_on_game_player_id"
 
   create_table "game_players", :force => true do |t|
-    t.integer  "game_id",     :null => false
-    t.integer  "user_id",     :null => false
-    t.integer  "turn_num",    :null => false
-    t.integer  "turn_status", :null => false
-    t.integer  "color",       :null => false
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.integer  "game_id",       :null => false
+    t.integer  "user_id",       :null => false
+    t.integer  "turn_num",      :null => false
+    t.integer  "turn_status",   :null => false
+    t.integer  "color",         :null => false
+    t.datetime "turn_deadline"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   add_index "game_players", ["game_id"], :name => "index_game_players_on_game_id"
@@ -97,7 +98,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "player_roads", ["game_player_id"], :name => "index_player_roads_on_game_player_id"
 
   create_table "player_settlements", :force => true do |t|
-    t.integer  "game_player_id"
+    t.integer  "game_player_id",                    :null => false
     t.integer  "vertex_x",                          :null => false
     t.integer  "vertex_y",                          :null => false
     t.boolean  "is_city",        :default => false, :null => false
