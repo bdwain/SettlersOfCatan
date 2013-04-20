@@ -10,9 +10,13 @@ run "bundle install"
 
 copy config/application.yml.example to config/application.yml and set all of the values
 
-copy config/database.yml.example to database.yml. fill in your db info. run db:create
+copy config/database.yml.example to database.yml. fill in your db info. 
 
-run "rails server"
+run db:create and db:schema:load
+
+run the server
+
+## Other
 
 to generate a pdf of the model, you need to install the package [graphviz](http://rails-erd.rubyforge.org/install.html)
 
