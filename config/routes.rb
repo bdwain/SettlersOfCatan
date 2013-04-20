@@ -1,4 +1,7 @@
 SettlersOfCatan::Application.routes.draw do
+  resources :games
+
+
   devise_for :users
 
   get "home/index"

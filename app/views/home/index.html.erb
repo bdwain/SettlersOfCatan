@@ -1,1 +1,7 @@
-<h1>Home#index</h1>
+<h1>Settlers Of Catan</h1>
+
+<% if !user_signed_in? %>
+  <%= link_to('Please login', new_user_session_path)  %>
+<% else %>
+  
+<% end %>
