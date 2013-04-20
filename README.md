@@ -14,4 +14,8 @@ copy config/database.yml.example to database.yml. fill in your db info. run db:c
 
 run "rails server"
 
+to generate a pdf of the model, you need to install the package [graphviz](http://rails-erd.rubyforge.org/install.html)
+
+Then you can run "rake erd" to generate a pdf
+
 this does not work on windows yet as the gemfile contains therubyracer, which can't be installed on windows. However, if you'd like to run it on windows, the gemfile just needs to have therubyracer removed, because windows has an alternative.
