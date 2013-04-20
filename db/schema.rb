@@ -11,30 +11,39 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420042734) do
+ActiveRecord::Schema.define(:version => 20130420043819) do
 
   create_table "game_harbors", :force => true do |t|
-    t.integer  "game_id",    :null => false
-    t.integer  "edge_x",     :null => false
-    t.integer  "edge_y",     :null => false
-    t.integer  "hex_type"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer  "game_id",       :null => false
+    t.integer  "edge_x",        :null => false
+    t.integer  "edge_y",        :null => false
+    t.integer  "resource_type"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   add_index "game_harbors", ["game_id"], :name => "index_game_harbors_on_game_id"
 
   create_table "game_hexes", :force => true do |t|
-    t.integer  "game_id",    :null => false
-    t.integer  "pos_x",      :null => false
-    t.integer  "pos_y",      :null => false
-    t.integer  "hex_type",   :null => false
-    t.integer  "dice_num",   :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer  "game_id",       :null => false
+    t.integer  "pos_x",         :null => false
+    t.integer  "pos_y",         :null => false
+    t.integer  "resource_type", :null => false
+    t.integer  "dice_num",      :null => false
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   add_index "game_hexes", ["game_id"], :name => "index_game_hexes_on_game_id"
+
+  create_table "game_player_resources", :force => true do |t|
+    t.integer  "game_player_id", :null => false
+    t.integer  "resource_type",  :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
+
+  add_index "game_player_resources", ["game_player_id"], :name => "index_game_player_resources_on_game_player_id"
 
   create_table "game_players", :force => true do |t|
     t.integer  "game_id",     :null => false

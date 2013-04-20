@@ -4,7 +4,7 @@ class CreateGameHexes < ActiveRecord::Migration
       t.references :game, :null => false
       t.integer :pos_x, :null => false
       t.integer :pos_y, :null => false
-      t.integer :hex_type, :null => false
+      t.integer :resource_type, :null => false
       t.integer :dice_num, :null => false
 
       t.timestamps

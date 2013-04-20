@@ -4,7 +4,7 @@ class CreateGameHarbors < ActiveRecord::Migration
       t.references :game, :null => false
       t.integer :edge_x, :null => false
       t.integer :edge_y, :null => false
-      t.integer :hex_type, :null => true
+      t.integer :resource_type, :null => true
 
       t.timestamps
     end
