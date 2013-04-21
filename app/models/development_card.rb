@@ -1,4 +1,7 @@
 class DevelopmentCard < ActiveRecord::Base
+  #disable Single Table Inheritance
+  self.inheritance_column = nil
+  
   belongs_to :player, :inverse_of => :development_cards
   belongs_to :game, :inverse_of => :development_cards
 
