@@ -1,5 +1,5 @@
-class GameHarbor < ActiveRecord::Base
-  belongs_to :game, :inverse_of => :game_harbors
+class Harbor < ActiveRecord::Base
+  belongs_to :game, :inverse_of => :harbors
   attr_accessible :edge_x, :edge_y, :resource_type
 
   validates_presence_of :game_id

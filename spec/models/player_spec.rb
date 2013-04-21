@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GamePlayer do
+describe Player do
   describe "game" do
     it { should belong_to(:game) }
     it { should validate_presence_of(:game_id) }
@@ -11,20 +11,20 @@ describe GamePlayer do
     it { should validate_presence_of(:user_id) }
   end
 
-  describe "game_player_resources" do
-    it { should have_many(:game_player_resources) }
+  describe "resources" do
+    it { should have_many(:resources) }
   end
 
-  describe "game_development_cards" do
-    it { should have_many(:game_development_cards) }
+  describe "development_cards" do
+    it { should have_many(:development_cards) }
   end
 
-  describe "player_settlements" do
-    it { should have_many(:player_settlements) }
+  describe "settlements" do
+    it { should have_many(:settlements) }
   end
 
-  describe "player_roads" do
-    it { should have_many(:player_roads) }
+  describe "roads" do
+    it { should have_many(:roads) }
   end
 
   describe "color" do

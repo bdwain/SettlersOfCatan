@@ -1,6 +1,6 @@
-class CreateGamePlayers < ActiveRecord::Migration
+class CreatePlayers < ActiveRecord::Migration
   def change
-    create_table :game_players do |t|
+    create_table :players do |t|
       t.references :game, :null => false
       t.references :user, :null => false
       t.integer :turn_num, :null => false
@@ -10,7 +10,7 @@ class CreateGamePlayers < ActiveRecord::Migration
 
       t.timestamps
     end
-    add_index :game_players, :game_id
-    add_index :game_players, :user_id
+    add_index :players, :game_id
+    add_index :players, :user_id
   end
 end

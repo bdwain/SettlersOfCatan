@@ -1,11 +1,11 @@
 class Game < ActiveRecord::Base
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  has_many :game_hexes, :inverse_of => :game
-  has_many :game_harbors, :inverse_of => :game
-  has_many :game_players, :inverse_of => :game
-  has_many :game_development_cards, :inverse_of => :game
+  has_many :hexes, :inverse_of => :game
+  has_many :harbors, :inverse_of => :game
+  has_many :players, :inverse_of => :game
+  has_many :development_cards, :inverse_of => :game
 
-  attr_accessible :game_status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
+  attr_accessible :status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
 
   private
   STATUS_WAITING_FOR_PLAYERS = 1
@@ -15,7 +15,7 @@ class Game < ActiveRecord::Base
   STATUS_COMPLETED = 5
 
   public
-  validates :game_status, :presence => true, 
+  validates :status, :presence => true, 
             :inclusion => { :in => [ STATUS_WAITING_FOR_PLAYERS,
              STATUS_ROLLING_FOR_TURN_ORDER, STATUS_PLACING_INITIAL_PIECES,
              STATUS_PLAYING, STATUS_COMPLETED ] }
@@ -37,26 +37,26 @@ class Game < ActiveRecord::Base
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
   
   def is_waiting_for_players?
-    self.game_status == STATUS_WAITING_FOR_PLAYERS
+    self.status == STATUS_WAITING_FOR_PLAYERS
   end
 
   def is_rolling_for_turn_order?
-    self.game_status == STATUS_ROLLING_FOR_TURN_ORDER
+    self.status == STATUS_ROLLING_FOR_TURN_ORDER
   end
 
   def is_placing_initial_pieces?
-    self.game_status == STATUS_PLACING_INITIAL_PIECES
+    self.status == STATUS_PLACING_INITIAL_PIECES
   end
 
   def is_playing?
-    self.game_status == STATUS_PLAYING
+    self.status == STATUS_PLAYING
   end
 
   def is_completed?
-    self.game_status == STATUS_COMPLETED
+    self.status == STATUS_COMPLETED
   end
 
   #def contains_user?(user)
-    #game_players.contains()
+    #players.contains()
   #end
 end

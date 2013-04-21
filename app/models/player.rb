@@ -1,10 +1,10 @@
-class GamePlayer < ActiveRecord::Base
-  belongs_to :game, :inverse_of => :game_players
+class Player < ActiveRecord::Base
+  belongs_to :game, :inverse_of => :player
   belongs_to :user
-  has_many :game_player_resources, :inverse_of => :game_player
-  has_many :game_development_cards, :inverse_of => :game_player
-  has_many :player_settlements, :inverse_of => :game_player
-  has_many :player_roads, :inverse_of => :game_player
+  has_many :resources, :inverse_of => :player
+  has_many :development_cards, :inverse_of => :player
+  has_many :settlements, :inverse_of => :player
+  has_many :roads, :inverse_of => :player
 
   attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 

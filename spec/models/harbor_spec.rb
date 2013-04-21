@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe GameHarbor do
+describe Harbor do
   describe "game" do
     it { should belong_to(:game) }
     it { should validate_presence_of(:game_id) }

@@ -1,6 +1,6 @@
-class CreateGameHexes < ActiveRecord::Migration
+class CreateHexes < ActiveRecord::Migration
   def change
-    create_table :game_hexes do |t|
+    create_table :hexes do |t|
       t.references :game, :null => false
       t.integer :pos_x, :null => false
       t.integer :pos_y, :null => false
@@ -9,6 +9,6 @@ class CreateGameHexes < ActiveRecord::Migration
 
       t.timestamps
     end
-    add_index :game_hexes, :game_id
+    add_index :hexes, :game_id
   end
 end

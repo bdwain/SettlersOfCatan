@@ -5,25 +5,25 @@ describe Game do
     it { should belong_to(:winner).class_name('User') }
   end
 
-  describe "game_hexes" do
-    it { should have_many(:game_hexes) }
+  describe "hexes" do
+    it { should have_many(:hexes) }
   end
  
-  describe "game_harbors" do
-    it { should have_many(:game_harbors) }
+  describe "harbors" do
+    it { should have_many(:harbors) }
   end
 
-  describe "game_players" do
-    it { should have_many(:game_players) }
+  describe "players" do
+    it { should have_many(:players) }
   end
 
-  describe "game_development_cards" do
-    it { should have_many(:game_development_cards) }
+  describe "development_cards" do
+    it { should have_many(:development_cards) }
   end
 
-  describe "game_status" do
-    it { should validate_presence_of(:game_status) }
-    it { should ensure_inclusion_of(:game_status).in_range(1..5) }
+  describe "status" do
+    it { should validate_presence_of(:status) }
+    it { should ensure_inclusion_of(:status).in_range(1..5) }
   end
 
   describe "middle_row_width" do
@@ -64,41 +64,41 @@ describe Game do
   end
 
   describe "is_waiting_for_players" do
-    it "checks that game_status is 1" do
+    it "checks that status is 1" do
       game = FactoryGirl.build(:game)
-      game.game_status = 1
+      game.status = 1
       game.is_waiting_for_players?.should be_true
     end
   end
 
   describe "is_rolling_for_turn_order" do
-    it "checks that game_status is 2" do
+    it "checks that status is 2" do
       game = FactoryGirl.build(:game)
-      game.game_status = 2
+      game.status = 2
       game.is_rolling_for_turn_order?.should be_true
     end
   end
 
   describe "is_placing_initial_pieces" do
-    it "checks that game_status is 3" do
+    it "checks that status is 3" do
       game = FactoryGirl.build(:game)
-      game.game_status = 3
+      game.status = 3
       game.is_placing_initial_pieces?.should be_true
     end
   end
 
   describe "is_playing" do
-    it "checks that game_status is 4" do
+    it "checks that status is 4" do
       game = FactoryGirl.build(:game)
-      game.game_status = 4
+      game.status = 4
       game.is_playing?.should be_true
     end
   end
 
   describe "is_completed" do
-    it "checks that game_status is 5" do
+    it "checks that status is 5" do
       game = FactoryGirl.build(:game)
-      game.game_status = 5
+      game.status = 5
       game.is_completed?.should be_true
     end
   end

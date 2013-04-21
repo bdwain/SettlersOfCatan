@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe PlayerSettlement do
-  describe "game_player" do
-    it { should belong_to(:game_player) }
-    it { should validate_presence_of(:game_player_id) }
+describe Settlement do
+  describe "player" do
+    it { should belong_to(:player) }
+    it { should validate_presence_of(:player_id) }
   end
 
   describe "vertex_x" do

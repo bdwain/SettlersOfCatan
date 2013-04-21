@@ -1,6 +1,6 @@
-class CreateGameHarbors < ActiveRecord::Migration
+class CreateHarbors < ActiveRecord::Migration
   def change
-    create_table :game_harbors do |t|
+    create_table :harbors do |t|
       t.references :game, :null => false
       t.integer :edge_x, :null => false
       t.integer :edge_y, :null => false
@@ -8,6 +8,6 @@ class CreateGameHarbors < ActiveRecord::Migration
 
       t.timestamps
     end
-    add_index :game_harbors, :game_id
+    add_index :harbors, :game_id
   end
 end
