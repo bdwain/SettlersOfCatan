@@ -2,7 +2,7 @@ class CreateGames < ActiveRecord::Migration
   def change
     create_table :games do |t|
       t.integer :num_players, :null => false, :default => 3
-      t.integer :game_status, :null => false, :default => 0
+      t.integer :game_status, :null => false, :default => 1
       t.integer :winner_id, :null => true
       t.integer :robber_x, :null => false
       t.integer :robber_y, :null => false

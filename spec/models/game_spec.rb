@@ -23,7 +23,7 @@ describe Game do
 
   describe "game_status" do
     it { should validate_presence_of(:game_status) }
-    it { should validate_numericality_of(:game_status).only_integer }
+    it { should ensure_inclusion_of(:game_status).in_range(1..5) }
   end
 
   describe "middle_row_width" do
@@ -63,4 +63,43 @@ describe Game do
     it { should validate_numericality_of(:robber_y).only_integer }
   end
 
+  describe "is_waiting_for_players" do
+    it "checks that game_status is 1" do
+      game = FactoryGirl.build(:game)
+      game.game_status = 1
+      game.is_waiting_for_players?.should be_true
+    end
+  end
+
+  describe "is_rolling_for_turn_order" do
+    it "checks that game_status is 2" do
+      game = FactoryGirl.build(:game)
+      game.game_status = 2
+      game.is_rolling_for_turn_order?.should be_true
+    end
+  end
+
+  describe "is_placing_initial_pieces" do
+    it "checks that game_status is 3" do
+      game = FactoryGirl.build(:game)
+      game.game_status = 3
+      game.is_placing_initial_pieces?.should be_true
+    end
+  end
+
+  describe "is_playing" do
+    it "checks that game_status is 4" do
+      game = FactoryGirl.build(:game)
+      game.game_status = 4
+      game.is_playing?.should be_true
+    end
+  end
+
+  describe "is_completed" do
+    it "checks that game_status is 5" do
+      game = FactoryGirl.build(:game)
+      game.game_status = 5
+      game.is_completed?.should be_true
+    end
+  end
 end

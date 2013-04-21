@@ -74,7 +74,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
 
   create_table "games", :force => true do |t|
     t.integer  "num_players",      :default => 3, :null => false
-    t.integer  "game_status",      :default => 0, :null => false
+    t.integer  "game_status",      :default => 1, :null => false
     t.integer  "winner_id"
     t.integer  "robber_x",                        :null => false
     t.integer  "robber_y",                        :null => false
