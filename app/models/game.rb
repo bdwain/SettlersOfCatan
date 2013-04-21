@@ -56,7 +56,7 @@ class Game < ActiveRecord::Base
     self.status == STATUS_COMPLETED
   end
 
-  #def contains_user?(user)
-    #players.contains()
-  #end
+  def has_user?(user)
+    players.any? { |player| player.user_id == user.id }
+  end
 end

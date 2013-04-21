@@ -4,7 +4,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.references :game, :null => false
       t.references :user, :null => false
       t.integer :turn_num, :null => false
-      t.integer :turn_status, :null => false
+      t.integer :turn_status, :null => true
       t.integer :color, :null => false
       t.datetime :turn_deadline, :null => true
 

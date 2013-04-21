@@ -35,7 +35,7 @@ describe Player do
   describe "turn_num" do
     it { should validate_presence_of(:turn_num) }
     it { should validate_numericality_of(:turn_num).only_integer }
-    it { should ensure_inclusion_of(:turn_num).in_range(3..4) } 
+    it { should ensure_inclusion_of(:turn_num).in_range(1..4) } 
   end
 
   describe "turn_status" do

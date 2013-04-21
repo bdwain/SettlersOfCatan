@@ -1,5 +1,5 @@
 class Player < ActiveRecord::Base
-  belongs_to :game, :inverse_of => :player
+  belongs_to :game, :inverse_of => :players
   belongs_to :user
   has_many :resources, :inverse_of => :player
   has_many :development_cards, :inverse_of => :player
@@ -12,7 +12,7 @@ class Player < ActiveRecord::Base
 
   validates :color, :presence => true, :numericality => {:only_integer => true}
   
-  validates :turn_num, :presence => true, :inclusion => { :in => 3.upto(4) },
+  validates :turn_num, :presence => true, :inclusion => { :in => 1.upto(4) },
             :numericality => {:only_integer => true }
 
   validates :turn_status, :allow_nil => true, :numericality => {:only_integer => true}
