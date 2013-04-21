@@ -8,12 +8,12 @@ class GamePlayer < ActiveRecord::Base
 
   attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 
+  validates_presence_of :game_id, :user_id
+
   validates :color, :presence => true, :numericality => {:only_integer => true}
   
-  validates :turn_num, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than => 0}
+  validates :turn_num, :presence => true, :inclusion => { :in => 3.upto(4) },
+            :numericality => {:only_integer => true }
 
-  validates :turn_status, :presence => true, :numericality => {:only_integer => true}
-
-  validates :turn_deadline, :allow_nil => true, :timeliness => {:type => :datetime}
+  validates :turn_status, :allow_nil => true, :numericality => {:only_integer => true}
 end

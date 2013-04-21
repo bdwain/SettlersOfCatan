@@ -6,7 +6,7 @@ class Game < ActiveRecord::Base
   has_many :game_development_cards, :inverse_of => :game
 
   attr_accessible :game_status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
-  
+
   validates :game_status, :presence => true, :numericality => {:only_integer => true}
 
   validates :middle_row_width, :presence => true, 
@@ -18,8 +18,8 @@ class Game < ActiveRecord::Base
   validates :num_rows, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 5}
 
-  validates :num_players, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than => 2, :less_than => 5}
+  validates :num_players, :presence => true, :inclusion => { :in => 3.upto(4) }, 
+            :numericality => {:only_integer => true}
 
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}

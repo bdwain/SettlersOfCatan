@@ -2,8 +2,10 @@ class GameHex < ActiveRecord::Base
   belongs_to :game, :inverse_of => :game_hexes
   attr_accessible :dice_num, :resource_type, :pos_x, :pos_y
 
-  validates :dice_num, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than => 0, :less_than => 7}
+  validates_presence_of :game_id
+
+  validates :dice_num, :presence => true, :inclusion => { :in => 2.upto(12) },
+            :numericality => {:only_integer => true}
 
   validates :resource_type, :presence => true, :numericality => {:only_integer => true}
   
