@@ -68,7 +68,7 @@ describe Game do
       @rand = Random.new
     end
 
-    describe "is_waiting_for_players" do
+    describe "is_waiting_for_players?" do
       it "returns true if status is 1" do
         game = FactoryGirl.build(:game)
         game.status = 1
@@ -82,7 +82,7 @@ describe Game do
       end
     end
 
-    describe "is_rolling_for_turn_order" do
+    describe "is_rolling_for_turn_order?" do
       it "returns true if status is 2" do
         game = FactoryGirl.build(:game)
         game.status = 2
@@ -96,7 +96,7 @@ describe Game do
       end
     end
 
-    describe "is_placing_initial_pieces" do
+    describe "is_placing_initial_pieces?" do
       it "returns true if status is 3" do
         game = FactoryGirl.build(:game)
         game.status = 3
@@ -110,7 +110,7 @@ describe Game do
       end
     end
 
-    describe "is_playing" do
+    describe "is_playing?" do
       it "returns true if status is 4" do
         game = FactoryGirl.build(:game)
         game.status = 4
@@ -124,7 +124,7 @@ describe Game do
       end
     end
 
-    describe "is_completed" do
+    describe "is_completed?" do
       it "returns true if status is 5" do
         game = FactoryGirl.build(:game)
         game.status = 5
@@ -139,12 +139,12 @@ describe Game do
     end
   end
 
-  describe "has_user" do
+  describe "has_user?" do
     it "returns true if a game's players include user" do
       game = FactoryGirl.create(:game_with_players)
       game.has_user?(game.players.first.user).should be_true
     end
-    
+
     it "returns false if a game's players do not include user" do
       game = FactoryGirl.create(:game_with_players)
       user = FactoryGirl.build(:user)
