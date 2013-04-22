@@ -36,27 +36,29 @@ class Game < ActiveRecord::Base
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
   
-  def is_waiting_for_players?
+  def waiting_for_players?
     self.status == STATUS_WAITING_FOR_PLAYERS
   end
 
-  def is_rolling_for_turn_order?
+  def rolling_for_turn_order?
     self.status == STATUS_ROLLING_FOR_TURN_ORDER
   end
 
-  def is_placing_initial_pieces?
+  def placing_initial_pieces?
     self.status == STATUS_PLACING_INITIAL_PIECES
   end
 
-  def is_playing?
+  def playing?
     self.status == STATUS_PLAYING
   end
 
-  def is_completed?
+  def completed?
     self.status == STATUS_COMPLETED
   end
 
-  def has_user?(user)
+  #Since this works for anything with an id, and id's are not guaranteed to be unique 
+  #across different types of items, would it make sense to use email address?
+  def playing_user?(user)
     players.any? { |player| player.user_id == user.id }
   end
 end

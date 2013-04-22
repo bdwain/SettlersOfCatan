@@ -68,87 +68,87 @@ describe Game do
       @rand = Random.new
     end
 
-    describe "is_waiting_for_players?" do
+    describe "waiting_for_players?" do
       it "returns true if status is 1" do
         game = FactoryGirl.build(:game)
         game.status = 1
-        game.is_waiting_for_players?.should be_true
+        game.waiting_for_players?.should be_true
       end
       
       it "returns false if status is not 1" do
         game = FactoryGirl.build(:game)
         game.status = @rand.rand(2..100)
-        game.is_waiting_for_players?.should be_false
+        game.waiting_for_players?.should be_false
       end
     end
 
-    describe "is_rolling_for_turn_order?" do
+    describe "rolling_for_turn_order?" do
       it "returns true if status is 2" do
         game = FactoryGirl.build(:game)
         game.status = 2
-        game.is_rolling_for_turn_order?.should be_true
+        game.rolling_for_turn_order?.should be_true
       end
       
       it "returns false if status is not 2" do
         game = FactoryGirl.build(:game)
         game.status = @rand.rand(1..100) until game.status != 2
-        game.is_rolling_for_turn_order?.should be_false
+        game.rolling_for_turn_order?.should be_false
       end
     end
 
-    describe "is_placing_initial_pieces?" do
+    describe "placing_initial_pieces?" do
       it "returns true if status is 3" do
         game = FactoryGirl.build(:game)
         game.status = 3
-        game.is_placing_initial_pieces?.should be_true
+        game.placing_initial_pieces?.should be_true
       end
       
       it "returns false if status is not 3" do
         game = FactoryGirl.build(:game)
         game.status = @rand.rand(1..100) until game.status != 3
-        game.is_placing_initial_pieces?.should be_false
+        game.placing_initial_pieces?.should be_false
       end
     end
 
-    describe "is_playing?" do
+    describe "playing?" do
       it "returns true if status is 4" do
         game = FactoryGirl.build(:game)
         game.status = 4
-        game.is_playing?.should be_true
+        game.playing?.should be_true
       end
       
       it "returns false if status is not 4" do
         game = FactoryGirl.build(:game)
         game.status = @rand.rand(1..100) until game.status != 4
-        game.is_playing?.should be_false
+        game.playing?.should be_false
       end
     end
 
-    describe "is_completed?" do
+    describe "completed?" do
       it "returns true if status is 5" do
         game = FactoryGirl.build(:game)
         game.status = 5
-        game.is_completed?.should be_true
+        game.completed?.should be_true
       end
       
       it "returns false if status is not 5" do
         game = FactoryGirl.build(:game)
         game.status = @rand.rand(1..100) until game.status != 5
-        game.is_completed?.should be_false
+        game.completed?.should be_false
       end
     end
   end
 
-  describe "has_user?" do
+  describe "playing_user?" do
     it "returns true if a game's players include user" do
       game = FactoryGirl.create(:game_with_players)
-      game.has_user?(game.players.first.user).should be_true
+      game.playing_user?(game.players.first.user).should be_true
     end
 
     it "returns false if a game's players do not include user" do
       game = FactoryGirl.create(:game_with_players)
       user = FactoryGirl.build(:user)
-      game.has_user?(user).should be_false
+      game.playing_user?(user).should be_false
     end
   end
 end
