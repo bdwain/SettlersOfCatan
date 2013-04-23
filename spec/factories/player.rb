@@ -4,6 +4,6 @@ FactoryGirl.define do
     sequence(:color, 0) {|n| (n % 4) + 1} 
     sequence(:turn_num, 0) {|n| (n % 4) + 1}
     game
-    user
+    association :user, factory: :confirmed_user
   end  
 end
