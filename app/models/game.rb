@@ -63,6 +63,6 @@ class Game < ActiveRecord::Base
   end
 
   def player(user)
-    players.detect { |p| p.user_id == p.id }
+    players.detect { |p| p.user_id == user.id }
   end
 end

@@ -153,9 +153,14 @@ describe Game do
   end
 
   describe "player" do
-    it "returns the player for the passed in user if they are playing in the game" do
+    it "returns the first player when passed the corresponding user" do
       game = FactoryGirl.create(:game_with_players)
-      game.player(game.players.first.user).should equal(game.players.first)
+      game.player(game.players.first).should equal(game.players.first)
+    end
+
+    it "returns the last player when passed the corresponding user" do
+      game = FactoryGirl.create(:game_with_players)
+      game.player(game.players.last.user).should equal(game.players.last)
     end
 
     it "returns nil if the user isn't playing" do
