@@ -58,7 +58,11 @@ class Game < ActiveRecord::Base
 
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
   #across different types of items, would it make sense to use email address?
-  def user_playing?(user)
-    players.any? { |player| player.user_id == user.id }
+  def player?(user)
+    players.any? { |p| p.user_id == user.id }
+  end
+
+  def player(user)
+    players.detect { |p| p.user_id == p.id }
   end
 end

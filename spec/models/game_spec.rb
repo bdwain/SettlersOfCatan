@@ -139,16 +139,29 @@ describe Game do
     end
   end
 
-  describe "user_playing?" do
+  describe "player?" do
     it "returns true if a game's players include user" do
       game = FactoryGirl.create(:game_with_players)
-      game.user_playing?(game.players.first.user).should be_true
+      game.player?(game.players.first.user).should be_true
     end
 
     it "returns false if a game's players do not include user" do
       game = FactoryGirl.create(:game_with_players)
       user = FactoryGirl.build(:user)
-      game.user_playing?(user).should be_false
+      game.player?(user).should be_false
+    end
+  end
+
+  describe "player" do
+    it "returns the player for the passed in user if they are playing in the game" do
+      game = FactoryGirl.create(:game_with_players)
+      game.player(game.players.first.user).should equal(game.players.first)
+    end
+
+    it "returns nil if the user isn't playing" do
+      game = FactoryGirl.create(:game)
+      user = FactoryGirl.build(:user)
+      game.player(user).should be_false
     end
   end
 end
