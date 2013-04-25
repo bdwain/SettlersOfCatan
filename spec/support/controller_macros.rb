@@ -1,9 +1,9 @@
 module ControllerMacros
   def login
     before(:each) do
-      @user = FactoryGirl.create(:user)
-      @user.confirm!
-      sign_in @user
+      @current_user = FactoryGirl.create(:user)
+      @current_user.confirm!
+      sign_in @current_user
     end
   end
 end

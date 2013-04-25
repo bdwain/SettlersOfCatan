@@ -59,10 +59,26 @@ class Game < ActiveRecord::Base
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
   #across different types of items, would it make sense to use email address?
   def player?(user)
-    players.any? { |p| p.user_id == user.id }
+    players.any? { |p| p.user_id == user.id } if user != nil
   end
 
   def player(user)
-    players.detect { |p| p.user_id == user.id }
+    players.detect { |p| p.user_id == user.id } if user != nil
+  end
+
+  def add_user?(user)
+    if waiting_for_players? && user != nil && user.confirmed? && !player?(user) && players.count < num_players
+      player = Player.new()
+      player.user = user
+      player.game = self
+      #these will get set on game startup
+      player.turn_num = 1 
+      player.color = 1
+      players.push(player) 
+    end
+  end
+
+  def remove_player?(player)
+    player.destroy if waiting_for_players? && player != nil && players.find_by_id(player.id) != nil
   end
 end

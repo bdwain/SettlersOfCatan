@@ -5,14 +5,24 @@ FactoryGirl.define do
     num_rows 5
     robber_x 0
     robber_y 0
-    #numplayers and game_status have default values
+    #num_players and status have default values
 
-    factory :game_with_players do
+    factory :partially_filled_game do
       ignore do
-        player_count 3
+        player_count 2
       end
       after(:create) do |game, evaluator|
         FactoryGirl.create_list(:player, evaluator.player_count, game: game)
+      end
+
+      factory :full_game do
+        after(:create) do |game, evaluator|
+          FactoryGirl.create_list(:player, game.num_players - evaluator.player_count, game: game)
+        end
+
+        factory :game_started do
+          status 2
+        end
       end
     end
   end

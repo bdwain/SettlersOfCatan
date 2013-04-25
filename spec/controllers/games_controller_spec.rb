@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe GamesController do
-  describe "When Not Logged In" do
+  context "When Not Logged In" do
     let(:game) { FactoryGirl.create(:game) }
     after { response.should redirect_to new_user_session_path }
     it { get :index }
@@ -12,7 +12,7 @@ describe GamesController do
     it { put :update, :id => game.to_param, :game => {'these' => 'params'} }
   end
 
-  describe "When Logged In" do
+  context "When Logged In" do
     login
     describe "GET index" do
       it "assigns all games as @games" do

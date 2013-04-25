@@ -10,13 +10,28 @@
   <tr>
     <td>
       <% if game.waiting_for_players? %>
-        <!--<%=  %>-->
+        Waiting for players
+        <% if !game.player?(current_user) %>
+          (<%= link_to 'Join Game', players_path(:game => game.id), :method => :post %>)
+        <% else %>
+          (<%= link_to 'Leave Game', game.player(current_user), 
+          :method => :delete, data: { confirm: 'Are you sure?' } %>)
+        <% end %>
+      <% elsif !game.waiting_for_players? && game.player?(current_user) %>
+        <%= link_to 'Enter Game', game %>
+      <% else %>
+        watch game
       <% end %>
     </td>
     <td><%= link_to 'Show', game %></td>
     <td>
       <table>
-          <% #(1..game.num_players) %>
+          <% game.players.each do |player| %>
+            <tr><td> <%= player.user.displayname %> </td></tr>
+          <% end %>
+          <% (game.num_players-game.players.size).times do %>
+            <tr><td> ________ </td></tr>
+          <% end %>
       </table>
     </td>
   </tr>
