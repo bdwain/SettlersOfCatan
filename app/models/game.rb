@@ -71,9 +71,6 @@ class Game < ActiveRecord::Base
       player = Player.new()
       player.user = user
       player.game = self
-      #these will get set on game startup
-      player.turn_num = 1 
-      player.color = 1
       players.push(player) 
     end
   end
