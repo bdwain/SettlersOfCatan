@@ -25,7 +25,7 @@ describe PlayersController do
       shared_examples "create sets the flash" do
         it "sets the flash" do
           post :create, {:game => mock_game_id}
-          should set_the_flash
+          should set_the_flash.to('You couldn\'t join the game')
         end
       end
 
@@ -81,10 +81,10 @@ describe PlayersController do
         end
       end
 
-      shared_examples "destroy sets the flash" do
+      shared_examples "destroy sets the flash" do |flash_msg|
         it "sets the flash" do
           delete :destroy, {:id => mock_player_id}
-          should set_the_flash
+          should set_the_flash[:error].to(flash_msg)
         end
       end
 
@@ -123,7 +123,7 @@ describe PlayersController do
             end
 
             include_examples "destroy redirects to games_url"
-            include_examples "destroy sets the flash"
+            include_examples "destroy sets the flash", "The game already started. You can't quit now"
           end
         end
 
@@ -134,7 +134,7 @@ describe PlayersController do
           end
 
           include_examples "destroy redirects to games_url"
-          include_examples "destroy sets the flash"
+          include_examples "destroy sets the flash", "You can't do that"
         end
       end
 
@@ -145,7 +145,7 @@ describe PlayersController do
         end
 
         include_examples "destroy redirects to games_url"
-        include_examples "destroy sets the flash"
+        include_examples "destroy sets the flash", "Invalid request"
       end
     end
   end

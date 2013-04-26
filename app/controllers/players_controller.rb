@@ -17,11 +17,11 @@ class PlayersController < ApplicationController
     if player != nil && player.user == current_user && player.game.remove_player?(player)
       redirect_to games_url
     elsif player != nil && player.user == current_user
-      redirect_to games_url, :flash => { :error => "Game  already started. You can't quit now" }
+      redirect_to games_url, :flash => { :error => "The game already started. You can't quit now" }
     elsif player != nil
       redirect_to games_url, :flash => { :error => "You can't do that" }
     else
-      redirect_to games_url, :flash => { :error => "Invalid URL" }
+      redirect_to games_url, :flash => { :error => "Invalid request" }
     end
   end
 end
