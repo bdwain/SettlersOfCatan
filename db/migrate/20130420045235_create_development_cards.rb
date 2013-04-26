@@ -4,7 +4,7 @@ class CreateDevelopmentCards < ActiveRecord::Migration
       t.references :player, :null => true
       t.references :game, :null => false
       t.integer :type, :null => false
-      t.integer :position, :null => false
+      t.integer :position, :null => true
       t.boolean :was_used, :null => false, :default => false
 
       t.timestamps

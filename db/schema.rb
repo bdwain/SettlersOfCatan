@@ -17,7 +17,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "player_id"
     t.integer  "game_id",                       :null => false
     t.integer  "type",                          :null => false
-    t.integer  "position",                      :null => false
+    t.integer  "position"
     t.boolean  "was_used",   :default => false, :null => false
     t.datetime "created_at",                    :null => false
     t.datetime "updated_at",                    :null => false
@@ -30,11 +30,11 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "num_players",      :default => 3, :null => false
     t.integer  "status",           :default => 1, :null => false
     t.integer  "winner_id"
-    t.integer  "robber_x",                        :null => false
-    t.integer  "robber_y",                        :null => false
-    t.integer  "middle_row_width",                :null => false
-    t.integer  "num_rows",                        :null => false
-    t.integer  "num_middle_rows",                 :null => false
+    t.integer  "robber_x",         :default => 0, :null => false
+    t.integer  "robber_y",         :default => 0, :null => false
+    t.integer  "middle_row_width", :default => 5, :null => false
+    t.integer  "num_rows",         :default => 5, :null => false
+    t.integer  "num_middle_rows",  :default => 1, :null => false
     t.datetime "created_at",                      :null => false
     t.datetime "updated_at",                      :null => false
   end
@@ -65,14 +65,14 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "hexes", ["game_id"], :name => "index_hexes_on_game_id"
 
   create_table "players", :force => true do |t|
-    t.integer  "game_id",       :null => false
-    t.integer  "user_id",       :null => false
-    t.integer  "turn_num",      :null => false
+    t.integer  "game_id",                      :null => false
+    t.integer  "user_id",                      :null => false
+    t.integer  "turn_num",      :default => 1, :null => false
     t.integer  "turn_status"
-    t.integer  "color",         :null => false
+    t.integer  "color",         :default => 1, :null => false
     t.datetime "turn_deadline"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
   end
 
   add_index "players", ["game_id"], :name => "index_players_on_game_id"

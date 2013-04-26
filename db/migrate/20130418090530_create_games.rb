@@ -4,11 +4,11 @@ class CreateGames < ActiveRecord::Migration
       t.integer :num_players, :null => false, :default => 3
       t.integer :status, :null => false, :default => 1
       t.integer :winner_id, :null => true
-      t.integer :robber_x, :null => false
-      t.integer :robber_y, :null => false
-      t.integer :middle_row_width, :null => false
-      t.integer :num_rows, :null => false
-      t.integer :num_middle_rows, :null => false
+      t.integer :robber_x, :null => false, :default => 0
+      t.integer :robber_y, :null => false, :default => 0
+      t.integer :middle_row_width, :null => false, :default => 5
+      t.integer :num_rows, :null => false, :default => 5
+      t.integer :num_middle_rows, :null => false, :default => 1
 
       t.timestamps
     end

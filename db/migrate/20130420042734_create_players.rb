@@ -3,9 +3,9 @@ class CreatePlayers < ActiveRecord::Migration
     create_table :players do |t|
       t.references :game, :null => false
       t.references :user, :null => false
-      t.integer :turn_num, :null => false
+      t.integer :turn_num, :null => false, :default => 1
       t.integer :turn_status, :null => true
-      t.integer :color, :null => false
+      t.integer :color, :null => false, :default => 1
       t.datetime :turn_deadline, :null => true
 
       t.timestamps
