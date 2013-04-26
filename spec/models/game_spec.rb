@@ -215,7 +215,7 @@ describe Game do
 
         it "makes the new player valid" do
           @game.add_user?(@user)
-          @game.players.last.game.should be_valid
+          @game.players.last.should be_valid
         end
       end
 

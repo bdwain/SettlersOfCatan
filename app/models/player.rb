@@ -1,14 +1,14 @@
 class Player < ActiveRecord::Base
   belongs_to :game, :inverse_of => :players
   belongs_to :user
-  has_many :resources, :inverse_of => :player
-  has_many :development_cards, :inverse_of => :player
-  has_many :settlements, :inverse_of => :player
-  has_many :roads, :inverse_of => :player
+  has_many :resources, :inverse_of => :player, :autosave => true
+  has_many :development_cards, :inverse_of => :player, :autosave => true
+  has_many :settlements, :inverse_of => :player, :autosave => true
+  has_many :roads, :inverse_of => :player, :autosave => true
 
   attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 
-  validates_presence_of :game_id, :user_id
+  validates_presence_of :game, :user
 
   validates :color, :presence => true, :numericality => {:only_integer => true}
   

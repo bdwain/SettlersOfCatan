@@ -1,9 +1,9 @@
 class Game < ActiveRecord::Base
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  has_many :hexes, :inverse_of => :game
-  has_many :harbors, :inverse_of => :game
-  has_many :players, :inverse_of => :game
-  has_many :development_cards, :inverse_of => :game
+  has_many :hexes, :inverse_of => :game, :autosave => true
+  has_many :harbors, :inverse_of => :game, :autosave => true
+  has_many :players, :inverse_of => :game, :autosave => true
+  has_many :development_cards, :inverse_of => :game, :autosave => true
 
   attr_accessible :status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
 
@@ -68,10 +68,10 @@ class Game < ActiveRecord::Base
 
   def add_user?(user)
     if waiting_for_players? && user != nil && user.confirmed? && !player?(user) && players.count < num_players
-      player = Player.new()
+      player = Player.new
       player.user = user
       player.game = self
-      players.push(player) 
+      players << player
     end
   end
 
