@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "development_cards", ["player_id"], :name => "index_development_cards_on_player_id"
 
   create_table "games", :force => true do |t|
-    t.integer  "num_players",      :default => 3, :null => false
+    t.integer  "num_players",                     :null => false
     t.integer  "status",           :default => 1, :null => false
     t.integer  "winner_id"
     t.integer  "robber_x",         :default => 0, :null => false

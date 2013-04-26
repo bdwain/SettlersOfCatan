@@ -1,11 +1,7 @@
 FactoryGirl.define do
   factory :game do
-    middle_row_width 5
-    num_middle_rows 1
-    num_rows 5
-    robber_x 0
-    robber_y 0
-    #num_players and status have default values
+    num_players 3
+    #the rest of the attributes have default values
 
     factory :partially_filled_game do
       ignore do
