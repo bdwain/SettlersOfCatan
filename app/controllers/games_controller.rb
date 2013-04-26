@@ -34,12 +34,6 @@ class GamesController < ApplicationController
 
   # PUT /games/1
   def update
-    @game = Game.find(params[:id])
-
-    if @game.update_attributes(params[:game])
-      redirect_to @game, notice: 'Game was successfully updated.'
-    else
-      render action: "edit"
-    end
+    redirect_to games_url
   end
 end

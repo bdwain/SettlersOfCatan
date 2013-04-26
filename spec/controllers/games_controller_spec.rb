@@ -38,14 +38,6 @@ describe GamesController do
       end
     end
 
-    describe "GET edit" do
-      it "assigns the requested game as @game" do
-        game = FactoryGirl.create(:game)
-        get :edit, {:id => game.to_param}
-        assigns(:game).should eq(game)
-      end
-    end
-
     describe "POST create" do
       describe "with valid params" do
         it "creates a new Game" do
@@ -84,47 +76,6 @@ describe GamesController do
     end
 
     describe "PUT update" do
-      describe "with valid params" do
-        it "updates the requested game" do
-          game = FactoryGirl.create(:game)
-          # Assuming there are no other games in the database, this
-          # specifies that the Game created on the previous line
-          # receives the :update_attributes message with whatever params are
-          # submitted in the request.
-          Game.any_instance.should_receive(:update_attributes).with({ "these" => "params" })
-          put :update, {:id => game.to_param, :game => { "these" => "params" }}
-        end
-
-        it "assigns the requested game as @game" do
-          game = FactoryGirl.create(:game)
-          put :update, {:id => game.to_param, :game => FactoryGirl.attributes_for(:game)}
-          assigns(:game).should eq(game)
-        end
-
-        it "redirects to the game" do
-          game = FactoryGirl.create(:game)
-          put :update, {:id => game.to_param, :game => FactoryGirl.attributes_for(:game)}
-          response.should redirect_to(game)
-        end
-      end
-
-      describe "with invalid params" do
-        it "assigns the game as @game" do
-          game = FactoryGirl.create(:game)
-          # Trigger the behavior that occurs when invalid params are submitted
-          Game.any_instance.stub(:save).and_return(false)
-          put :update, {:id => game.to_param, :game => {  }}
-          assigns(:game).should eq(game)
-        end
-
-        it "re-renders the 'edit' template" do
-          game = FactoryGirl.create(:game)
-          # Trigger the behavior that occurs when invalid params are submitted
-          Game.any_instance.stub(:save).and_return(false)
-          put :update, {:id => game.to_param, :game => {  }}
-          response.should render_template("edit")
-        end
-      end
     end
   end
 end
