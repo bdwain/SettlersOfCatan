@@ -2,9 +2,14 @@ SettlersOfCatan
 ===============
 
 ## Setup
-Set up ruby 2.0.0p0 and rubygems. I followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.0.0p0. 
+Set up ruby 2.0.0p0 and rubygems. I used rvm and followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.0.0p0. 
 
 Clone the repo
+
+The next step allows bundler to install all of the necessary mysql files. You can use another database, but those are in the gemfile. 
+
+    sudo apt-get install libmysqld-dev libmysqlclient-dev mysql-client
+  
 
 Run "bundle install"
 
