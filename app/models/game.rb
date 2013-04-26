@@ -1,9 +1,9 @@
 class Game < ActiveRecord::Base
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  has_many :hexes, :inverse_of => :game, :autosave => true
-  has_many :harbors, :inverse_of => :game, :autosave => true
-  has_many :players, :inverse_of => :game, :autosave => true
-  has_many :development_cards, :inverse_of => :game, :autosave => true
+  has_many :hexes, :inverse_of => :game, :autosave => true, :dependent => :destroy
+  has_many :harbors, :inverse_of => :game, :autosave => true, :dependent => :destroy
+  has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
+  has_many :development_cards, :inverse_of => :game, :autosave => true, :dependent => :destroy
 
   attr_accessible :status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
 
@@ -35,25 +35,25 @@ class Game < ActiveRecord::Base
   #position of the robber
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
-  
+
   def waiting_for_players?
-    self.status == STATUS_WAITING_FOR_PLAYERS
+    status == STATUS_WAITING_FOR_PLAYERS
   end
 
   def rolling_for_turn_order?
-    self.status == STATUS_ROLLING_FOR_TURN_ORDER
+    status == STATUS_ROLLING_FOR_TURN_ORDER
   end
 
   def placing_initial_pieces?
-    self.status == STATUS_PLACING_INITIAL_PIECES
+    status == STATUS_PLACING_INITIAL_PIECES
   end
 
   def playing?
-    self.status == STATUS_PLAYING
+    status == STATUS_PLAYING
   end
 
   def completed?
-    self.status == STATUS_COMPLETED
+    status == STATUS_COMPLETED
   end
 
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
@@ -76,6 +76,8 @@ class Game < ActiveRecord::Base
   end
 
   def remove_player?(player)
-    player.destroy if waiting_for_players? && player != nil && players.find_by_id(player.id) != nil
+    if waiting_for_players? && player != nil && players.find_by_id(player.id) != nil
+      players.count == 1 ? destroy : player.destroy
+    end
   end
 end

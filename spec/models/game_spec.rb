@@ -182,7 +182,7 @@ describe Game do
       it "does not add players to the game" do
         expect{
           @game.add_user?(@user)
-        }.to_not change(@game.players, :count).by(1)
+        }.to_not change(@game.players, :count)
       end
     end
 
@@ -275,22 +275,52 @@ describe Game do
       it "does not remove players from the game" do
         expect{
           @game.remove_player?(@player)
-        }.to_not change(@game.players, :count).by(1)
+        }.to_not change(@game.players, :count)
       end
     end
 
     context "when the input is expected" do
-      context "when the game is still waiting for players" do
-        it "returns true" do
-          game = FactoryGirl.create(:full_game)
-          game.remove_player?(game.players.first).should be_true
+      context "when the game is stil waiting for players" do
+        context "when the game has one player left" do
+          it "returns true" do
+            game = FactoryGirl.create(:player).game
+            game.remove_player?(game.players.first).should be_true
+          end
+
+          it "destroys the game" do
+            game = FactoryGirl.create(:player).game
+            expect{
+              game.remove_player?(game.players.first)
+            }.to change(Game, :count).by(-1)
+          end
+
+          it "destroys the player" do
+            game = FactoryGirl.create(:player).game
+            expect{
+              game.remove_player?(game.players.first)
+            }.to change(Player, :count).by(-1)
+          end
         end
 
-        it "removes the player" do
-          game = FactoryGirl.create(:full_game)
-          expect{
-            game.remove_player?(game.players.first)
-          }.to change(game.players, :count).by(-1)
+        context "when the game has more than one player left" do
+          it "returns true" do
+            game = FactoryGirl.create(:full_game)
+            game.remove_player?(game.players.first).should be_true
+          end
+
+          it "does not destroy the game" do
+            game = FactoryGirl.create(:game)
+            expect{
+              game.remove_player?(game.players.first)
+            }.to_not change(Game, :count)
+          end
+
+          it "removes the player" do
+            game = FactoryGirl.create(:full_game)
+            expect{
+              game.remove_player?(game.players.first)
+            }.to change(game.players, :count).by(-1)
+          end
         end
       end
       

@@ -1,10 +1,10 @@
 class Player < ActiveRecord::Base
   belongs_to :game, :inverse_of => :players
   belongs_to :user
-  has_many :resources, :inverse_of => :player, :autosave => true
-  has_many :development_cards, :inverse_of => :player, :autosave => true
-  has_many :settlements, :inverse_of => :player, :autosave => true
-  has_many :roads, :inverse_of => :player, :autosave => true
+  has_many :resources, :inverse_of => :player, :autosave => true, :dependent => :destroy
+  has_many :development_cards, :inverse_of => :player, :autosave => true, :dependent => :destroy
+  has_many :settlements, :inverse_of => :player, :autosave => true, :dependent => :destroy
+  has_many :roads, :inverse_of => :player, :autosave => true, :dependent => :destroy
 
   attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 
