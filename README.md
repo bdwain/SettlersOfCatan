@@ -6,18 +6,22 @@ Set up ruby 2.0.0p0 and rubygems. I used rvm and followed the instructions [here
 
 Clone the repo
 
-The next step allows bundler to install all of the necessary mysql files. You can use another database, but those are in the gemfile. 
+The next step allows bundler to install all of the necessary mysql gems. You can use another database, but using the gemfile requires this step. 
 
     sudo apt-get install libmysqld-dev libmysqlclient-dev mysql-client
   
-
 Run "bundle install"
 
 Copy config/application.yml.example to config/application.yml and set all of the values
 
 Copy config/database.yml.example to database.yml and fill in your db info. 
 
-Rake db:create and rake db:schema:load
+Do whatever set up you need to install your database. You should be able to open the database terminal with the username and password you specify in database.yml.
+I used mysql, which just required
+
+    sudo apt-get install mysql-server
+
+Run rake db:create and rake db:schema:load
 
 Run the server
 
