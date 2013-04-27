@@ -5,7 +5,7 @@ class PlayersController < ApplicationController
   def create
     game = Game.find_by_id(params[:game])
     if game != nil && game.add_user?(current_user)
-      redirect_to games_url
+      redirect_to game
     else
       redirect_to games_url, :flash => { :error => "You couldn't join the game" }
     end
