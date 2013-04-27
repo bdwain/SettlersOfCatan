@@ -1,6 +1,6 @@
 class Player < ActiveRecord::Base
   belongs_to :game, :inverse_of => :players
-  belongs_to :user
+  belongs_to :user, :inverse_of => :players
   has_many :resources, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :development_cards, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :settlements, :inverse_of => :player, :autosave => true, :dependent => :destroy

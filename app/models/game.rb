@@ -8,6 +8,7 @@ class Game < ActiveRecord::Base
   attr_accessible :status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
 
   private
+  STATUS_ABANDONED = 1000
   STATUS_WAITING_FOR_PLAYERS = 1
   STATUS_ROLLING_FOR_TURN_ORDER = 2
   STATUS_PLACING_INITIAL_PIECES = 3
@@ -16,7 +17,7 @@ class Game < ActiveRecord::Base
 
   public
   validates :status, :presence => true, 
-            :inclusion => { :in => [ STATUS_WAITING_FOR_PLAYERS,
+            :inclusion => { :in => [STATUS_ABANDONED, STATUS_WAITING_FOR_PLAYERS,
              STATUS_ROLLING_FOR_TURN_ORDER, STATUS_PLACING_INITIAL_PIECES,
              STATUS_PLAYING, STATUS_COMPLETED ] }
 
@@ -35,6 +36,19 @@ class Game < ActiveRecord::Base
   #position of the robber
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
+
+  def abandoned_by(player)
+    if players.find_by_id(player.id) != nil
+      if !waiting_for_players? && !completed?
+        self.status = STATUS_ABANDONED
+      end
+      remove_player?(player)
+    end
+  end
+
+  def abandoned?
+    status == STATUS_ABANDONED
+  end
 
   def waiting_for_players?
     status == STATUS_WAITING_FOR_PLAYERS
@@ -76,7 +90,7 @@ class Game < ActiveRecord::Base
   end
 
   def remove_player?(player)
-    if waiting_for_players? && player != nil && players.find_by_id(player.id) != nil
+    if (waiting_for_players? || completed? || abandoned?) && player != nil && players.find_by_id(player.id) != nil
       players.count == 1 ? destroy : player.destroy
     end
   end

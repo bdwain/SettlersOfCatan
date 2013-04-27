@@ -23,7 +23,7 @@ describe Game do
 
   describe "status" do
     it { should validate_presence_of(:status) }
-    it { should ensure_inclusion_of(:status).in_range(1..5) }
+    it { should ensure_inclusion_of(:status).in_array([*1..5, 1000]) }
   end
 
   describe "middle_row_width" do
@@ -63,10 +63,90 @@ describe Game do
     it { should validate_numericality_of(:robber_y).only_integer }
   end
 
+  describe "abandoned_by" do   
+    context "when player id is in the game" do
+      shared_examples "abandoned_by doesn't change status" do
+        it "does not set the game status to abandoned" do
+          game = FactoryGirl.create(:partially_filled_game)
+          game.status = status
+          expect {
+            game.abandoned_by(game.players.first)
+          }.to_not change(game, :status)
+        end
+      end
+
+      shared_examples "abandoned_by calls remove_player?" do
+        it "calles remove_player?" do
+          game = FactoryGirl.create(:partially_filled_game)
+          game.status = status
+          game.should_receive(:remove_player?).with(game.players.first)
+          game.abandoned_by(game.players.first)
+        end
+      end
+
+      context "when waiting for players" do
+        let(:status) {1}
+        include_examples "abandoned_by doesn't change status"
+        include_examples "abandoned_by calls remove_player?"
+      end
+
+      context "when completed" do
+        let(:status) {5}
+        include_examples "abandoned_by doesn't change status"
+        include_examples "abandoned_by calls remove_player?"
+      end
+
+      context "when abandoned" do
+        let(:status) {1}
+        include_examples "abandoned_by doesn't change status"
+        include_examples "abandoned_by calls remove_player?"
+      end
+
+      context "when game is in play" do
+        let(:status) {2}
+        it "sets the game status to abandoned" do
+          game = FactoryGirl.create(:game_started)
+          game.abandoned_by(game.players.first)
+          game.abandoned?.should be_true
+        end
+
+        include_examples "abandoned_by calls remove_player?"
+      end
+    end
+
+    context "when player id is not in the game" do
+      it "doesn't set the game status to abandoned" do
+        game = FactoryGirl.create(:partially_filled_game)
+        otherPlayer = FactoryGirl.create(:player)
+        game.abandoned_by(otherPlayer)
+        game.abandoned?.should be_false
+      end
+
+      it "doesn't call remove_player?" do
+        game = FactoryGirl.create(:partially_filled_game)
+        otherPlayer = FactoryGirl.create(:player)
+        game.should_not_receive(:remove_player?)
+        game.abandoned_by(otherPlayer)
+      end
+    end
+  end
+
   describe "status_checkers" do
     before(:all) do
       @rand = Random.new
       @game = FactoryGirl.build(:game)
+    end
+
+    describe "abandoned?" do
+      it "returns true if status is 1000" do
+        @game.status = 1000
+        @game.abandoned?.should be_true
+      end
+      
+      it "returns false if status is not 1000" do
+        @game.status = @rand.rand(1..100)
+        @game.abandoned?.should be_false
+      end
     end
 
     describe "waiting_for_players?" do
@@ -269,93 +349,107 @@ describe Game do
   describe "remove_player?" do
     shared_examples "remove_player?_failures" do
       it "returns false" do
-        @game.remove_player?(@player).should be_false
+        game.remove_player?(player).should be_false
       end
 
       it "does not remove players from the game" do
         expect{
-          @game.remove_player?(@player)
-        }.to_not change(@game.players, :count)
+          game.remove_player?(player)
+        }.to_not change(game.players, :count)
+      end
+    end
+
+    shared_examples "remove_player?_successes" do
+      context "when the game has one player left" do
+        before(:each) do
+          @game = FactoryGirl.create(:player).game
+          @game.status = status
+        end
+
+        it "returns true" do
+          @game.remove_player?(@game.players.first).should be_true
+        end
+
+        it "destroys the game" do
+          expect{
+            @game.remove_player?(@game.players.first)
+          }.to change(Game, :count).by(-1)
+        end
+
+        it "destroys the player" do
+          expect{
+            @game.remove_player?(@game.players.first)
+          }.to change(Player, :count).by(-1)
+        end
+      end
+
+      context "when the game has more than one player left" do
+        before(:each) do
+          @game = FactoryGirl.create(:full_game, status: status)
+        end
+
+        it "returns true" do
+          @game.remove_player?(@game.players.first).should be_true
+        end
+
+        it "does not destroy the game" do
+          expect{
+            @game.remove_player?(@game.players.first)
+          }.to_not change(Game, :count)
+        end
+
+        it "destroys the player" do
+          expect{
+            @game.remove_player?(@game.players.first)
+          }.to change(@game.players, :count).by(-1)
+        end
       end
     end
 
     context "when the input is expected" do
       context "when the game is stil waiting for players" do
-        context "when the game has one player left" do
-          it "returns true" do
-            game = FactoryGirl.create(:player).game
-            game.remove_player?(game.players.first).should be_true
-          end
+        let(:status) { 1 } 
 
-          it "destroys the game" do
-            game = FactoryGirl.create(:player).game
-            expect{
-              game.remove_player?(game.players.first)
-            }.to change(Game, :count).by(-1)
-          end
-
-          it "destroys the player" do
-            game = FactoryGirl.create(:player).game
-            expect{
-              game.remove_player?(game.players.first)
-            }.to change(Player, :count).by(-1)
-          end
-        end
-
-        context "when the game has more than one player left" do
-          it "returns true" do
-            game = FactoryGirl.create(:full_game)
-            game.remove_player?(game.players.first).should be_true
-          end
-
-          it "does not destroy the game" do
-            game = FactoryGirl.create(:game)
-            expect{
-              game.remove_player?(game.players.first)
-            }.to_not change(Game, :count)
-          end
-
-          it "removes the player" do
-            game = FactoryGirl.create(:full_game)
-            expect{
-              game.remove_player?(game.players.first)
-            }.to change(game.players, :count).by(-1)
-          end
-        end
+        include_examples "remove_player?_successes"
       end
-      
+
       context "when the game already started" do
-        before(:each) do
-          @game = FactoryGirl.create(:game_started)
-          @player = @game.players.first
-        end
+        let(:game) { FactoryGirl.create(:game_started) }
+        let(:player) { game.players.first }
 
         include_examples "remove_player?_failures"
+      end
+
+      context "when the game is completed" do
+        let(:status) { 5 } 
+
+        include_examples "remove_player?_successes"
+      end
+
+      context "when the game is abandoned" do
+        let(:status) { 1000 }
+
+        include_examples "remove_player?_successes"
       end
     end
     
     context "when the input is not expected" do
-      before(:each) do
-        @game = FactoryGirl.create(:full_game)
-      end
+      let(:game) { FactoryGirl.create(:full_game) }
 
       context "when player is nil" do
+        let(:player) { nil }
         include_examples "remove_player?_failures"
       end
 
       context "when player not in game" do
-        before(:each) do
-          @game2 = FactoryGirl.create(:partially_filled_game)
-          @player = @game2.players.first
-        end
+        let(:game2) { FactoryGirl.create(:partially_filled_game) }
+        let(:player) { game2.players.first }
 
         include_examples "remove_player?_failures"
 
         #make sure it's looking by playerid and not user id
         context "when player's user is playing in this game as well" do
-          before(:each) do
-            @player = FactoryGirl.create(:player, user: @game.players.first.user, game: @game2)
-          end
+          let(:player) { FactoryGirl.create(:player, user: game.players.first.user, game: game2) }
 
           include_examples "remove_player?_failures"
         end
