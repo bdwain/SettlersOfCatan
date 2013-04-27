@@ -14,8 +14,8 @@
   <% end %>
 
   <div class="field">
-    <%= f.label :num_players %><br />
-    <%= f.number_field :num_players %>
+    <%= f.label "How many players?" %>
+    <%= f.select(:num_players, [[3, 3], [4, 4]]) %>
   </div>
   <div class="actions">
     <%= f.submit %>

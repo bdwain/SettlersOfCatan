@@ -7,7 +7,6 @@ describe GamesController do
     it { get :index }
     it { get :new }
     it { get :show, :id => game.to_param }
-    it { get :edit, :id => game.to_param }
     it { post :create, :game => FactoryGirl.attributes_for(:game) }
     it { put :update, :id => game.to_param, :game => {'these' => 'params'} }
   end
@@ -39,12 +38,17 @@ describe GamesController do
     end
 
     describe "POST create" do
-      describe "with valid params" do
+      context "with valid params" do
         it "creates a new Game" do
           expect {
             post :create, {:game => FactoryGirl.attributes_for(:game)}
           }.to change(Game, :count).by(1)
         end
+
+        it "calls add_user? with current user" do
+          Game.any_instance.should_receive(:add_user?).with(@current_user)
+          post :create, {:game => FactoryGirl.attributes_for(:game)}
+        end        
 
         it "assigns a newly created game as @game" do
           post :create, {:game => FactoryGirl.attributes_for(:game)}
@@ -58,24 +62,40 @@ describe GamesController do
         end
       end
 
-      describe "with invalid params" do
+      context "with invalid params" do
         it "assigns a newly created but unsaved game as @game" do
-          # Trigger the behavior that occurs when invalid params are submitted
+          Game.any_instance.stub(:valid).and_return(false)
           Game.any_instance.stub(:save).and_return(false)
           post :create, {:game => {  }}
           assigns(:game).should be_a_new(Game)
         end
 
         it "re-renders the 'new' template" do
-          # Trigger the behavior that occurs when invalid params are submitted
+          Game.any_instance.stub(:valid).and_return(false)
           Game.any_instance.stub(:save).and_return(false)
           post :create, {:game => {  }}
           response.should render_template("new")
         end
+
+        context "add_user? returns false" do
+         it "add_user? returning false prevents save from ever being called" do
+            Game.any_instance.should_receive(:add_user?).and_return(false)
+            Game.any_instance.should_not_receive(:save)
+            post :create, {:game => FactoryGirl.attributes_for(:game)}
+          end
+
+          it "add_user? returning false causes a flash notice as well" do
+            Game.any_instance.should_receive(:add_user?).and_return(false)
+            post :create, {:game => FactoryGirl.attributes_for(:game)}
+            should set_the_flash[:error].to("Something went wrong creating the game")
+          end 
+        end
+
       end
     end
 
     describe "PUT update" do
+      #nothing yet
     end
   end
 end
