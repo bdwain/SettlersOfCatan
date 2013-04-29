@@ -3,7 +3,7 @@ class PlayersController < ApplicationController
 
   # POST /players
   def create
-    game = Game.find_by_id(params[:game])
+    game = Game.find_by_id(params[:game_id])
     if game != nil && game.add_user?(current_user)
       redirect_to game
     else

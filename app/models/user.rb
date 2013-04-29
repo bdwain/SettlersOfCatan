@@ -5,7 +5,8 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable, :timeoutable,
          :recoverable, :rememberable, :confirmable, :validatable
 
-  has_many :players, :inverse_of => :user
+  #don't use dependent => destroy because of http://goo.gl/YTOkw
+  has_many :players, :inverse_of => :user 
 
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :password, :password_confirmation, :remember_me, 
@@ -14,6 +15,11 @@ class User < ActiveRecord::Base
   validates :displayname, :presence => true, 
             :length => {:minimum => 3, :maximum => 20}
 
-  #before deleting, abandon all games
-  before_destroy { |u| u.players.each { |p| p.game.abandoned_by(p) } }
+  #before deleting, abandon games
+  before_destroy do |u|
+    u.players.each do |p|
+      p.game.player_account_deleted(p)
+      p.destroy
+    end
+  end
 end

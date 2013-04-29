@@ -3,6 +3,7 @@ class CreateGames < ActiveRecord::Migration
     create_table :games do |t|
       t.integer :num_players, :null => false
       t.integer :status, :null => false, :default => 1
+      t.integer :creator_id, :null => false
       t.integer :winner_id, :null => true
       t.integer :robber_x, :null => false, :default => 0
       t.integer :robber_y, :null => false, :default => 0
@@ -12,6 +13,7 @@ class CreateGames < ActiveRecord::Migration
 
       t.timestamps
     end
+    add_index :games, :creator_id
     add_index :games, :winner_id
   end
 end

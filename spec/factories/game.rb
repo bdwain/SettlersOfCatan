@@ -1,24 +1,21 @@
 FactoryGirl.define do
   factory :game do
     num_players 3
-    #the rest of the attributes have default values
+    association :creator, factory: :confirmed_user
+    #the rest of the attributes have default values and don't need to be set
 
     factory :partially_filled_game do
       ignore do
-        player_count 2
+        additional_players 1
       end
+
       after(:create) do |game, evaluator|
-        FactoryGirl.create_list(:player, evaluator.player_count, game: game)
+        FactoryGirl.create_list(:player, evaluator.additional_players, game: game)
       end
 
-      factory :full_game do
-        after(:create) do |game, evaluator|
-          FactoryGirl.create_list(:player, game.num_players - evaluator.player_count, game: game)
-        end
-
-        factory :game_started do
-          status 2
-        end
+      factory :game_playing do
+        status 2
+        additional_players 2
       end
     end
   end

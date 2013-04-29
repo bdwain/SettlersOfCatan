@@ -9,6 +9,7 @@ class Player < ActiveRecord::Base
   attr_accessible :color, :turn_num, :turn_status, :turn_deadline
 
   validates_presence_of :game, :user
+  validates_uniqueness_of :user_id, :scope => :game_id
 
   validates :color, :presence => true, :numericality => {:only_integer => true}
   

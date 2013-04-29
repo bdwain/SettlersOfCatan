@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   create_table "games", :force => true do |t|
     t.integer  "num_players",                     :null => false
     t.integer  "status",           :default => 1, :null => false
+    t.integer  "creator_id",                      :null => false
     t.integer  "winner_id"
     t.integer  "robber_x",         :default => 0, :null => false
     t.integer  "robber_y",         :default => 0, :null => false
@@ -39,6 +40,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.datetime "updated_at",                      :null => false
   end
 
+  add_index "games", ["creator_id"], :name => "index_games_on_creator_id"
   add_index "games", ["winner_id"], :name => "index_games_on_winner_id"
 
   create_table "harbors", :force => true do |t|
@@ -76,6 +78,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   end
 
   add_index "players", ["game_id"], :name => "index_players_on_game_id"
+  add_index "players", ["user_id", "game_id"], :name => "index_players_on_user_id_and_game_id", :unique => true
   add_index "players", ["user_id"], :name => "index_players_on_user_id"
 
   create_table "resources", :force => true do |t|

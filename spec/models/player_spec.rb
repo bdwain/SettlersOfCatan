@@ -9,22 +9,27 @@ describe Player do
   describe "user" do
     it { should belong_to(:user) }
     it { should validate_presence_of(:user) }
+    it "validates_uniqueness_of user_id scoped to game_id" do
+      #needed because the validation fails without a game precreted. See docs.
+      FactoryGirl.create(:game)
+      should validate_uniqueness_of(:user_id).scoped_to(:game_id)
+     end 
   end
 
   describe "resources" do
-    it { should have_many(:resources) }
+    it { should have_many(:resources).dependent(:destroy) }
   end
 
   describe "development_cards" do
-    it { should have_many(:development_cards) }
+    it { should have_many(:development_cards).dependent(:destroy) }
   end
 
   describe "settlements" do
-    it { should have_many(:settlements) }
+    it { should have_many(:settlements).dependent(:destroy) }
   end
 
   describe "roads" do
-    it { should have_many(:roads) }
+    it { should have_many(:roads).dependent(:destroy) }
   end
 
   describe "color" do

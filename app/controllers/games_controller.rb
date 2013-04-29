@@ -19,16 +19,13 @@ class GamesController < ApplicationController
   # POST /games
   def create
     @game = Game.new(params[:game])
-    if @game.valid?
-      if @game.add_user?(current_user) && @game.save
-        redirect_to @game and return
-      else
-        flash[:error] = "Something went wrong creating the game"
-      end
+    @game.creator = current_user
+    if @game.save
+      redirect_to @game
+    else
+      flash[:error] = "Something went wrong creating the game"
+      render action: 'new'      
     end
-
-    #fallback
-    render action: 'new'
   end
 
   # PUT /games/1

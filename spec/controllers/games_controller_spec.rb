@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe GamesController do
   context "When Not Logged In" do
-    let(:game) { FactoryGirl.create(:game) }
+    let(:game) { FactoryGirl.build_stubbed(:game) }
     after { response.should redirect_to new_user_session_path }
     it { get :index }
     it { get :new }
@@ -45,15 +45,15 @@ describe GamesController do
           }.to change(Game, :count).by(1)
         end
 
-        it "calls add_user? with current user" do
-          Game.any_instance.should_receive(:add_user?).with(@current_user)
-          post :create, {:game => FactoryGirl.attributes_for(:game)}
-        end        
-
         it "assigns a newly created game as @game" do
           post :create, {:game => FactoryGirl.attributes_for(:game)}
           assigns(:game).should be_a(Game)
           assigns(:game).should be_persisted
+        end
+
+        it "sets the creator of game to the current_user" do
+          post :create, {:game => FactoryGirl.attributes_for(:game)}
+          assigns(:game).creator.should eq(@current_user)
         end
 
         it "redirects to the created game" do
@@ -64,33 +64,16 @@ describe GamesController do
 
       context "with invalid params" do
         it "assigns a newly created but unsaved game as @game" do
-          Game.any_instance.stub(:valid).and_return(false)
           Game.any_instance.stub(:save).and_return(false)
           post :create, {:game => {  }}
           assigns(:game).should be_a_new(Game)
         end
 
         it "re-renders the 'new' template" do
-          Game.any_instance.stub(:valid).and_return(false)
           Game.any_instance.stub(:save).and_return(false)
           post :create, {:game => {  }}
           response.should render_template("new")
         end
-
-        context "add_user? returns false" do
-         it "add_user? returning false prevents save from ever being called" do
-            Game.any_instance.should_receive(:add_user?).and_return(false)
-            Game.any_instance.should_not_receive(:save)
-            post :create, {:game => FactoryGirl.attributes_for(:game)}
-          end
-
-          it "add_user? returning false causes a flash notice as well" do
-            Game.any_instance.should_receive(:add_user?).and_return(false)
-            post :create, {:game => FactoryGirl.attributes_for(:game)}
-            should set_the_flash[:error].to("Something went wrong creating the game")
-          end 
-        end
-
       end
     end
 

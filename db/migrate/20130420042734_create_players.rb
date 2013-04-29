@@ -12,5 +12,6 @@ class CreatePlayers < ActiveRecord::Migration
     end
     add_index :players, :game_id
     add_index :players, :user_id
+    add_index :players, [:user_id, :game_id], :unique => true
   end
 end

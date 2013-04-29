@@ -1,4 +1,5 @@
 class Game < ActiveRecord::Base
+  belongs_to :creator, :class_name => 'User', :foreign_key => 'creator_id'
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
   has_many :hexes, :inverse_of => :game, :autosave => true, :dependent => :destroy
   has_many :harbors, :inverse_of => :game, :autosave => true, :dependent => :destroy
@@ -8,18 +9,15 @@ class Game < ActiveRecord::Base
   attr_accessible :status, :middle_row_width, :num_middle_rows, :num_players, :num_rows, :robber_x, :robber_y
 
   private
-  STATUS_ABANDONED = 1000
   STATUS_WAITING_FOR_PLAYERS = 1
-  STATUS_ROLLING_FOR_TURN_ORDER = 2
-  STATUS_PLACING_INITIAL_PIECES = 3
-  STATUS_PLAYING = 4
-  STATUS_COMPLETED = 5
+  STATUS_PLAYING = 2
+  STATUS_COMPLETED = 3
 
   public
+  validates_presence_of :creator
+
   validates :status, :presence => true, 
-            :inclusion => { :in => [STATUS_ABANDONED, STATUS_WAITING_FOR_PLAYERS,
-             STATUS_ROLLING_FOR_TURN_ORDER, STATUS_PLACING_INITIAL_PIECES,
-             STATUS_PLAYING, STATUS_COMPLETED ] }
+            :inclusion => { :in => [STATUS_WAITING_FOR_PLAYERS, STATUS_PLAYING, STATUS_COMPLETED] }
 
   validates :middle_row_width, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 5}
@@ -37,29 +35,8 @@ class Game < ActiveRecord::Base
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
 
-  def abandoned_by(player)
-    if players.find_by_id(player.id) != nil
-      if !waiting_for_players? && !completed?
-        self.status = STATUS_ABANDONED
-      end
-      remove_player?(player)
-    end
-  end
-
-  def abandoned?
-    status == STATUS_ABANDONED
-  end
-
   def waiting_for_players?
     status == STATUS_WAITING_FOR_PLAYERS
-  end
-
-  def rolling_for_turn_order?
-    status == STATUS_ROLLING_FOR_TURN_ORDER
-  end
-
-  def placing_initial_pieces?
-    status == STATUS_PLACING_INITIAL_PIECES
   end
 
   def playing?
@@ -70,28 +47,63 @@ class Game < ActiveRecord::Base
     status == STATUS_COMPLETED
   end
 
+  #returns the player for a corresponding user, or nil if they aren't playing
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
   #across different types of items, would it make sense to use email address?
-  def player?(user)
-    players.any? { |p| p.user_id == user.id } if user != nil
-  end
-
   def player(user)
     players.detect { |p| p.user_id == user.id } if user != nil
   end
 
+  def player?(user)
+    player(user) != nil
+  end  
+
+  #this allows us to roll back game creation if the player fails to be added for the
+  #creator. this would be an unexpected error, but at least no one will ever be left
+  #wondering why they're not in the game they just made when they normally are
+  after_create :after_create_add_creators_player
+  def after_create_add_creators_player
+     raise ActiveRecord::Rollback unless add_user?(creator)
+  end
+
   def add_user?(user)
-    if waiting_for_players? && user != nil && user.confirmed? && !player?(user) && players.count < num_players
+    if user != nil && user.confirmed? && waiting_for_players? && !player?(user) 
       player = Player.new
       player.user = user
       player.game = self
       players << player
+      if players.size != num_players || begin_game? #don't save if begin_game fails
+        save
+      else
+        players.last.destroy
+        false
+      end
     end
   end
 
   def remove_player?(player)
-    if (waiting_for_players? || completed? || abandoned?) && player != nil && players.find_by_id(player.id) != nil
-      players.count == 1 ? destroy : player.destroy
+    if waiting_for_players? && player != nil && players.find_by_id(player.id) != nil
+      #the size check is a fallback if the creator somehow leaves 
+      #without deleting the game. It's just to avoid an orphaned game
+      if player.user == creator || players.size == 1
+        destroy
+      else
+        player.destroy
+      end
     end
+  end
+
+  #used when a player's account is deleted. Deletes the game if the player
+  #can't safely be removed (via remove_player?, which may also delete the game)
+  def player_account_deleted(player)
+    if player != nil && players.find_by_id(player.id) != nil
+      destroy unless remove_player?(player)
+      #maybe throw in an email to the rest of the players letting them know
+    end
+  end  
+
+private
+  def begin_game?
+    true
   end
 end
