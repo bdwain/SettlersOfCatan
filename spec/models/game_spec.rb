@@ -78,7 +78,7 @@ describe Game do
       end
       
       it "returns false if status is not 1" do
-        game.status = -123
+        game.status = 2
         game.waiting_for_players?.should be_false
       end
     end
@@ -90,7 +90,7 @@ describe Game do
       end
       
       it "returns false if status is not 2" do
-        game.status = -123
+        game.status = 3
         game.playing?.should be_false
       end
     end
@@ -102,7 +102,7 @@ describe Game do
       end
       
       it "returns false if status is not 3" do
-        game.status = -123
+        game.status = 1
         game.completed?.should be_false
       end
     end
@@ -170,25 +170,19 @@ describe Game do
   end
 
   describe "add_user?" do
-    shared_examples "add_user? does not call begin_game?" do
-      it "does not call begin_game? " do
-        game.should_not_receive(:begin_game?)
-        game.add_user?(user)
-      end
-    end
-
     shared_examples "add_user? successes" do
       it "returns true" do
         game.add_user?(user).should be_true
       end
 
-      it "does add players to the game" do
+      it "add a player with the right user to the game" do
         expect{
           game.add_user?(user)
         }.to change(game.players, :count).by(1)
+
+        game.players.last.user.should eq(user)
       end
     end
-
 
     shared_examples "add_user? failures" do
       it "returns false" do
@@ -219,30 +213,7 @@ describe Game do
           end
 
           context "when the user is not already in the game" do
-            context "when game will now be full" do
-              before(:each) do
-                game.add_user?(FactoryGirl.create(:confirmed_user))
-                game.add_user?(FactoryGirl.create(:confirmed_user))
-              end
-              context "begin_game? returns true" do
-                before(:each) do
-                  game.should_receive(:begin_game?).and_return(true)
-                end
-                include_examples "add_user? successes"
-              end
-
-              context "begin_game? returns false" do
-                before(:each) do
-                  game.stub(:begin_game?).and_return(false)
-                end
-                include_examples "add_user? failures"
-              end
-            end
-
-            context "when the game is stil not full" do
-              include_examples "add_user? successes"
-              include_examples "add_user? does not call begin_game?"
-            end
+            include_examples "add_user? successes"
           end
 
           context "when the user is already in the game" do
@@ -250,7 +221,6 @@ describe Game do
               game.add_user?(game.creator)
             end
             include_examples "add_user? failures"
-            include_examples "add_user? does not call begin_game?"
           end
         end
 
@@ -259,14 +229,12 @@ describe Game do
             game.stub(:waiting_for_players?).and_return(false)
           end
           include_examples "add_user? failures"
-          include_examples "add_user? does not call begin_game?"
         end
       end
 
       context "when user is unconfirmed" do
         let(:user) {FactoryGirl.build_stubbed(:user)}
         include_examples "add_user? failures"
-        include_examples "add_user? does not call begin_game?"
       end
     end
 

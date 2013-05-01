@@ -72,12 +72,7 @@ class Game < ActiveRecord::Base
       player.user = user
       player.game = self
       players << player
-      if players.size != num_players || begin_game? #don't save if begin_game fails
-        save
-      else
-        players.last.destroy
-        false
-      end
+      save
     end
   end
 
@@ -101,9 +96,4 @@ class Game < ActiveRecord::Base
       #maybe throw in an email to the rest of the players letting them know
     end
   end  
-
-private
-  def begin_game?
-    true
-  end
 end
