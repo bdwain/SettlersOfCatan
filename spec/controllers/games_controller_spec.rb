@@ -63,16 +63,20 @@ describe GamesController do
       end
 
       context "with invalid params" do
-        it "assigns a newly created but unsaved game as @game" do
+        before(:each) do
           Game.any_instance.stub(:save).and_return(false)
           post :create, {:game => {  }}
+        end
+        it "assigns a newly created but unsaved game as @game" do
           assigns(:game).should be_a_new(Game)
         end
 
         it "re-renders the 'new' template" do
-          Game.any_instance.stub(:save).and_return(false)
-          post :create, {:game => {  }}
           response.should render_template("new")
+        end
+
+        it "sets the flash" do
+          should set_the_flash[:error].to("Something went wrong creating the game")
         end
       end
     end
