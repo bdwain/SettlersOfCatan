@@ -14,14 +14,14 @@ class PlayersController < ApplicationController
   # DELETE /players/1
   def destroy
     player = Player.find_by_id(params[:id])
-    if player != nil && player.user == current_user && player.game.remove_player?(player)
-      redirect_to games_url
-    elsif player != nil && player.user == current_user
-      redirect_to games_url, :flash => { :error => "The game already started. You can't quit now" }
-    elsif player != nil
-      redirect_to games_url, :flash => { :error => "You can't do that" }
-    else
+    if !player
       redirect_to games_url, :flash => { :error => "Invalid request" }
+    elsif player.user != current_user
+      redirect_to games_url, :flash => { :error => "You can't do that" }
+    elsif !player.game.remove_player?(player)
+      redirect_to games_url, :flash => { :error => "The game already started. You can't quit now" }
+    else
+      redirect_to games_url
     end
   end
 end
