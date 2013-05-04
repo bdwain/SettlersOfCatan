@@ -132,7 +132,7 @@ describe Game do
   end
 
   describe "player?" do
-    let(:game) { FactoryGirl.create(:partially_filled_game) }    
+    let(:game) { FactoryGirl.create(:partially_filled_game) }
 
     it "returns true if a game's players include user" do
       game.player?(game.players.first.user).should be_true
@@ -150,6 +150,7 @@ describe Game do
 
   describe "creation" do
     let(:game) { FactoryGirl.build(:game) }
+
     it "creates one player when created" do
       expect{
         game.save
@@ -170,18 +171,12 @@ describe Game do
   end
 
   describe "add_user?" do
-    shared_examples "add_user? successes" do
-      it "returns true" do
-        game.add_user?(user).should be_true
-      end
-
-      it "add a player with the right user to the game" do
-        expect{
-          game.add_user?(user)
-        }.to change(game.players, :count).by(1)
-
-        game.players.last.user.should eq(user)
-      end
+    #prevents us from calling add_user? on create. tests for that are separate
+    before(:all) do
+      Game.skip_callback(:create, :after, :after_create_add_creators_player)
+    end
+    after(:all) do
+      Game.set_callback(:create, :after, :after_create_add_creators_player)
     end
 
     shared_examples "add_user? failures" do
@@ -197,37 +192,34 @@ describe Game do
     end
 
     let!(:game) { FactoryGirl.build(:game, num_players: 3) }
-    #prevents us from calling add_user? on create. tests for that are separate
-    before(:all) do
-      Game.skip_callback(:create, :after, :after_create_add_creators_player)
-    end
-    after(:all) do
-      Game.set_callback(:create, :after, :after_create_add_creators_player)
-    end
     context "when user is not nil" do
       context "when user is confirmed" do
         let(:user) { game.creator }        
         context "when waiting for players" do
-          before(:each) do
-            game.should_receive(:waiting_for_players?).at_least(:once).and_return(true)
-          end
+          before(:each) { game.should_receive(:waiting_for_players?).at_least(:once).and_return(true) }
 
           context "when the user is not already in the game" do
-            include_examples "add_user? successes"
+            it "returns true" do
+              game.add_user?(user).should be_true
+            end
+
+            it "add a player with the right user to the game" do
+              expect{
+                game.add_user?(user)
+              }.to change(game.players, :count).by(1)
+
+              game.players.last.user.should eq(user)
+            end
           end
 
           context "when the user is already in the game" do
-            before(:each) do
-              game.add_user?(game.creator)
-            end
+            before(:each) { game.add_user?(game.creator) }
             include_examples "add_user? failures"
           end
         end
 
         context "when not waiting for players" do
-          before(:each) do
-            game.stub(:waiting_for_players?).and_return(false)
-          end
+          before(:each) { game.stub(:waiting_for_players?).and_return(false) }
           include_examples "add_user? failures"
         end
       end
@@ -280,7 +272,7 @@ describe Game do
     shared_examples "remove_player? failures" do
       include_examples "remove_player? doesn't destroy the game"
 
-      it "destroys the player" do
+      it "does not destroy the player" do
         expect{
           game.remove_player?(player)
         }.to_not change(game.players, :count)
@@ -294,36 +286,27 @@ describe Game do
     let!(:game) { FactoryGirl.create(:game) }
     context "when the player is not nil" do
       context "when the game is still waiting for players" do
-        before(:each) do
-          game.should_receive(:waiting_for_players?).and_return(true)
-        end
+        before(:each) { game.should_receive(:waiting_for_players?).and_return(true) }
 
         context "when the player is in the game" do
           context "when the player is the creator" do
             let!(:player) { game.creator.players.first }
-            before(:each) do
-              game.players.push(FactoryGirl.create(:player, game: game))
-            end
-
+            before(:each) { game.players.push(FactoryGirl.create(:player, game: game)) }
             include_examples "remove_player? destroys the game"
             include_examples "remove_player? returns true"
           end
 
+          #unexpected but this will prevent old empty games
           context "when a non-creator is the only player left" do
-            before(:each) do 
-              game.players.first.destroy
-            end            
             let!(:player) { FactoryGirl.create(:player, game: game) }
-            
+            before(:each) { game.players.first.destroy }
             include_examples "remove_player? destroys the game"
             include_examples "remove_player? returns true"
           end          
 
           context "when there are other players and this isn't the creator" do
-            let!(:player) { FactoryGirl.create(:player, game: game) }
-            before(:each) do
-              game.players.push(player)
-            end            
+            before(:each) { game.players.push(FactoryGirl.create(:player, game: game)) }
+            let!(:player) { game.players.last }
             include_examples "remove_player? destroys the player"
             include_examples "remove_player? returns true"
           end
@@ -345,10 +328,7 @@ describe Game do
 
       context "when the game is not waiting for players anymore" do
         let!(:player) { game.creator.players.first }
-        before(:each) do
-          game.stub(:waiting_for_players?).and_return(false)
-        end
-
+        before(:each) { game.stub(:waiting_for_players?).and_return(false) }
         include_examples "remove_player? failures"
       end
     end
@@ -379,19 +359,15 @@ describe Game do
     context "when player is not nil" do
       context "when player is in the game" do
         let(:player) { game.creator.players.first }
-        context "remove_player? returns true" do
-          before(:each) do
-            game.should_receive(:remove_player?).with(player).and_return(true)
-          end
 
+        context "remove_player? returns true" do
+          before(:each) { game.should_receive(:remove_player?).with(player).and_return(true) }
           include_examples "player_account_deleted game not destroyed"
         end
 
         context "remove_player? returns false" do
-          before(:each) do
-            game.stub(:remove_player?).and_return(false)
-          end
-
+          before(:each) { game.stub(:remove_player?).and_return(false) }
+          
           it "destroys the game" do
             expect{
               game.player_account_deleted(player)
