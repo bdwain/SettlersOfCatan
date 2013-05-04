@@ -71,7 +71,6 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "user_id",                      :null => false
     t.integer  "turn_num",      :default => 1, :null => false
     t.integer  "turn_status"
-    t.integer  "color",         :default => 1, :null => false
     t.datetime "turn_deadline"
     t.datetime "created_at",                   :null => false
     t.datetime "updated_at",                   :null => false

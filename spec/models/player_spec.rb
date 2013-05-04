@@ -32,11 +32,6 @@ describe Player do
     it { should have_many(:roads).dependent(:destroy) }
   end
 
-  describe "color" do
-    it { should validate_presence_of(:color) }
-    it { should validate_numericality_of(:color).only_integer }
-  end
-
   describe "turn_num" do
     it { should validate_presence_of(:turn_num) }
     it { should validate_numericality_of(:turn_num).only_integer }
