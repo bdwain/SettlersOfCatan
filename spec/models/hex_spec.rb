@@ -7,9 +7,7 @@ describe Hex do
   end
 
   describe "dice_num" do
-    it { should validate_presence_of(:dice_num) }
-    it { should validate_numericality_of(:dice_num).only_integer }
-    it { should ensure_inclusion_of(:dice_num).in_range(2..12) } 
+    it { should ensure_inclusion_of(:dice_num).in_range(2..12).allow_nil(true) } 
   end
 
   describe "resource_type" do

@@ -5,7 +5,7 @@ class CreateHexes < ActiveRecord::Migration
       t.integer :pos_x, :null => false
       t.integer :pos_y, :null => false
       t.integer :resource_type, :null => false
-      t.integer :dice_num, :null => false
+      t.integer :dice_num, :null => true
 
       t.timestamps
     end

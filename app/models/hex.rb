@@ -4,8 +4,7 @@ class Hex < ActiveRecord::Base
 
   validates_presence_of :game_id
 
-  validates :dice_num, :presence => true, :inclusion => { :in => 2.upto(12) },
-            :numericality => {:only_integer => true}
+  validates :dice_num, :inclusion => { :in => 2.upto(12) }, :allow_nil => true
 
   validates :resource_type, :presence => true, :numericality => {:only_integer => true}
   

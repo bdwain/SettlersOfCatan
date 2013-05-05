@@ -59,7 +59,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "pos_x",         :null => false
     t.integer  "pos_y",         :null => false
     t.integer  "resource_type", :null => false
-    t.integer  "dice_num",      :null => false
+    t.integer  "dice_num"
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
   end
