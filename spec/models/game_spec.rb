@@ -339,54 +339,45 @@ describe Game do
     end
   end
 
-  describe "player_account_deleted" do
-    shared_examples "player_account_deleted game not destroyed" do
-      it "does not delete the game" do
-        expect{
-          game.player_account_deleted(player)
-        }.to_not change(Game, :count)
+  describe "saving" do
+    context "when the game has just added its last player but is still \"waiting_for_players\"" do
+      it "gives each player a different turn_num" do
+        
+      end
+
+      it "creates a map" do
+        
+      end
+
+      it "adds harbors to the map" do
+        
+      end
+
+      it "creates a deck of development cards" do
+        
+      end
+
+      it "changes the status to playing" do
+
       end
     end
 
-    shared_examples "player_account_deleted remove_player? not called" do
-      it "does not call remove_player?" do
-        game.should_not_receive(:remove_player?)
-        game.player_account_deleted(player)
-      end
-    end    
-
-    let!(:game) { FactoryGirl.create(:game) }
-    context "when player is not nil" do
-      context "when player is in the game" do
-        let(:player) { game.creator.players.first }
-
-        context "remove_player? returns true" do
-          before(:each) { game.should_receive(:remove_player?).with(player).and_return(true) }
-          include_examples "player_account_deleted game not destroyed"
-        end
-
-        context "remove_player? returns false" do
-          before(:each) { game.stub(:remove_player?).and_return(false) }
-          
-          it "destroys the game" do
-            expect{
-              game.player_account_deleted(player)
-            }.to change(Game, :count).by(-1)
-          end
-        end
-      end
-      
-      context "player is not in the game" do
-        let!(:player) { FactoryGirl.create(:player) }
-        include_examples "player_account_deleted game not destroyed"
-        include_examples "player_account_deleted remove_player? not called"  
+    context "when the game isn't full" do
+      let(:game) { FactoryGirl.build(:game) }
+      it "status doesn't change" do
+        expect {
+          game.save
+        }.to_not change(game, :status)
       end
     end
 
-    context "player is nil" do
-      let(:player) {nil}
-      include_examples "player_account_deleted game not destroyed"
-      include_examples "player_account_deleted remove_player? not called"      
+    context "when no longer waiting for players" do
+      let(:game) { FactoryGirl.create(:game_playing) }
+      it "doesn't add any new hexes" do #something it would do if trying to init a game
+        expect {
+          game.save
+        }.to_not change(Hex, :count)
+      end
     end
   end
 end
