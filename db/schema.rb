@@ -14,57 +14,59 @@
 ActiveRecord::Schema.define(:version => 20130420052235) do
 
   create_table "development_cards", :force => true do |t|
-    t.integer  "player_id"
-    t.integer  "game_id",                       :null => false
-    t.integer  "type",                          :null => false
-    t.integer  "position"
-    t.boolean  "was_used",   :default => false, :null => false
-    t.datetime "created_at",                    :null => false
-    t.datetime "updated_at",                    :null => false
+    t.integer "player_id"
+    t.integer "game_id",                      :null => false
+    t.integer "type",                         :null => false
+    t.integer "position"
+    t.boolean "was_used",  :default => false, :null => false
   end
 
   add_index "development_cards", ["game_id"], :name => "index_development_cards_on_game_id"
   add_index "development_cards", ["player_id"], :name => "index_development_cards_on_player_id"
 
   create_table "games", :force => true do |t|
-    t.integer  "num_players",                     :null => false
-    t.integer  "status",           :default => 1, :null => false
-    t.integer  "creator_id",                      :null => false
+    t.integer  "num_players",                :null => false
+    t.integer  "status",      :default => 1, :null => false
+    t.integer  "creator_id",                 :null => false
     t.integer  "winner_id"
-    t.integer  "robber_x",         :default => 0, :null => false
-    t.integer  "robber_y",         :default => 0, :null => false
-    t.integer  "middle_row_width", :default => 5, :null => false
-    t.integer  "num_rows",         :default => 5, :null => false
-    t.integer  "num_middle_rows",  :default => 1, :null => false
-    t.datetime "created_at",                      :null => false
-    t.datetime "updated_at",                      :null => false
+    t.integer  "map_id",      :default => 1, :null => false
+    t.integer  "robber_x",    :default => 0, :null => false
+    t.integer  "robber_y",    :default => 0, :null => false
+    t.datetime "created_at",                 :null => false
+    t.datetime "updated_at",                 :null => false
   end
 
   add_index "games", ["creator_id"], :name => "index_games_on_creator_id"
+  add_index "games", ["map_id"], :name => "index_games_on_map_id"
   add_index "games", ["winner_id"], :name => "index_games_on_winner_id"
 
   create_table "harbors", :force => true do |t|
-    t.integer  "game_id",       :null => false
-    t.integer  "edge_x",        :null => false
-    t.integer  "edge_y",        :null => false
-    t.integer  "resource_type"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.integer "map_id",        :null => false
+    t.integer "edge_x",        :null => false
+    t.integer "edge_y",        :null => false
+    t.integer "resource_type"
   end
 
-  add_index "harbors", ["game_id"], :name => "index_harbors_on_game_id"
+  add_index "harbors", ["map_id"], :name => "index_harbors_on_map_id"
 
   create_table "hexes", :force => true do |t|
-    t.integer  "game_id",       :null => false
-    t.integer  "pos_x",         :null => false
-    t.integer  "pos_y",         :null => false
-    t.integer  "resource_type", :null => false
-    t.integer  "dice_num"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.integer "map_id",        :null => false
+    t.integer "pos_x",         :null => false
+    t.integer "pos_y",         :null => false
+    t.integer "resource_type", :null => false
+    t.integer "dice_num"
   end
 
-  add_index "hexes", ["game_id"], :name => "index_hexes_on_game_id"
+  add_index "hexes", ["map_id"], :name => "index_hexes_on_map_id"
+
+  create_table "maps", :force => true do |t|
+    t.string   "name",             :limit => 50,                :null => false
+    t.integer  "middle_row_width",               :default => 5, :null => false
+    t.integer  "num_rows",                       :default => 5, :null => false
+    t.integer  "num_middle_rows",                :default => 1, :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
+  end
 
   create_table "players", :force => true do |t|
     t.integer  "game_id",                      :null => false
@@ -72,8 +74,6 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "turn_num",      :default => 1, :null => false
     t.integer  "turn_status"
     t.datetime "turn_deadline"
-    t.datetime "created_at",                   :null => false
-    t.datetime "updated_at",                   :null => false
   end
 
   add_index "players", ["game_id"], :name => "index_players_on_game_id"
@@ -81,31 +81,25 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "players", ["user_id"], :name => "index_players_on_user_id"
 
   create_table "resources", :force => true do |t|
-    t.integer  "player_id",  :null => false
-    t.integer  "type",       :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer "player_id", :null => false
+    t.integer "type",      :null => false
   end
 
   add_index "resources", ["player_id"], :name => "index_resources_on_player_id"
 
   create_table "roads", :force => true do |t|
-    t.integer  "player_id",  :null => false
-    t.integer  "edge_x",     :null => false
-    t.integer  "edge_y",     :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer "player_id", :null => false
+    t.integer "edge_x",    :null => false
+    t.integer "edge_y",    :null => false
   end
 
   add_index "roads", ["player_id"], :name => "index_roads_on_player_id"
 
   create_table "settlements", :force => true do |t|
-    t.integer  "player_id",                     :null => false
-    t.integer  "vertex_x",                      :null => false
-    t.integer  "vertex_y",                      :null => false
-    t.boolean  "is_city",    :default => false, :null => false
-    t.datetime "created_at",                    :null => false
-    t.datetime "updated_at",                    :null => false
+    t.integer "player_id",                    :null => false
+    t.integer "vertex_x",                     :null => false
+    t.integer "vertex_y",                     :null => false
+    t.boolean "is_city",   :default => false, :null => false
   end
 
   add_index "settlements", ["player_id"], :name => "index_settlements_on_player_id"

@@ -1,8 +1,8 @@
 class Harbor < ActiveRecord::Base
-  belongs_to :game, :inverse_of => :harbors
+  belongs_to :map, :inverse_of => :harbors
   attr_accessible :edge_x, :edge_y, :resource_type
 
-  validates_presence_of :game_id
+  validates_presence_of :map
 
   validates :resource_type, :allow_nil => true, :numericality => {:only_integer => true}
   

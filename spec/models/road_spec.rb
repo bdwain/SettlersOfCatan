@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Road do
   describe "player" do
     it { should belong_to(:player) }
-    it { should validate_presence_of(:player_id) }
+    it { should validate_presence_of(:player) }
   end
 
   describe "edge_x" do

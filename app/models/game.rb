@@ -1,8 +1,7 @@
 class Game < ActiveRecord::Base
   belongs_to :creator, :class_name => 'User', :foreign_key => 'creator_id'
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  has_many :hexes, :inverse_of => :game, :autosave => true, :dependent => :destroy
-  has_many :harbors, :inverse_of => :game, :autosave => true, :dependent => :destroy
+  belongs_to :map
   has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
   has_many :development_cards, :inverse_of => :game, :autosave => true, :dependent => :destroy
 
@@ -14,19 +13,10 @@ class Game < ActiveRecord::Base
   STATUS_COMPLETED = 3
 
   public
-  validates_presence_of :creator
+  validates_presence_of :creator, :map
 
   validates :status, :presence => true, 
             :inclusion => { :in => [STATUS_WAITING_FOR_PLAYERS, STATUS_PLAYING, STATUS_COMPLETED] }
-
-  validates :middle_row_width, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than_or_equal_to => 5}
-
-  validates :num_middle_rows, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than => 0}
-
-  validates :num_rows, :presence => true, 
-            :numericality => {:only_integer => true, :greater_than_or_equal_to => 5}
 
   validates :num_players, :presence => true, :inclusion => { :in => 3.upto(4) }, 
             :numericality => {:only_integer => true}
@@ -92,47 +82,6 @@ class Game < ActiveRecord::Base
 
     #give each player their own turn
     players.shuffle!.each_with_index { |player, index| player.turn_num = index}
-
-    hexes.build(:resource_type => DESERT)
-    4.times do
-      hexes.build(:resource_type => WHEAT)
-      hexes.build(:resource_type => WOOL)
-      hexes.build(:resource_type => WOOD)
-    end
-    3.times do
-      hexes.build(:resource_type => BRICK)
-      hexes.build(:resource_type => ORE)
-    end
-    hexes.shuffle!
-    
-    #figure out the math later. for now, assume these are all true
-    #and it's a normal map
-    self.middle_row_width = 5
-    self.num_middle_rows = 1
-    self.num_rows = 5
-
-    dice_nums = [5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11]
-    num_rows.times do |x|
-      init_y = (x == 0 || x == 4 ? 1 : 0)
-      final_y = (x == 2 ? 4 : 3)
-      (init_y..final_y).each do |y|
-        hexes.first.dice_num = dice_nums.shift unless hexes.first.resource_type == DESERT
-        hexes.first.pos_x = x
-        hexes.first.pos_y = y
-        hexes.push(hexes.shift)
-      end
-    end
-
-    #do harbors later
-    #harbors.push(Harbor.new(:game => self, :resource_type => WHEAT))
-    #harbors.push(Harbor.new(:game => self, :resource_type => WOOD))
-    #harbors.push(Harbor.new(:game => self, :resource_type => WOOL))
-    #harbors.push(Harbor.new(:game => self, :resource_type => BRICK))
-    #harbors.push(Harbor.new(:game => self, :resource_type => ORE))
-    #3.times do
-    #  harbors.push(Harbor.new(:game => self))
-    #end
-    #harbors.shuffle!
 
     #do development cards later
 

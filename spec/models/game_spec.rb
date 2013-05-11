@@ -10,12 +10,9 @@ describe Game do
     it { should belong_to(:winner).class_name('User') }
   end
 
-  describe "hexes" do
-    it { should have_many(:hexes).dependent(:destroy) }
-  end
- 
-  describe "harbors" do
-    it { should have_many(:harbors).dependent(:destroy) }
+  describe "map" do
+    it { should belong_to(:map) }
+    it { should validate_presence_of(:map) }
   end
 
   describe "players" do
@@ -29,27 +26,6 @@ describe Game do
   describe "status" do
     it { should validate_presence_of(:status) }
     it { should ensure_inclusion_of(:status).in_range(1..3) }
-  end
-
-  describe "middle_row_width" do
-    it { should validate_presence_of(:middle_row_width) }
-    it { should validate_numericality_of(:middle_row_width).only_integer }
-    it { should_not allow_value(4).for(:middle_row_width) }
-    it { should allow_value(5).for(:middle_row_width) }
-  end
-
-  describe "num_middle_rows" do
-    it { should validate_presence_of(:num_middle_rows) }
-    it { should validate_numericality_of(:num_middle_rows).only_integer }
-    it { should_not allow_value(0).for(:num_middle_rows) }
-    it { should allow_value(1).for(:num_middle_rows) }
-  end
-
-  describe "num_rows" do
-    it { should validate_presence_of(:num_rows) }
-    it { should validate_numericality_of(:num_rows).only_integer }
-    it { should_not allow_value(4).for(:num_rows) }
-    it { should allow_value(5).for(:num_rows) }
   end
 
   describe "num_players" do
@@ -342,14 +318,6 @@ describe Game do
   describe "saving" do
     context "when the game has just added its last player but is still \"waiting_for_players\"" do
       it "gives each player a different turn_num" do
-        
-      end
-
-      it "creates a map" do
-        
-      end
-
-      it "adds harbors to the map" do
         
       end
 

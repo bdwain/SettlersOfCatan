@@ -6,8 +6,6 @@ class CreatePlayers < ActiveRecord::Migration
       t.integer :turn_num, :null => false, :default => 1
       t.integer :turn_status, :null => true
       t.datetime :turn_deadline, :null => true
-
-      t.timestamps
     end
     add_index :players, :game_id
     add_index :players, :user_id

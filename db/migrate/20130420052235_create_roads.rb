@@ -4,8 +4,6 @@ class CreateRoads < ActiveRecord::Migration
       t.references :player, :null => false
       t.integer :edge_x, :null => false
       t.integer :edge_y, :null => false
-
-      t.timestamps
     end
     add_index :roads, :player_id
   end

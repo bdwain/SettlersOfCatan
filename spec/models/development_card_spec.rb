@@ -3,7 +3,11 @@ require 'spec_helper'
 describe DevelopmentCard do
   describe "game" do
     it { should belong_to(:game) }
-    it { should validate_presence_of(:game_id) }
+    it { should validate_presence_of(:game) }
+  end
+
+  describe "player" do
+    it { should belong_to(:player) }
   end
     
   describe "card_position" do

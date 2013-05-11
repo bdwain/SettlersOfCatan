@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Harbor do
-  describe "game" do
-    it { should belong_to(:game) }
-    it { should validate_presence_of(:game_id) }
+  describe "map" do
+    it { should belong_to(:map) }
+    it { should validate_presence_of(:map) }
   end
 
   describe "resource_type" do

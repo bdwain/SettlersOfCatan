@@ -6,7 +6,7 @@ SettlersOfCatan
 
 2. Clone the repo
 
-3. The next step allows bundler to install all of the necessary mysql gems. You can use another database, but using the gemfile requires this step. 
+3. The next step allows bundler to install all of the necessary mysql gems. You can use another database, but using the gemfile requires this step (for now at least). 
 
     sudo apt-get install libmysqld-dev libmysqlclient-dev mysql-client
   
@@ -16,14 +16,17 @@ SettlersOfCatan
 
 6. Copy config/database.yml.example to database.yml and fill in your db info. 
 
-7. Do whatever set up you need to install your database. You should be able to open the database terminal with the username and password you specify in database.yml.
-I used mysql, which just required
+7. Do whatever set up you need to install your database. You should be able to open the database terminal with the username and password you specify in database.yml. I used mysql, which just required
 
     sudo apt-get install mysql-server
 
-8. Run rake db:create and rake db:schema:load
+8. Run
 
-9. Run the server
+    rake db:setup RAILS_ENV=production
+
+9. Run
+
+    rails server -e production
 
 ## Other
 

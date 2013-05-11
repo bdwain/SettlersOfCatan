@@ -7,7 +7,7 @@ class DevelopmentCard < ActiveRecord::Base
 
   attr_accessible :position, :type, :was_used
 
-  validates_presence_of :game_id
+  validates_presence_of :game
 
   validates :position, :allow_nil=> true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}

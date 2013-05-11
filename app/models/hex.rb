@@ -1,8 +1,8 @@
 class Hex < ActiveRecord::Base
-  belongs_to :game, :inverse_of => :hexes
+  belongs_to :map, :inverse_of => :hexes
   attr_accessible :dice_num, :resource_type, :pos_x, :pos_y
 
-  validates_presence_of :game_id
+  validates_presence_of :map
 
   validates :dice_num, :inclusion => { :in => 2.upto(12) }, :allow_nil => true
 
