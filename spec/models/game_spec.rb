@@ -317,22 +317,41 @@ describe Game do
 
   describe "saving" do
     context "when the game has just added its last player but is still \"waiting_for_players\"" do
-      it "gives each player a different turn_num" do
-        
+      let(:game) { FactoryGirl.create(:partially_filled_game) }
+      before(:each) do
+        final_player = game.players.build
+        final_player.user = FactoryGirl.build_stubbed(:confirmed_user)
       end
 
-      it "creates a deck of development cards" do
-        
+      it "gives each player a different turn_num" do
+        game.players.each { |player| player.turn_num = 1 }
+        game.save
+        game.players.sort_by! {|p| p.turn_num }.each_with_index do |player, index|
+          player.turn_num.should eq(index)
+        end
+      end
+
+      it "creates a correct deck of development cards" do
+        expect{
+          game.save
+        }.to change(DevelopmentCard, :count).by(25)
+        game.development_cards.where(:type => KNIGHT).count.should eq(14)
+        game.development_cards.where(:type => VICTORY_POINT).count.should eq(5)
+        game.development_cards.where(:type => ROAD_BUILDING).count.should eq(2)
+        game.development_cards.where(:type => YEAR_OF_PLENTY).count.should eq(2)
+        game.development_cards.where(:type => MONOPOLY).count.should eq(2)
       end
 
       it "changes the status to playing" do
-
+        game.playing?.should be_false
+        game.save
+        game.playing?.should be_true
       end
     end
 
     context "when the game isn't full" do
-      let(:game) { FactoryGirl.build(:game) }
       it "status doesn't change" do
+        game = FactoryGirl.build(:game)
         expect {
           game.save
         }.to_not change(game, :status)
@@ -340,11 +359,11 @@ describe Game do
     end
 
     context "when no longer waiting for players" do
-      let(:game) { FactoryGirl.create(:game_playing) }
-      it "doesn't add any new hexes" do #something it would do if trying to init a game
+      it "doesn't add any new development cards" do #something it would do if starting a game
+        game = FactoryGirl.create(:game_playing)
         expect {
           game.save
-        }.to_not change(Hex, :count)
+        }.to_not change(DevelopmentCard, :count)
       end
     end
   end

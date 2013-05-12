@@ -83,7 +83,15 @@ class Game < ActiveRecord::Base
     #give each player their own turn
     players.shuffle!.each_with_index { |player, index| player.turn_num = index}
 
-    #do development cards later
+    14.times { development_cards.build(type: KNIGHT) }
+    5.times { development_cards.build(type: VICTORY_POINT) }
+    2.times do
+      development_cards.build(type: ROAD_BUILDING)
+      development_cards.build(type: YEAR_OF_PLENTY)
+      development_cards.build(type: MONOPOLY)
+    end
+
+    development_cards.shuffle!.each_with_index { |card, index| card.position = index }
 
     self.status = STATUS_PLAYING
   end
