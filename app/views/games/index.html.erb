@@ -2,28 +2,23 @@
 <table>
   <tr>
     <th></th>
-    <th>Status</th>
     <th>Players</th>
   </tr>
 
 <% @games.each do |game| %>
   <tr>
     <td>
-      <% if game.waiting_for_players? %>
-        Waiting for players
-        <% if !game.player?(current_user) %>
-          (<%= link_to 'Join Game', players_path(:game_id => game.id), :method => :post %>)
-        <% else %>
-          (<%= link_to 'Leave Game', game.player(current_user), 
-          :method => :delete, data: { confirm: 'Are you sure?' } %>)
-        <% end %>
-      <% elsif !game.waiting_for_players? && game.player?(current_user) %>
+      <% if game.waiting_for_players? && !game.player?(current_user) %>
+        <%= link_to 'Join Game', players_path(:game_id => game.id), :method => :post %>
+      <% elsif game.waiting_for_players? %>
+        <%= link_to 'Leave Game', game.player(current_user), :method => :delete, 
+        data: { confirm: 'Are you sure?' } %>
+      <% elsif game.player?(current_user) %>
         <%= link_to 'Enter Game', game %>
       <% else %>
-        watch game
+        <%= link_to 'Watch Game', game %>
       <% end %>
     </td>
-    <td><%= link_to 'Show', game %></td>
     <td>
       <table>
           <% game.players.each do |player| %>
