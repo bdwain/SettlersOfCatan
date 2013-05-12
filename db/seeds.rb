@@ -8,8 +8,6 @@
 
 require 'factory_girl_rails'
 
-3.times { FactoryGirl.create(:confirmed_user) } if Rails.env == "development"
-
 #NOTE: right now x is vertical and y is horizontal. Maybe change that?
 #create default map
 map = Map.create({ name: 'Default', middle_row_width: 5, num_middle_rows: 1, num_rows: 5})
@@ -42,3 +40,5 @@ map.harbors.build(resource_type: ORE, edge_x: 3, edge_y: 1) #hex 1,0 left
 map.harbors.build(resource_type: BRICK, edge_x: 8, edge_y: 8) #hex 3,3 bottom-right
 
 map.save
+
+FactoryGirl.create(:game_playing) if Rails.env == "development"
