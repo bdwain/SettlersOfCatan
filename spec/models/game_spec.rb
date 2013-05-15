@@ -25,7 +25,7 @@ describe Game do
 
   describe "status" do
     it { should validate_presence_of(:status) }
-    it { should ensure_inclusion_of(:status).in_range(1..3) }
+    it { should ensure_inclusion_of(:status).in_range(1..4) }
   end
 
   describe "num_players" do
@@ -59,25 +59,37 @@ describe Game do
       end
     end
 
-    describe "playing?" do
+    describe "placing_initial_pieces?" do
       it "returns true if status is 2" do
         game.status = 2
-        game.playing?.should be_true
+        game.placing_initial_pieces?.should be_true
       end
       
       it "returns false if status is not 2" do
         game.status = 3
+        game.placing_initial_pieces?.should be_false
+      end
+    end    
+
+    describe "playing?" do
+      it "returns true if status is 3" do
+        game.status = 3
+        game.playing?.should be_true
+      end
+      
+      it "returns false if status is not 2" do
+        game.status = 4
         game.playing?.should be_false
       end
     end
 
     describe "completed?" do
-      it "returns true if status is 3" do
-        game.status = 3
+      it "returns true if status is 4" do
+        game.status = 4
         game.completed?.should be_true
       end
       
-      it "returns false if status is not 3" do
+      it "returns false if status is not 4" do
         game.status = 1
         game.completed?.should be_false
       end
@@ -342,10 +354,10 @@ describe Game do
         game.development_cards.where(:type => MONOPOLY).count.should eq(2)
       end
 
-      it "changes the status to playing" do
-        game.playing?.should be_false
+      it "changes the status to placing initial pieces" do
+        game.placing_initial_pieces?.should be_false
         game.save
-        game.playing?.should be_true
+        game.placing_initial_pieces?.should be_true
       end
     end
 

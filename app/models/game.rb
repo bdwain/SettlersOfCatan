@@ -9,14 +9,16 @@ class Game < ActiveRecord::Base
 
   private
   STATUS_WAITING_FOR_PLAYERS = 1
-  STATUS_PLAYING = 2
-  STATUS_COMPLETED = 3
+  STATUS_PLACING_INITIAL_PIECES = 2
+  STATUS_PLAYING = 3
+  STATUS_COMPLETED = 4
 
   public
   validates_presence_of :creator, :map
 
   validates :status, :presence => true, 
-            :inclusion => { :in => [STATUS_WAITING_FOR_PLAYERS, STATUS_PLAYING, STATUS_COMPLETED] }
+            :inclusion => { :in => [STATUS_WAITING_FOR_PLAYERS, STATUS_PLACING_INITIAL_PIECES, 
+             STATUS_PLAYING, STATUS_COMPLETED] }
 
   validates :num_players, :presence => true, :inclusion => { :in => 3.upto(4) }, 
             :numericality => {:only_integer => true}
@@ -27,6 +29,10 @@ class Game < ActiveRecord::Base
 
   def waiting_for_players?
     status == STATUS_WAITING_FOR_PLAYERS
+  end
+
+  def placing_initial_pieces?
+    status == STATUS_PLACING_INITIAL_PIECES
   end
 
   def playing?
@@ -93,6 +99,6 @@ class Game < ActiveRecord::Base
 
     development_cards.shuffle!.each_with_index { |card, index| card.position = index }
 
-    self.status = STATUS_PLAYING
+    self.status = STATUS_PLACING_INITIAL_PIECES
   end
 end
