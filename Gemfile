@@ -50,6 +50,7 @@ gem "figaro", ">= 0.6.3"
 gem "better_errors", ">= 0.7.2", :group => :development
 gem "binding_of_caller", ">= 0.7.1", :group => :development, :platforms => [:mri_19, :rbx]
 gem 'factory_girl_rails', :require => false #don't require because of http://goo.gl/kgnKz
+gem "active_model_serializers", "~> 0.8.0"
 
 group :development do
   gem "rails-erd"
