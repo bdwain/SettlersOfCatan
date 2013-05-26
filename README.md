@@ -1,6 +1,9 @@
 SettlersOfCatan
 ===============
 
+##Current Status
+You can create a game, but can't play it yet. Gameplay is in progress
+
 ## Setup
 1. Set up ruby 2.0.0p0 and rubygems. I used rvm and followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.0.0p0. 
 
