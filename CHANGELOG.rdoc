@@ -1,3 +1,0 @@
-= 2013-04-20
-* Created the initial Model
-* previously set up devise authentication
