@@ -19,7 +19,6 @@ class PlayerSerializer < ActiveModel::Serializer
   end
 
   def development_cards
-    puts "hello"
     if current_user == object.user
       object.development_cards
     else
