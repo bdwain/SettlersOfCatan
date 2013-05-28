@@ -1,4 +1,8 @@
 //= require underscore
 //= require backbone
-//= require_tree ./game/
-//= require_tree ../templates/game/
+//= require game/SettlersOfCatan
+//= require ../templates/game
+//= require game/models
+//= require game/collections
+//= require game/views
+//= require_tree ./game
