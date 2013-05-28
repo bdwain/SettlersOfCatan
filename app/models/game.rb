@@ -87,7 +87,7 @@ class Game < ActiveRecord::Base
     return true if num_players != players.length || !waiting_for_players?
 
     #give each player their own turn
-    players.shuffle!.each_with_index { |player, index| player.turn_num = index}
+    players.shuffle!.each_with_index { |player, index| player.turn_num = index + 1}
 
     14.times { development_cards.build(type: KNIGHT) }
     5.times { development_cards.build(type: VICTORY_POINT) }
