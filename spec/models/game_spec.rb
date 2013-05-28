@@ -354,6 +354,13 @@ describe Game do
         game.development_cards.where(:type => MONOPOLY).count.should eq(2)
       end
 
+      it "sets player 1's status to PLAYING_TURN and everyone else to WAITING_FOR_TURN" do
+        game.save
+        game.players.each do |player|
+          player.turn_status.should eq(player.turn_num == 1 ? PLAYING_TURN : WAITING_FOR_TURN)
+        end
+      end
+
       it "changes the status to placing initial pieces" do
         game.placing_initial_pieces?.should be_false
         game.save
