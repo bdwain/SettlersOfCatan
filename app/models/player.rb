@@ -12,5 +12,6 @@ class Player < ActiveRecord::Base
   validates :turn_num, :presence => true, :inclusion => { :in => 1.upto(4) },
             :numericality => {:only_integer => true }
 
-  validates :turn_status, :allow_nil => true, :numericality => {:only_integer => true}
+  validates :turn_status, :presence => true, 
+            :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
 end

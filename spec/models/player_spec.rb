@@ -39,7 +39,9 @@ describe Player do
   end
 
   describe "turn_status" do
-    it { should_not validate_presence_of(:turn_status) }
+    it { should validate_presence_of(:turn_status) }
     it { should validate_numericality_of(:turn_status).only_integer }
+    it { should_not allow_value(-1).for(:turn_status) }
+    it { should allow_value(0).for(:turn_status) }        
   end
 end

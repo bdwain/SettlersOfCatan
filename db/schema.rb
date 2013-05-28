@@ -72,7 +72,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "game_id",                      :null => false
     t.integer  "user_id",                      :null => false
     t.integer  "turn_num",      :default => 1, :null => false
-    t.integer  "turn_status"
+    t.integer  "turn_status",   :default => 0, :null => false
     t.datetime "turn_deadline"
   end
 
