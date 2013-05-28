@@ -6,8 +6,6 @@ class Player < ActiveRecord::Base
   has_many :settlements, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :roads, :inverse_of => :player, :autosave => true, :dependent => :destroy
 
-  attr_accessible :turn_num, :turn_status, :turn_deadline
-
   validates_presence_of :game, :user
   validates_uniqueness_of :user_id, :scope => :game_id
   
