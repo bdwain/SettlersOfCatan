@@ -10,8 +10,8 @@ describe Player do
     it { should belong_to(:user) }
     it { should validate_presence_of(:user) }
     it "validates_uniqueness_of user_id scoped to game_id" do
-      #needed because the validation fails without a game precreted. See docs.
-      FactoryGirl.create(:game)
+      #needed because the validation fails without a player precreted. See docs.
+      FactoryGirl.create(:player)
       should validate_uniqueness_of(:user_id).scoped_to(:game_id)
      end 
   end

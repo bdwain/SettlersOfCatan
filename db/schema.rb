@@ -81,10 +81,12 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
   add_index "players", ["user_id"], :name => "index_players_on_user_id"
 
   create_table "resources", :force => true do |t|
-    t.integer "player_id", :null => false
-    t.integer "type",      :null => false
+    t.integer "player_id",                :null => false
+    t.integer "type",                     :null => false
+    t.integer "count",     :default => 0, :null => false
   end
 
+  add_index "resources", ["player_id", "type"], :name => "index_resources_on_player_id_and_type", :unique => true
   add_index "resources", ["player_id"], :name => "index_resources_on_player_id"
 
   create_table "roads", :force => true do |t|
