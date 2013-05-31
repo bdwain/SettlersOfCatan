@@ -4,4 +4,46 @@
 
 <p id="notice"><%= notice %></p>
 
-<%= tag "div", id: "game_init", data: {game: GameSerializer.new(@game, :scope => current_user, :scope_name => 'current_user')} %>
+<%= content_tag "div", id: "game_container", data: {game: GameSerializer.new(@game, :scope => current_user, :scope_name => 'current_user')} do %>
+  <div id="map" style="width: 1000px; height: 500px; background-color: blue;">
+  </div>
+
+  <table id="stats">
+    <tr>
+      <th>Player</th>
+      <th>Resources</th>
+      <th>Development Cards</th>
+      <th>Victory Points</th>
+      <th>Longest Road</th>
+    </tr>
+    <% @game.players.each do |player| %>
+      <tr>
+        <td><%= player.user.displayname %></td>
+        <td><%= player.resources.count %></td>
+        <td><%= player.development_cards.count %></td>
+        <td><%= 0 %></td>
+        <td><%= 0 %></td>
+      </tr>
+    <% end %>
+  </table>
+
+  <% my_player = @game.players.where(:user_id => current_user.id).first %>
+  <% if my_player %>
+    <div>
+      <h4>Action</h4>
+      <div>
+        <% case my_player.turn_status %>
+        <% when WAITING_FOR_TURN %>
+          Waiting For Turn
+        <% when WAITING_FOR_TRADE_RESPONSE %>
+          Waiting for Trade Response
+        <% when READY_TO_ROLL %>
+          
+        <% when MOVING_ROBBER %>
+        <% when PLAYING_TURN %>
+        <% when CONSIDERING_TRADE %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

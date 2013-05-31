@@ -3,7 +3,7 @@ window.SettlersOfCatan = {
   Collections: {},
   Views: {},
   initialize: function() {
-    this.game = new this.Models.Game($("#game_init").data("game"), {parse: true});
+    this.game = new this.Models.Game($("#game_container").data("game"), {parse: true});
   }
 };
 
