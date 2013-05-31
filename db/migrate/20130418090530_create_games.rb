@@ -8,6 +8,7 @@ class CreateGames < ActiveRecord::Migration
       t.references :map, :null => false, :default => 1
       t.integer :robber_x, :null => false, :default => 0
       t.integer :robber_y, :null => false, :default => 0
+      t.integer :turn_num, :null => false, :default => 1
 
       t.timestamps
     end

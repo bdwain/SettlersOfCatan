@@ -34,6 +34,13 @@ describe Game do
     it { should ensure_inclusion_of(:num_players).in_range(3..4) } 
   end
 
+  describe "turn_num" do
+    it { should validate_presence_of(:turn_num) }
+    it { should validate_numericality_of(:turn_num).only_integer }
+    it { should_not allow_value(0).for(:turn_num) }
+    it { should allow_value(1).for(:turn_num) }
+  end
+
   describe "robber_x" do
     it { should validate_presence_of(:robber_x) }
     it { should validate_numericality_of(:robber_x).only_integer }
@@ -357,7 +364,7 @@ describe Game do
       it "sets player 1's status to PLAYING_TURN and everyone else to WAITING_FOR_TURN" do
         game.save
         game.players.each do |player|
-          player.turn_status.should eq(player.turn_num == 1 ? PLAYING_TURN : WAITING_FOR_TURN)
+          player.turn_status.should eq(player.turn_num == 1 ? PLACING_INITIAL_PIECE : WAITING_FOR_TURN)
         end
       end
 

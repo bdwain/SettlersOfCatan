@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
     t.integer  "map_id",      :default => 1, :null => false
     t.integer  "robber_x",    :default => 0, :null => false
     t.integer  "robber_y",    :default => 0, :null => false
+    t.integer  "turn_num",    :default => 1, :null => false
     t.datetime "created_at",                 :null => false
     t.datetime "updated_at",                 :null => false
   end

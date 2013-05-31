@@ -23,6 +23,9 @@ class Game < ActiveRecord::Base
   validates :num_players, :presence => true, :inclusion => { :in => 3.upto(4) }, 
             :numericality => {:only_integer => true}
 
+  validates :turn_num, :presence => true, 
+            :numericality => {:only_integer => true, :greater_than => 0}
+
   #position of the robber
   validates :robber_x, :presence => true, :numericality => {:only_integer => true}
   validates :robber_y, :presence => true, :numericality => {:only_integer => true}
@@ -89,7 +92,7 @@ class Game < ActiveRecord::Base
     #give each player their own turn
     players.shuffle!.each_with_index do |player, index|
       player.turn_num = index + 1
-      player.turn_status = (index == 0 ? PLAYING_TURN : WAITING_FOR_TURN)
+      player.turn_status = (index == 0 ? PLACING_INITIAL_PIECE : WAITING_FOR_TURN)
     end
 
     14.times { development_cards.build(type: KNIGHT) }
