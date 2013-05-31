@@ -1,10 +1,15 @@
 require 'spec_helper'
 
 describe User do
-  it { should validate_presence_of(:displayname) }
-  it { should ensure_length_of(:displayname).is_at_least(3).is_at_most(20) }
-  it { should have_many(:players) }
+  describe "displayname" do
+    it { should validate_presence_of(:displayname) }
+    it { should ensure_length_of(:displayname).is_at_least(3).is_at_most(20) }
+  end
 
+  describe "players" do
+    it { should have_many(:players) }
+  end
+  
   describe "destruction" do
     let(:game) { FactoryGirl.create(:game) }
     it "calls game.remove_player? on each of a user's players' games" do
