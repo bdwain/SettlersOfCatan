@@ -3,8 +3,8 @@ class CreateGames < ActiveRecord::Migration
     create_table :games do |t|
       t.integer :num_players, :null => false
       t.integer :status, :null => false, :default => 1
-      t.references :creator, :null => false
-      t.references :winner, :null => true
+      t.integer :creator_id, :null => false
+      t.integer :winner_id, :null => true
       t.references :map, :null => false, :default => 1
       t.integer :robber_x, :null => false, :default => 0
       t.integer :robber_y, :null => false, :default => 0
