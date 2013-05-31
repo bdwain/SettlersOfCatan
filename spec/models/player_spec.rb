@@ -32,6 +32,18 @@ describe Player do
     it { should have_many(:roads).dependent(:destroy) }
   end
 
+  describe "chats" do
+    it { should have_many(:chats) }
+  end
+
+  describe "game_logs" do
+    it { should have_many(:game_logs) }
+  end
+
+  describe "dice_rolls" do
+    it { should have_many(:dice_rolls) }
+  end  
+
   describe "turn_num" do
     it { should validate_presence_of(:turn_num) }
     it { should validate_numericality_of(:turn_num).only_integer }

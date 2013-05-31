@@ -11,7 +11,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130420052235) do
+ActiveRecord::Schema.define(:version => 20130531074019) do
+
+  create_table "chats", :force => true do |t|
+    t.text     "msg",        :null => false
+    t.integer  "sender_id",  :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "chats", ["sender_id"], :name => "index_chats_on_sender_id"
 
   create_table "development_cards", :force => true do |t|
     t.integer "player_id"
@@ -23,6 +32,27 @@ ActiveRecord::Schema.define(:version => 20130420052235) do
 
   add_index "development_cards", ["game_id"], :name => "index_development_cards_on_game_id"
   add_index "development_cards", ["player_id"], :name => "index_development_cards_on_player_id"
+
+  create_table "dice_rolls", :force => true do |t|
+    t.integer  "current_player_id", :null => false
+    t.integer  "turn_num",          :null => false
+    t.integer  "dice_num",          :null => false
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
+  end
+
+  add_index "dice_rolls", ["current_player_id"], :name => "index_dice_rolls_on_current_player_id"
+
+  create_table "game_logs", :force => true do |t|
+    t.integer  "current_player_id", :null => false
+    t.integer  "turn_num",          :null => false
+    t.integer  "recipient_id"
+    t.text     "msg",               :null => false
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
+  end
+
+  add_index "game_logs", ["current_player_id"], :name => "index_game_logs_on_current_player_id"
 
   create_table "games", :force => true do |t|
     t.integer  "num_players",                :null => false

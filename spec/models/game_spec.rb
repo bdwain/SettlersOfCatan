@@ -23,6 +23,18 @@ describe Game do
     it { should have_many(:development_cards).dependent(:destroy) }
   end
 
+  describe "chats" do
+    it { should have_many(:chats).through(:players) }
+  end
+
+  describe "game_logs" do
+    it { should have_many(:game_logs).through(:players) }
+  end
+
+  describe "dice_rolls" do
+    it { should have_many(:dice_rolls).through(:players) }
+  end
+
   describe "status" do
     it { should validate_presence_of(:status) }
     it { should ensure_inclusion_of(:status).in_range(1..4) }

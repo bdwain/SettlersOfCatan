@@ -5,6 +5,10 @@ class Game < ActiveRecord::Base
   has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
   has_many :development_cards, :inverse_of => :game, :autosave => true, :dependent => :destroy
 
+  has_many :chats, :through => :players
+  has_many :game_logs, :through => :players
+  has_many :dice_rolls, :through => :players
+
   attr_accessible :num_players
 
   private

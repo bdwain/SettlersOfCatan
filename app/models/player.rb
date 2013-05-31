@@ -5,6 +5,9 @@ class Player < ActiveRecord::Base
   has_many :development_cards, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :settlements, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :roads, :inverse_of => :player, :autosave => true, :dependent => :destroy
+  has_many :chats, :inverse_of => :sender, :autosave => true, :dependent => :destroy, :foreign_key => 'sender_id'
+  has_many :game_logs, :inverse_of => :current_player, :autosave => true, :dependent => :destroy, :foreign_key => 'current_player_id'
+  has_many :dice_rolls, :inverse_of => :current_player, :autosave => true, :dependent => :destroy, :foreign_key => 'current_player_id'
 
   validates_presence_of :game, :user
   validates_uniqueness_of :user_id, :scope => :game_id
