@@ -50,6 +50,12 @@ class Game < ActiveRecord::Base
     status == STATUS_COMPLETED
   end
 
+  after_initialize :init
+
+  def init
+    @game_board = GameBoard.new(map, players)
+  end
+
   #returns the player for a corresponding user, or nil if they aren't playing
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
   #across different types of items, would it make sense to use email address?
