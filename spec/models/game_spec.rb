@@ -376,7 +376,7 @@ describe Game do
       it "sets player 1's status to PLAYING_TURN and everyone else to WAITING_FOR_TURN" do
         game.save
         game.players.each do |player|
-          player.turn_status.should eq(player.turn_num == 1 ? PLACING_INITIAL_PIECE : WAITING_FOR_TURN)
+          player.turn_status.should eq(player.turn_num == 1 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
         end
       end
 

@@ -102,7 +102,7 @@ class Game < ActiveRecord::Base
     #give each player their own turn
     players.shuffle!.each_with_index do |player, index|
       player.turn_num = index + 1
-      player.turn_status = (index == 0 ? PLACING_INITIAL_PIECE : WAITING_FOR_TURN)
+      player.turn_status = (index == 0 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
     end
 
     14.times { development_cards.build(type: KNIGHT) }
