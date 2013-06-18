@@ -1,6 +1,16 @@
 SettlersOfCatan::Application.routes.draw do
   resources :players
   resources :games
+  resources :chats
+  resources :development_cards
+  resources :dice_rolls
+  resources :game_logs
+  resources :harbors
+  resources :hexes
+  resources :maps
+  resources :resources
+  resources :roads
+  resources :settlements
   devise_for :users
 
   get "home/index"
