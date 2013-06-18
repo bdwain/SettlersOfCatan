@@ -50,8 +50,8 @@ class Game < ActiveRecord::Base
     status == STATUS_COMPLETED
   end
 
+  include GameBoard
   after_initialize :init
-
   def init
     @game_board = GameBoard.new(map, players)
   end
