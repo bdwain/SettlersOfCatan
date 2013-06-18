@@ -1,6 +1,6 @@
 class Settlement < ActiveRecord::Base
   belongs_to :player, :inverse_of => :settlements
-  attr_accessible :is_city, :vertex_x, :vertex_y
+  attr_accessible :vertex_x, :vertex_y
 
   validates_presence_of :player
 
