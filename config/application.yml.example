@@ -2,6 +2,7 @@
 
 #REQUIRED: Generate a key by saying "rake secret" on the command line
 app_secret_token: SET_ME
+devise_secret_key: SET_ME
 devise_pepper: SET_ME
 
 #REQUIRED: The default URL for your website. This value will probably be fine for dev and test, 
