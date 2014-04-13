@@ -11,6 +11,13 @@ class Game < ActiveRecord::Base
 
   attr_accessible :num_players
 
+  include GameBoard
+  attr_reader :game_board
+  after_initialize :init
+  def init
+    @game_board = GameBoard.new(map, players)
+  end
+
   private
   STATUS_WAITING_FOR_PLAYERS = 1
   STATUS_PLACING_INITIAL_PIECES = 2
@@ -48,12 +55,6 @@ class Game < ActiveRecord::Base
 
   def completed?
     status == STATUS_COMPLETED
-  end
-
-  include GameBoard
-  after_initialize :init
-  def init
-    @game_board = GameBoard.new(map, players)
   end
 
   #returns the player for a corresponding user, or nil if they aren't playing
