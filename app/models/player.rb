@@ -17,4 +17,17 @@ class Player < ActiveRecord::Base
 
   validates :turn_status, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
+  
+  def add_initial_settlement?(x, y)
+    if turn_status != PLACING_INITIAL_SETTLEMENT || !game.game_board.vertex_is_free_for_building?(x, y)
+      return false
+    end
+
+    self.turn_status = PLACING_INITIAL_ROAD
+    game_log = game_logs.build
+    game_log.turn_num = game.turn_num
+    game_log.msg = "#{user.displayname} placed a settlement on (#{x},#{y})"
+    settlements.build(:vertex_x => x, :vertex_y => y)
+    save
+  end
 end

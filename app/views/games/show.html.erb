@@ -35,6 +35,23 @@
         <% case my_player.turn_status %>
         <% when WAITING_FOR_TURN %>
           Waiting For Turn
+        <% when PLACING_INITIAL_SETTLEMENT %>
+          <%= form_tag("/settlements", :method => "post") do %>
+            <%= hidden_field_tag(:player_id, my_player.id) %>
+            <div>
+              <%= label_tag(:vertex_x, "X Position: ") %>
+              <%= text_field_tag :vertex_x, nil, :required => true %>
+            </div>
+            <div>
+              <%= label_tag(:vertex_y, "Y Position: ") %>
+              <%= text_field_tag :vertex_y, nil, :required => true %>
+            </div>
+            <div class="actions">
+              <%= submit_tag("Submit") %>
+            </div>            
+          <% end %>
+        <% when PLACING_INITIAL_ROAD %>
+          Placing initial settlements
         <% when WAITING_FOR_TRADE_RESPONSE %>
           Waiting for Trade Response
         <% when READY_TO_ROLL %>
