@@ -57,79 +57,87 @@ describe Player do
     it { should allow_value(0).for(:turn_status) }        
   end
 
-  describe "add_initial_settlement?" do
-    let(:game) { FactoryGirl.create(:game_playing) }
+  describe "add_settlement?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_playing) }
+    let(:board) {double("GameBoard")}
+    before(:each) { game.stub(:game_board).and_return(board) }
+    let(:player) {FactoryGirl.build(:player)}
+    before(:each) {player.game = game}
 
-    shared_examples "add_initial_settlement? failures" do
+    shared_examples "add_settlement? failures" do
       it "returns false" do
-        player.add_initial_settlement?(1, 3).should be_false
+        player.add_settlement?(1, 3).should be_false
       end
 
       it "does not change the player's turn_status" do
         expect{
-          player.add_initial_settlement?(1, 3)
+          player.add_settlement?(1, 3)
         }.to_not change(player, :turn_status)
       end
 
       it "does not create a new game log" do
         expect{
-          player.add_initial_settlement?(1, 3)
+          player.add_settlement?(1, 3)
         }.to_not change(player.game_logs, :count)
       end
 
       it "does not create a new settlement" do
         expect{
-          player.add_initial_settlement?(1, 3)
+          player.add_settlement?(1, 3)
         }.to_not change(player.settlements, :count)
       end
     end
 
-    context "when player is not status PLACING_INITIAL_SETTLEMENT" do
-      let(:player) {game.players.detect {|p| p.turn_status != PLACING_INITIAL_SETTLEMENT}}
-      include_examples "add_initial_settlement? failures"
+    context "when x,y is not free for building" do
+      before(:each) {board.stub(:vertex_is_free_for_building?).and_return(false)}
+
+      include_examples "add_settlement? failures"
     end
 
-    context "when player is PLACING_INITIAL_SETTLEMENT" do
-      let(:player) {game.players.detect {|p| p.turn_status == PLACING_INITIAL_SETTLEMENT}}
-      let(:board) {double("GameBoard")}
-      before(:each) { game.stub(:game_board).and_return(board) }
-      context "when x,y is not free for building" do
-        before(:each) {board.stub(:vertex_is_free_for_building?).and_return(false)}
-        include_examples "add_initial_settlement? failures"
-      end
+    context "when x,y is free for building" do
+      before(:each) {board.stub(:vertex_is_free_for_building?).and_return(true)}
 
-      context "when x,y is free for building" do
-        before(:each) {board.stub(:vertex_is_free_for_building?).and_return(true)}
+      context "when player is status PLACING_INITIAL_SETTLEMENT" do
+        before(:each) {player.turn_status = PLACING_INITIAL_SETTLEMENT}
+
         it "returns true" do
-          player.add_initial_settlement?(1, 0).should be_true
+          player.add_settlement?(1, 0).should be_true
         end
 
         it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
-          player.add_initial_settlement?(1, 0)
+          player.add_settlement?(1, 0)
           player.turn_status.should eq(PLACING_INITIAL_ROAD)
         end
 
         it "creates a new game_log with the game's turn number" do
           expect{
-            player.add_initial_settlement?(1, 0)
+            player.add_settlement?(1, 0)
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
         end
 
         it "creates a new game_log with the text \"user.displayname placed a settlement on x,y\"" do
-          player.add_initial_settlement?(1, 0)
+          player.add_settlement?(1, 0)
           player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,0)")
         end
 
         it "creates a new settlement with for the user at x,y" do
           expect{
-            player.add_initial_settlement?(1, 0)
+            player.add_settlement?(1, 0)
           }.to change(player.settlements, :count).by(1)
 
           player.settlements.last.vertex_x.should eq(1)
           player.settlements.last.vertex_y.should eq(0)
         end
+      end
+
+      #TODO: add in when player is playing turn
+      
+      context "when player is not status PLACING_INITIAL_SETTLEMENT" do
+        before(:each) {player.stub(:turn_status).and_return(WAITING_FOR_TURN)}
+
+        include_examples "add_settlement? failures"
       end
     end
   end

@@ -27,9 +27,9 @@ describe SettlementsController do
 
         context "when the current_user does control the player" do
           before(:each) {player.stub(:user).and_return(@current_user)}
-          context "when player.add_initial_settlement? returns true" do
+          context "when player.add_settlement? returns true" do
             before(:each) do
-              player.stub(:add_initial_settlement?).and_return(true)
+              player.stub(:add_settlement?).and_return(true)
               post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1
             end
 
@@ -38,9 +38,9 @@ describe SettlementsController do
             end
           end
 
-          context "when player.add_initial_settlement? returns false" do
+          context "when player.add_settlement? returns false" do
             before(:each) do
-              player.stub(:add_initial_settlement?).and_return(false)
+              player.stub(:add_settlement?).and_return(false)
               post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1
             end
 

@@ -18,8 +18,10 @@ class Player < ActiveRecord::Base
   validates :turn_status, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
   
-  def add_initial_settlement?(x, y)
-    if turn_status != PLACING_INITIAL_SETTLEMENT || !game.game_board.vertex_is_free_for_building?(x, y)
+  def add_settlement?(x, y)
+    if !game.game_board.vertex_is_free_for_building?(x, y)
+      return false
+    elsif turn_status != PLACING_INITIAL_SETTLEMENT # later make sure they're not buying either
       return false
     end
 
