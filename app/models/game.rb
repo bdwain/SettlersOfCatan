@@ -98,8 +98,14 @@ class Game < ActiveRecord::Base
   
   #when saving a game, initialize it for play if it's full but status is still waiting
   before_save do
-    return true if num_players != players.length || !waiting_for_players?
+    if num_players == players.length && waiting_for_players?
+      init_game
+    end
+    true
+  end
 
+  private
+  def init_game
     #give each player their own turn
     players.shuffle!.each_with_index do |player, index|
       player.turn_num = index + 1
