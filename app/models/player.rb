@@ -32,4 +32,21 @@ class Player < ActiveRecord::Base
     settlements.build(:vertex_x => x, :vertex_y => y)
     save
   end
+
+  def add_road?(x, y)
+    if !game.game_board.edge_is_free_for_building_by_player?(x, y, self)
+      return false
+    elsif turn_status != PLACING_INITIAL_ROAD # later make sure they're not buying either
+      return false
+    end
+
+    game_log = game_logs.build
+    game_log.turn_num = game.turn_num
+    game_log.msg = "#{user.displayname} placed a road on (#{x},#{y})"
+    roads.build(:edge_x => x, :edge_y => y)
+
+    return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
+    save
+  end
+
 end

@@ -109,16 +109,12 @@ describe Player do
           player.turn_status.should eq(PLACING_INITIAL_ROAD)
         end
 
-        it "creates a new game_log with the game's turn number" do
+        it "creates a new game_log with the game's turn number and proper text" do
           expect{
             player.add_settlement?(1, 0)
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
-        end
-
-        it "creates a new game_log with the text \"user.displayname placed a settlement on x,y\"" do
-          player.add_settlement?(1, 0)
           player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,0)")
         end
 
@@ -141,4 +137,98 @@ describe Player do
       end
     end
   end
+
+  describe "add_road?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_playing) }
+    let(:board) {double("GameBoard")}
+    before(:each) { game.stub(:game_board).and_return(board) }
+    let(:player) {FactoryGirl.build(:player)}
+    before(:each) {player.game = game}
+
+    shared_examples "add_road? failures" do
+      it "returns false" do
+        player.add_road?(1, 3).should be_false
+      end
+
+      it "does not create a new game log" do
+        expect{
+          player.add_road?(1, 3)
+        }.to_not change(player.game_logs, :count)
+      end
+
+      it "does not create a new road" do
+        expect{
+          player.add_road?(1, 3)
+        }.to_not change(player.roads, :count)
+      end
+    end
+
+    shared_examples "does not call game.advance?" do
+      it "does not call game.advance?" do
+        game.should_not_receive(:advance?)
+        player.add_road?(1,3)
+      end
+    end
+
+    context "when x,y is not free for building" do
+      before(:each) {board.stub(:edge_is_free_for_building_by_player?).and_return(false)}
+
+      include_examples "add_road? failures"
+      include_examples "does not call game.advance?"
+    end
+
+    context "when x,y is free for building" do
+      before(:each) {board.stub(:edge_is_free_for_building_by_player?).and_return(true)}
+
+      context "when player is status PLACING_INITIAL_ROAD" do
+        before(:each) {player.turn_status = PLACING_INITIAL_ROAD}
+
+        context "when game.advance? returns true" do
+          before(:each) {game.stub(:advance?).and_return(true)}
+
+          it "returns true" do
+            player.add_road?(1, 0).should be_true
+          end
+
+          it "creates a new game_log with the game's turn number and proper text" do
+            expect{
+              player.add_road?(1, 0)
+            }.to change(player.game_logs, :count).by(1)
+
+            player.game_logs.last.turn_num.should eq(game.turn_num)
+            player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (1,0)")
+          end
+
+          it "creates a new road with for the user at x,y" do
+            expect{
+              player.add_road?(1, 0)
+            }.to change(player.roads, :count).by(1)
+
+            player.roads.last.edge_x.should eq(1)
+            player.roads.last.edge_y.should eq(0)
+          end
+
+          it "calls game.advance?" do
+            game.should_receive(:advance?)
+            player.add_road?(1,0)
+          end
+        end
+
+        context "when game.advance? returns false" do
+          before(:each) {game.stub(:advance?).and_return(false)}
+
+          include_examples "add_road? failures"
+        end
+      end
+
+      #TODO: add in when player is playing turn
+      
+      context "when player is not status PLACING_INITIAL_ROAD" do
+        before(:each) {player.stub(:turn_status).and_return(WAITING_FOR_TURN)}
+
+        include_examples "add_road? failures"
+        include_examples "does not call game.advance?"
+      end
+    end
+  end  
 end

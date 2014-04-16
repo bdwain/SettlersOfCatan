@@ -23,6 +23,10 @@ module GameBoard
       vertex_is_on_board?(x, y) && !@vertices[x][y] && !get_vertices_adjacent_to_vertex(x, y).any?
     end
 
+    def edge_is_free_for_building_by_player?(x, y, player)
+      #TODO
+    end
+
     private
     def hex_is_on_board?(x, y)
       x >= 0 && y >= 0 && x < @hexes.count && y < @hexes.count && @hexes[x][y]

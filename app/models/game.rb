@@ -95,6 +95,10 @@ class Game < ActiveRecord::Base
       end
     end
   end
+
+  def advance?
+    #TODO
+  end
   
   #when saving a game, initialize it for play if it's full but status is still waiting
   before_save do
