@@ -19,13 +19,13 @@ module GameBoard
 
       @edges.each_with_index do |row, x|
         row.each_with_index do |edge, y|
-          edge = Edge.new(x, y, nil) unless edge
+          @edges[x][y] = Edge.new(x, y, nil) unless edge
         end
       end
 
       @vertices.each_with_index do |row, x|
         row.each_with_index do |vertex, y|
-          vertex = Vertex.new(x, y, nil) unless vertex
+          @vertices[x][y] = Vertex.new(x, y, nil) unless vertex
         end
       end
     end
@@ -36,7 +36,7 @@ module GameBoard
     end
 
     def edge_is_free_for_building_by_player?(x, y, player)
-      edge_is_on_board?(x, y) && edges[x][y].empty? && edge_is_connected_to_player?(@edges[x][y], player)
+      edge_is_on_board?(x, y) && @edges[x][y].empty? && edge_is_connected_to_player?(@edges[x][y], player)
     end
 
     private
@@ -97,7 +97,7 @@ module GameBoard
     def get_vertices_attached_to_edge(edge)
       x = edge.x
       y = edge.y
-      if edge.x % 2 == 0
+      if x % 2 == 0
         points = [[x/2, y], [x/2, y+1]]
       else
         points = [[(x-1)/2, y], [(x+1)/2,y]]
@@ -114,7 +114,7 @@ module GameBoard
 
     def edge_is_connected_to_player?(edge, player)
       vertices = get_vertices_attached_to_edge(edge)
-      vertices.any?{|vertex| (!vertex.empty? && vertex.settlement.player == player) || (vertex.empty? && get_edges_from_vertex(vertex).any?{||connectedEdge| connectedEdge != edge && !connectedEdge.empty? && connectedEdge.road.player == player})}
+      vertices.any?{|vertex| (!vertex.empty? && vertex.settlement.player == player) || (vertex.empty? && get_edges_from_vertex(vertex).any?{|connectedEdge| connectedEdge != edge && !connectedEdge.empty? && connectedEdge.road.player == player})}
     end
   end
 end
