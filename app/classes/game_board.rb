@@ -1,13 +1,13 @@
 module GameBoard
   class GameBoard
     def initialize(map, players)
-      @hexes = Array.new(map.num_rows, Array.new(map.num_rows))
+      @hexes = Array.new(map.num_rows) {Array.new(map.num_rows)}
       map.hexes.each do |hex|
         @hexes[hex.pos_x][hex.pos_y] = hex
       end
 
-      @edges = Array.new(map.num_rows*2+2, Array.new(map.num_rows*2+2))
-      @vertices = Array.new(map.num_rows*2+2, Array.new(map.num_rows*2+2))
+      @edges = Array.new(map.num_rows*2+2) {Array.new(map.num_rows*2+2)}
+      @vertices = Array.new(map.num_rows*2+2) {Array.new(map.num_rows*2+2)}
       players.each do |player|
         player.roads.each do |road|
           @edges[road.edge_x][road.edge_y] = Edge.new(road.edge_x, road.edge_y, road)
@@ -37,6 +37,13 @@ module GameBoard
 
     def edge_is_free_for_building_by_player?(x, y, player)
       edge_is_on_board?(x, y) && @edges[x][y].empty? && edge_is_connected_to_player?(@edges[x][y], player)
+    end
+
+    def get_hexes_from_vertex(x,y)
+      x_offset = x % 2
+      y_offset = y % 2
+      points = [[x-1, (y+x_offset)/2 -1], [x - (1-y_offset)*x_offset, (y-1)/2], [x, (y - x_offset)/2]]
+      points.uniq.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
     end
 
     private
@@ -71,27 +78,18 @@ module GameBoard
     end
 
     def vertex_is_on_board?(x, y)
-      x >= 0 && y >= 0 && x < @vertices.count && y < @vertices.count && get_hexes_from_vertex(@vertices[x][y]).count > 0
+      x >= 0 && y >= 0 && x < @vertices.count && y < @vertices.count && get_hexes_from_vertex(x,y).count > 0
     end
 
     def edge_is_on_board?(x, y)
       x >= 0 && y >= 0 && x < @edges.count && y < @edges.count && get_vertices_attached_to_edge(@edges[x][y]).count == 2
     end
 
-    def get_hexes_from_vertex(vertex)
-      x = vertex.x
-      y = vertex.y
-      x_offset = x % 2
-      y_offset = y % 2
-      points = [[x-1, (y+x_offset)/2 -1], [x - (1-y_offset)*x_offset, (y-1)/2], [x, (y - x_offset)/2]]
-      points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
-    end
-
     def get_vertices_adjacent_to_vertex(vertex)
       x = vertex.x
       y = vertex.y
       points = [[x, y+1], [x+1, y], [x-1, y]]
-      points.reject{ |point| !vertex_is_on_board?(point[0], point[1])}.collect{|point| @vertices[point[0]][point[1]]}
+      points.uniq.reject{ |point| !vertex_is_on_board?(point[0], point[1])}.collect{|point| @vertices[point[0]][point[1]]}
     end
 
     def get_vertices_attached_to_edge(edge)
@@ -102,14 +100,14 @@ module GameBoard
       else
         points = [[(x-1)/2, y], [(x+1)/2,y]]
       end
-      points.reject{ |point| !vertex_is_on_board?(point[0], point[1])}.collect{|point| @vertices[point[0]][point[1]]}
+      points.uniq.reject{ |point| !vertex_is_on_board?(point[0], point[1])}.collect{|point| @vertices[point[0]][point[1]]}
     end
 
     def get_edges_from_vertex(vertex)
       x = vertex.x
       y = vertex.y
       points = [[x*2, y], [x*2+1, y], [x*2-1, y]]
-      points.reject{ |point| !edge_is_on_board?(point[0], point[1])}.collect{|point| @edges[point[0]][point[1]]}
+      points.uniq.reject{ |point| !edge_is_on_board?(point[0], point[1])}.collect{|point| @edges[point[0]][point[1]]}
     end
 
     def edge_is_connected_to_player?(edge, player)
