@@ -97,23 +97,35 @@ class Game < ActiveRecord::Base
   end
 
   def advance?
-    #TODO
+    if waiting_for_players?
+      false
+    elsif placing_initial_pieces?
+      advance_while_placing_initial_pieces?
+    end
   end
   
   #when saving a game, initialize it for play if it's full but status is still waiting
   before_save do
     if num_players == players.length && waiting_for_players?
-      init_game
+      return init_game?
     end
     true
   end
 
   private
-  def init_game
+  def init_game?
     #give each player their own turn
     players.shuffle!.each_with_index do |player, index|
       player.turn_num = index + 1
       player.turn_status = (index == 0 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
+      player.resources.build(type: WHEAT)
+      player.resources.build(type: WOOD)
+      player.resources.build(type: WOOL)
+      player.resources.build(type: ORE)
+      player.resources.build(type: BRICK)
+      player.resources.each do |resource|
+        resource.count = 0
+      end
     end
 
     14.times { development_cards.build(type: KNIGHT) }
@@ -127,5 +139,33 @@ class Game < ActiveRecord::Base
     development_cards.shuffle!.each_with_index { |card, index| card.position = index }
 
     self.status = STATUS_PLACING_INITIAL_PIECES
+    true
+  end
+
+  def advance_while_placing_initial_pieces?
+    current_player = players.find{|player| player.turn_status == PLACING_INITIAL_ROAD}
+    if !current_player
+      return false
+    end
+
+    if turn_num == 1 && current_player.turn_num != num_players
+      next_player = players.find{|player| player.turn_num == current_player.turn_num + 1}
+      next_player.turn_status = PLACING_INITIAL_SETTLEMENT
+      current_player.turn_status = WAITING_FOR_TURN
+    elsif turn_num == 1
+      self.turn_num = 2
+      current_player.turn_status = PLACING_INITIAL_SETTLEMENT
+    elsif turn_num == 2 && current_player.turn_num != 1
+      next_player = players.find{|player| player.turn_num == current_player.turn_num - 1}
+      next_player.turn_status = PLACING_INITIAL_SETTLEMENT
+      current_player.turn_status = WAITING_FOR_TURN
+    elsif turn_num == 2
+      self.turn_num = 3
+      self.status = STATUS_PLAYING
+      current_player.turn_status = READY_TO_ROLL
+    else
+      raise "There was an error"
+    end
+    save
   end
 end

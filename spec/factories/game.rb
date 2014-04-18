@@ -11,7 +11,7 @@ FactoryGirl.define do
       end
     end
 
-    factory :game_playing do
+    factory :game_turn_1 do
       after(:create) do |game, evaluator|
         (game.num_players - 1).times { game.add_user?(FactoryGirl.create(:confirmed_user)) }
       end

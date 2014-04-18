@@ -41,4 +41,4 @@ map.harbors.build(resource_type: BRICK, edge_x: 8, edge_y: 8) #hex 3,3 bottom-ri
 
 map.save
 
-FactoryGirl.create(:game_playing) if Rails.env == "development"
+FactoryGirl.create(:game_turn_1) if Rails.env == "development"

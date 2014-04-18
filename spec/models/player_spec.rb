@@ -58,10 +58,10 @@ describe Player do
   end
 
   describe "add_settlement?" do
-    let(:game) { FactoryGirl.build_stubbed(:game_playing) }
+    let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.build(:player)}
+    let(:player) {FactoryGirl.build(:in_game_player)}
     before(:each) {player.game = game}
 
     shared_examples "add_settlement? failures" do
@@ -86,6 +86,45 @@ describe Player do
           player.add_settlement?(1, 3)
         }.to_not change(player.settlements, :count)
       end
+
+      include_examples "add_settlement? does not add new resources"
+    end
+
+    shared_examples "add_settlement? does not add new resources" do
+      it "does not add new resources" do
+        expect{
+          player.add_settlement?(1, 3)
+        }.to_not change(player, :resources)
+      end
+    end
+
+    shared_examples "add_settlement? successes" do
+      it "returns true" do
+        player.add_settlement?(1, 0).should be_true
+      end
+
+      it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
+        player.add_settlement?(1, 0)
+        player.turn_status.should eq(PLACING_INITIAL_ROAD)
+      end
+
+      it "creates a new game_log with the game's turn number and proper text" do
+        expect{
+          player.add_settlement?(1, 0)
+        }.to change(player.game_logs, :count).by(1)
+
+        player.game_logs.last.turn_num.should eq(game.turn_num)
+        player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,0)")
+      end
+
+      it "creates a new settlement with for the user at x,y" do
+        expect{
+          player.add_settlement?(1, 0)
+        }.to change(player.settlements, :count).by(1)
+
+        player.settlements.last.vertex_x.should eq(1)
+        player.settlements.last.vertex_y.should eq(0)
+      end
     end
 
     context "when x,y is not free for building" do
@@ -98,34 +137,33 @@ describe Player do
       before(:each) {board.stub(:vertex_is_free_for_building?).and_return(true)}
 
       context "when player is status PLACING_INITIAL_SETTLEMENT" do
-        before(:each) {player.turn_status = PLACING_INITIAL_SETTLEMENT}
-
-        it "returns true" do
-          player.add_settlement?(1, 0).should be_true
+        before(:each) do
+          player.turn_status = PLACING_INITIAL_SETTLEMENT
+          hexes = [Hex.new(resource_type: WOOD), Hex.new(resource_type: WOOL), Hex.new(resource_type: WOOD)]
+          board.stub(:get_hexes_from_vertex).and_return(hexes)
         end
 
-        it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
-          player.add_settlement?(1, 0)
-          player.turn_status.should eq(PLACING_INITIAL_ROAD)
+        context "when turn number is 1" do
+          before(:each) {player.game.turn_num = 1}
+
+          include_examples "add_settlement? successes"
+          include_examples "add_settlement? does not add new resources"
         end
 
-        it "creates a new game_log with the game's turn number and proper text" do
-          expect{
+        context "when turn number is 2" do
+          before(:each) {player.game.turn_num = 2}
+          
+          include_examples "add_settlement? successes"
+          
+          it "sets the player's resource counts properly" do
             player.add_settlement?(1, 0)
-          }.to change(player.game_logs, :count).by(1)
-
-          player.game_logs.last.turn_num.should eq(game.turn_num)
-          player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,0)")
-        end
-
-        it "creates a new settlement with for the user at x,y" do
-          expect{
-            player.add_settlement?(1, 0)
-          }.to change(player.settlements, :count).by(1)
-
-          player.settlements.last.vertex_x.should eq(1)
-          player.settlements.last.vertex_y.should eq(0)
-        end
+            player.resources.find{|resource| resource.type == WOOD}.count.should eq(2)
+            player.resources.find{|resource| resource.type == WOOL}.count.should eq(1)
+            player.resources.find{|resource| resource.type == ORE}.count.should eq(0)
+            player.resources.find{|resource| resource.type == BRICK}.count.should eq(0)
+            player.resources.find{|resource| resource.type == WHEAT}.count.should eq(0)
+          end
+        end        
       end
 
       #TODO: add in when player is playing turn
@@ -139,7 +177,7 @@ describe Player do
   end
 
   describe "add_road?" do
-    let(:game) { FactoryGirl.build_stubbed(:game_playing) }
+    let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
     let(:player) {FactoryGirl.build(:player)}

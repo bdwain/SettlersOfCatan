@@ -67,11 +67,12 @@
               <%= submit_tag("Submit") %>
             </div>            
           <% end %>
-        <% when WAITING_FOR_TRADE_RESPONSE %>
-          Waiting for Trade Response
         <% when READY_TO_ROLL %>
+          Ready to roll
         <% when MOVING_ROBBER %>
         <% when PLAYING_TURN %>
+        <% when WAITING_FOR_TRADE_RESPONSE %>
+          Waiting for Trade Response
         <% when CONSIDERING_TRADE %>
         <% end %>
       </div>

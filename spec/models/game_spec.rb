@@ -362,6 +362,16 @@ describe Game do
         end
       end
 
+      it "gives each player each resource with a count of 0" do
+        expect{
+          game.save
+        }.to change(Resource, :count).by(5*game.num_players)
+        game.players.each do |player|
+          player.resources.collect {|resource| resource.type}.sort.should eq([WOOL, WOOD, WHEAT, ORE, BRICK].sort)
+          player.resources.all?{|resource| resource.count == 0}.should be_true
+        end
+      end
+
       it "creates a correct deck of development cards" do
         expect{
           game.save
@@ -398,10 +408,147 @@ describe Game do
 
     context "when no longer waiting for players" do
       it "doesn't add any new development cards" do #something it would do if starting a game
-        game = FactoryGirl.create(:game_playing)
+        game = FactoryGirl.create(:game_turn_1)
         expect {
           game.save
         }.to_not change(DevelopmentCard, :count)
+      end
+    end
+  end
+
+  describe "advance?" do
+    context "when the game is waiting for players" do
+      let(:game) { FactoryGirl.create(:game) }
+
+      it "returns false" do
+        game.advance?.should be_false
+      end
+    end
+
+    shared_examples "returns true" do
+      it "returns true" do
+        game.advance?.should be_true
+      end
+    end
+
+    shared_examples "first n-1 players on turn 1 or last n-1 players on turn 2" do
+      include_examples "returns true"
+
+      it "sets the next player's turn status to PLACING_INITIAL_SETTLEMENT" do
+        game.advance?
+        next_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
+      end
+
+      it "sets the current player's turn status to WAITING_FOR_TURN" do
+        game.advance?
+        current_player.turn_status.should eq(WAITING_FOR_TURN)
+      end
+    end
+
+    context "when the game is placing initial pieces" do
+      context "when on turn 1" do
+        let(:game){FactoryGirl.create(:game_turn_1)}
+
+        context "when the current player is not the last player" do
+          let!(:current_player) do
+            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
+            player.turn_status = PLACING_INITIAL_ROAD
+            player
+          end
+
+          let(:next_player) {game.players.find{|player| player.turn_num == current_player.turn_num + 1}}
+
+          include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
+        end
+
+        context "when the current player is the last player" do
+          let!(:current_player) do
+            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
+            player.turn_status = WAITING_FOR_TURN
+            player = game.players.find{|player| player.turn_num == game.num_players}
+            player.turn_status = PLACING_INITIAL_ROAD
+            player
+          end          
+
+          include_examples "returns true"
+
+          it "increments the game turn_num to 2" do
+            game.advance?
+            game.turn_num.should eq(2)
+          end
+
+          it "sets the current player's turn status to PLACING_INITIAL_SETTLEMENT" do
+            game.advance?
+            current_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
+          end
+        end
+      end
+
+      context "when on turn 2" do
+        let(:game) do
+          g = FactoryGirl.create(:game_turn_1)
+          g.turn_num = 2
+          g
+        end
+
+        context "when the current player is not player 1" do
+          let!(:current_player) do
+            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
+            player.turn_status = WAITING_FOR_TURN
+            player = game.players.find{|player| player.turn_num == game.num_players}
+            player.turn_status = PLACING_INITIAL_ROAD
+            player
+          end    
+
+          let(:next_player) do
+            game.players.find{|player| player.turn_num == current_player.turn_num - 1}
+          end
+
+          include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
+        end
+
+        context "when the current player is player 1" do
+          let!(:current_player) do
+            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
+            player.turn_status = PLACING_INITIAL_ROAD
+            player
+          end
+
+          include_examples "returns true"
+
+          it "increments the game turn_num to 3" do
+            game.advance?
+            game.turn_num.should eq(3)
+          end
+
+          it "sets the game status to playing" do
+            game.advance?
+            game.playing?.should be_true
+          end
+
+          it "sets the current player's turn status to READY_TO_ROLL" do
+            game.advance?
+            current_player.turn_status.should eq(READY_TO_ROLL)
+          end
+        end            
+      end
+
+      context "when the current turn is not 1 or 2" do
+        let(:game) do
+          g = FactoryGirl.create(:game_turn_1)
+          g.turn_num = 3
+          g
+        end
+
+        before(:each) do
+          game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}.turn_status = PLACING_INITIAL_ROAD
+        end
+
+        it "raises an exception" do
+          expect{
+            game.advance?
+          }.to raise_error("There was an error")
+        end
       end
     end
   end

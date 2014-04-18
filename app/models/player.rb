@@ -25,11 +25,20 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    self.turn_status = PLACING_INITIAL_ROAD
     game_log = game_logs.build
     game_log.turn_num = game.turn_num
     game_log.msg = "#{user.displayname} placed a settlement on (#{x},#{y})"
     settlements.build(:vertex_x => x, :vertex_y => y)
+    if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
+      game.game_board.get_hexes_from_vertex(x,y).each do |hex|
+        if hex.resource_type != DESERT
+          resource = resources.find{|r| r.type == hex.resource_type}
+          resource.count += 1
+        end
+      end
+    end
+
+    self.turn_status = PLACING_INITIAL_ROAD
     save
   end
 
@@ -48,5 +57,4 @@ class Player < ActiveRecord::Base
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
     save
   end
-
 end
