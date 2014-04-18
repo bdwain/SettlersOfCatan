@@ -4,6 +4,8 @@ class Resource < ActiveRecord::Base
   
   belongs_to :player, :inverse_of => :resources
 
+  attr_accessible :type
+
   validates_presence_of :player, :type, :count
   validates_uniqueness_of :type, :scope => :player_id
 
