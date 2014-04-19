@@ -102,7 +102,7 @@ module GameBoard
 
     def edge_is_connected_to_player?(x, y, side, player)
       points = get_vertex_points_attached_to_edge(x, y, side)
-      ponts.any?{|vertexPoint| (@settlements.has_key?(vertexPoint) && @settlements[vertexPoint].player == player) || 
+      points.any?{|vertexPoint| (@settlements.has_key?(vertexPoint) && @settlements[vertexPoint].player == player) || 
         (!@settlements.has_key?(vertexPoint) && get_edge_points_from_vertex(vertexPoint[0], vertexPoint[1], vertexPoint[2]).any?{|edgePoint| @roads.has_key?(edgePoint) && @roads[edgePoint].player == player})}
     end
   end
