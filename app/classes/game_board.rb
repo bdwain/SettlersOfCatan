@@ -21,7 +21,8 @@ module GameBoard
 
     public
     def vertex_is_free_for_building?(x, y, side)
-      vertex_is_on_board?(x, y, side) && !@settlements.has_key?([x, y, side]) && get_vertex_points_adjacent_to_vertex(x, y, side).count == 0
+      vertex_is_on_board?(x, y, side) && !@settlements.has_key?([x, y, side]) && 
+        get_vertex_points_adjacent_to_vertex(x, y, side).all? {|point| !@settlements.has_key?(point)}
     end
 
     def edge_is_free_for_building_by_player?(x, y, side, player)
@@ -40,7 +41,7 @@ module GameBoard
 
     private
     def get_hexes_from_points(points)
-      points.uniq.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
+      points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
     end
 
     def hex_is_on_board?(x, y)
