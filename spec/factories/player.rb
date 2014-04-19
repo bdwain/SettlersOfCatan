@@ -17,14 +17,20 @@ FactoryGirl.define do
         end
       end
 
-      factory :player_with_settlement do
+      factory :player_with_items do
         ignore do
-          settlement_x 2
-          settlement_y 2
-          settlement_side 0
+          settlement_points []
+          road_points []
         end
+
         after(:build) do |player, evaluator|
-          player.settlements.build(:vertex_x => evaluator.settlement_x, :vertex_y => evaluator.settlement_y, :side => evaluator.settlement_side)
+          evaluator.settlement_points.each do |point|
+            player.settlements.build(:vertex_x => point[0], :vertex_y => point[1], :side => point[2])
+          end
+          
+          evaluator.road_points.each do |point|
+            player.roads.build(:edge_x => point[0], :edge_y => point[1], :side => point[2])
+          end
         end
       end
     end
