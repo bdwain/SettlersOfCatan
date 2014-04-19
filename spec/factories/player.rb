@@ -16,6 +16,17 @@ FactoryGirl.define do
           resource.count = 0
         end
       end
+
+      factory :player_with_settlement do
+        ignore do
+          settlement_x 2
+          settlement_y 2
+          settlement_side 0
+        end
+        after(:build) do |player, evaluator|
+          player.settlements.build(:vertex_x => evaluator.settlement_x, :vertex_y => evaluator.settlement_y, :side => evaluator.settlement_side)
+        end
+      end
     end
   end  
 end
