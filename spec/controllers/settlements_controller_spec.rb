@@ -5,7 +5,7 @@ describe SettlementsController do
     let(:game) {FactoryGirl.build_stubbed(:game)}
     let(:player) {FactoryGirl.build_stubbed(:player)}
     after { response.should redirect_to new_user_session_path }
-    it { post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1 }
+    it { post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1, :side => 0 }
   end
 
   context "When Logged In" do
@@ -14,7 +14,7 @@ describe SettlementsController do
       context "with an invalid player" do
         before(:each) { Player.should_receive(:find_by_id).and_return(nil) }
         it "redirects to the games index" do
-          post :create, :player_id => -1, :vertex_x => 1, :vertex_y => 1
+          post :create, :player_id => -1, :vertex_x => 1, :vertex_y => 1, :side => 0
           response.should redirect_to(games_url)
         end
       end
@@ -30,7 +30,7 @@ describe SettlementsController do
           context "when player.add_settlement? returns true" do
             before(:each) do
               player.stub(:add_settlement?).and_return(true)
-              post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1
+              post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1, :side => 0
             end
 
             it "redirects to the game" do
@@ -41,7 +41,7 @@ describe SettlementsController do
           context "when player.add_settlement? returns false" do
             before(:each) do
               player.stub(:add_settlement?).and_return(false)
-              post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1
+              post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1, :side => 0
             end
 
             it "redirects to the game" do
@@ -59,7 +59,7 @@ describe SettlementsController do
           before(:each) {player.stub(:user).and_return(other_user)}
 
           it "redirects to the games index" do
-            post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1
+            post :create, :player_id => player, :vertex_x => 1, :vertex_y => 1, :side => 0
             response.should redirect_to(games_url)
           end
         end
