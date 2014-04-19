@@ -23,7 +23,6 @@ describe Harbor do
 
   describe "side" do
     it { should validate_presence_of(:side) }
-    it { should validate_numericality_of(:side).only_integer }
     it { should ensure_inclusion_of(:side).in_range(0..2) } 
   end  
 end

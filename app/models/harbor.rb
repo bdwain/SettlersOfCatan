@@ -6,10 +6,9 @@ class Harbor < ActiveRecord::Base
 
   validates :resource_type, :allow_nil => true, :numericality => {:only_integer => true}
   
-  validates :edge_x, :presence => true, :numericality => :only_integer
+  validates :edge_x, :presence => true, :numericality => {:only_integer => true}
 
-  validates :edge_y, :presence => true, :numericality => :only_integer
+  validates :edge_y, :presence => true, :numericality => {:only_integer => true}
 
-  validates :side, :presence => true,
-            :numericality => {:only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 2}
+  validates :side, :presence => true, :inclusion => {:in => 0..2 }
 end
