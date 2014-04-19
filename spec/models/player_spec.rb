@@ -66,24 +66,24 @@ describe Player do
 
     shared_examples "add_settlement? failures" do
       it "returns false" do
-        player.add_settlement?(1, 3).should be_false
+        player.add_settlement?(1, 1, 0).should be_false
       end
 
       it "does not change the player's turn_status" do
         expect{
-          player.add_settlement?(1, 3)
+          player.add_settlement?(1, 1, 0)
         }.to_not change(player, :turn_status)
       end
 
       it "does not create a new game log" do
         expect{
-          player.add_settlement?(1, 3)
+          player.add_settlement?(1, 1, 0)
         }.to_not change(player.game_logs, :count)
       end
 
       it "does not create a new settlement" do
         expect{
-          player.add_settlement?(1, 3)
+          player.add_settlement?(1, 1, 0)
         }.to_not change(player.settlements, :count)
       end
 
@@ -93,37 +93,38 @@ describe Player do
     shared_examples "add_settlement? does not add new resources" do
       it "does not add new resources" do
         expect{
-          player.add_settlement?(1, 3)
+          player.add_settlement?(1, 1, 0)
         }.to_not change(player, :resources)
       end
     end
 
     shared_examples "add_settlement? successes" do
       it "returns true" do
-        player.add_settlement?(1, 0).should be_true
+        player.add_settlement?(1, 1, 0).should be_true
       end
 
       it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
-        player.add_settlement?(1, 0)
+        player.add_settlement?(1, 1, 0)
         player.turn_status.should eq(PLACING_INITIAL_ROAD)
       end
 
       it "creates a new game_log with the game's turn number and proper text" do
         expect{
-          player.add_settlement?(1, 0)
+          player.add_settlement?(1, 1, 0)
         }.to change(player.game_logs, :count).by(1)
 
         player.game_logs.last.turn_num.should eq(game.turn_num)
-        player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,0)")
+        player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,1,0)")
       end
 
-      it "creates a new settlement with for the user at x,y" do
+      it "creates a new settlement for the user at x,y,side" do
         expect{
-          player.add_settlement?(1, 0)
+          player.add_settlement?(1, 1, 0)
         }.to change(player.settlements, :count).by(1)
 
         player.settlements.last.vertex_x.should eq(1)
-        player.settlements.last.vertex_y.should eq(0)
+        player.settlements.last.vertex_y.should eq(1)
+        player.settlements.last.side.should eq(0)
       end
     end
 
@@ -156,7 +157,7 @@ describe Player do
           include_examples "add_settlement? successes"
           
           it "sets the player's resource counts properly" do
-            player.add_settlement?(1, 0)
+            player.add_settlement?(1, 1, 0)
             player.resources.find{|resource| resource.type == WOOD}.count.should eq(2)
             player.resources.find{|resource| resource.type == WOOL}.count.should eq(1)
             player.resources.find{|resource| resource.type == ORE}.count.should eq(0)
@@ -185,18 +186,18 @@ describe Player do
 
     shared_examples "add_road? failures" do
       it "returns false" do
-        player.add_road?(1, 3).should be_false
+        player.add_road?(1, 1, 0).should be_false
       end
 
       it "does not create a new game log" do
         expect{
-          player.add_road?(1, 3)
+          player.add_road?(1, 1, 0)
         }.to_not change(player.game_logs, :count)
       end
 
       it "does not create a new road" do
         expect{
-          player.add_road?(1, 3)
+          player.add_road?(1, 1, 0)
         }.to_not change(player.roads, :count)
       end
     end
@@ -204,7 +205,7 @@ describe Player do
     shared_examples "does not call game.advance?" do
       it "does not call game.advance?" do
         game.should_not_receive(:advance?)
-        player.add_road?(1,3)
+        player.add_road?(1, 1, 0)
       end
     end
 
@@ -225,30 +226,31 @@ describe Player do
           before(:each) {game.stub(:advance?).and_return(true)}
 
           it "returns true" do
-            player.add_road?(1, 0).should be_true
+            player.add_road?(1, 1, 0).should be_true
           end
 
           it "creates a new game_log with the game's turn number and proper text" do
             expect{
-              player.add_road?(1, 0)
+              player.add_road?(1, 1, 0)
             }.to change(player.game_logs, :count).by(1)
 
             player.game_logs.last.turn_num.should eq(game.turn_num)
-            player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (1,0)")
+            player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (1,1,0)")
           end
 
           it "creates a new road with for the user at x,y" do
             expect{
-              player.add_road?(1, 0)
+              player.add_road?(1, 1, 0)
             }.to change(player.roads, :count).by(1)
 
             player.roads.last.edge_x.should eq(1)
-            player.roads.last.edge_y.should eq(0)
+            player.roads.last.edge_y.should eq(1)
+            player.roads.last.side.should eq(0)
           end
 
           it "calls game.advance?" do
             game.should_receive(:advance?)
-            player.add_road?(1,0)
+            player.add_road?(1, 1, 0)
           end
         end
 

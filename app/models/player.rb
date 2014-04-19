@@ -18,8 +18,8 @@ class Player < ActiveRecord::Base
   validates :turn_status, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
   
-  def add_settlement?(x, y)
-    if !game.game_board.vertex_is_free_for_building?(x, y)
+  def add_settlement?(x, y, side)
+    if !game.game_board.vertex_is_free_for_building?(x, y, side)
       return false
     elsif turn_status != PLACING_INITIAL_SETTLEMENT # later make sure they're not buying either
       return false
@@ -27,10 +27,11 @@ class Player < ActiveRecord::Base
 
     game_log = game_logs.build
     game_log.turn_num = game.turn_num
-    game_log.msg = "#{user.displayname} placed a settlement on (#{x},#{y})"
-    settlements.build(:vertex_x => x, :vertex_y => y)
+    game_log.msg = "#{user.displayname} placed a settlement on (#{x},#{y},#{side})"
+    settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
+
     if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
-      game.game_board.get_hexes_from_vertex(x,y).each do |hex|
+      game.game_board.get_hexes_from_vertex(x,y,side).each do |hex|
         if hex.resource_type != DESERT
           resource = resources.find{|r| r.type == hex.resource_type}
           resource.count += 1
@@ -42,8 +43,8 @@ class Player < ActiveRecord::Base
     save
   end
 
-  def add_road?(x, y)
-    if !game.game_board.edge_is_free_for_building_by_player?(x, y, self)
+  def add_road?(x, y, side)
+    if !game.game_board.edge_is_free_for_building_by_player?(x, y, side, self)
       return false
     elsif turn_status != PLACING_INITIAL_ROAD # later make sure they're not buying either
       return false
@@ -51,8 +52,8 @@ class Player < ActiveRecord::Base
 
     game_log = game_logs.build
     game_log.turn_num = game.turn_num
-    game_log.msg = "#{user.displayname} placed a road on (#{x},#{y})"
-    roads.build(:edge_x => x, :edge_y => y)
+    game_log.msg = "#{user.displayname} placed a road on (#{x},#{y},#{side})"
+    roads.build(:edge_x => x, :edge_y => y, :side => side)
 
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
     save
