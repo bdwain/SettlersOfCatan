@@ -14,14 +14,16 @@ describe Harbor do
   describe "edge_x" do
     it { should validate_presence_of(:edge_x) }
     it { should validate_numericality_of(:edge_x).only_integer }
-    it { should_not allow_value(-1).for(:edge_x) }
-    it { should allow_value(0).for(:edge_x) }
   end
 
   describe "edge_y" do
     it { should validate_presence_of(:edge_y) }
     it { should validate_numericality_of(:edge_y).only_integer }
-    it { should_not allow_value(-1).for(:edge_y) }
-    it { should allow_value(0).for(:edge_y) }
   end
+
+  describe "side" do
+    it { should validate_presence_of(:side) }
+    it { should validate_numericality_of(:side).only_integer }
+    it { should ensure_inclusion_of(:side).in_range(0..2) } 
+  end  
 end

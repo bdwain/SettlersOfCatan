@@ -9,14 +9,16 @@ describe Settlement do
   describe "vertex_x" do
     it { should validate_presence_of(:vertex_x) }
     it { should validate_numericality_of(:vertex_x).only_integer }
-    it { should_not allow_value(-1).for(:vertex_x) }
-    it { should allow_value(0).for(:vertex_x) }
   end
 
   describe "vertex_y" do
     it { should validate_presence_of(:vertex_y) }
     it { should validate_numericality_of(:vertex_y).only_integer }
-    it { should_not allow_value(-1).for(:vertex_y) }
-    it { should allow_value(0).for(:vertex_y) }
   end
+
+  describe "side" do
+    it { should validate_presence_of(:side) }
+    it { should validate_numericality_of(:side).only_integer }
+    it { should ensure_inclusion_of(:side).in_range(0..1) } 
+  end  
 end

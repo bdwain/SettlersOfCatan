@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130531074019) do
+ActiveRecord::Schema.define(:version => 20140419043837) do
 
   create_table "chats", :force => true do |t|
     t.text     "msg",        :null => false
@@ -76,6 +76,7 @@ ActiveRecord::Schema.define(:version => 20130531074019) do
     t.integer "edge_x",        :null => false
     t.integer "edge_y",        :null => false
     t.integer "resource_type"
+    t.integer "side",          :null => false
   end
 
   add_index "harbors", ["map_id"], :name => "index_harbors_on_map_id"
@@ -124,6 +125,7 @@ ActiveRecord::Schema.define(:version => 20130531074019) do
     t.integer "player_id", :null => false
     t.integer "edge_x",    :null => false
     t.integer "edge_y",    :null => false
+    t.integer "side",      :null => false
   end
 
   add_index "roads", ["player_id"], :name => "index_roads_on_player_id"
@@ -133,6 +135,7 @@ ActiveRecord::Schema.define(:version => 20130531074019) do
     t.integer "vertex_x",                     :null => false
     t.integer "vertex_y",                     :null => false
     t.boolean "is_city",   :default => false, :null => false
+    t.integer "side",                         :null => false
   end
 
   add_index "settlements", ["player_id"], :name => "index_settlements_on_player_id"
