@@ -44,4 +44,4 @@ map.harbors.build(resource_type: BRICK, edge_x: 4, edge_y: 1, :side => 2)
 
 map.save
 
-FactoryGirl.create(:game_turn_1) if Rails.env == "development"
+FactoryGirl.create(:game_started) if Rails.env == "development"
