@@ -19,6 +19,8 @@ module GameBoard
       end
     end
 
+    #attr_accessor :hexes, :roads, :settlements #for debugging only
+
     public
     def vertex_is_free_for_building?(x, y, side)
       vertex_is_on_board?(x, y, side) && !@settlements.has_key?([x, y, side]) && 

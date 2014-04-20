@@ -63,6 +63,15 @@ describe Game do
     it { should validate_numericality_of(:robber_y).only_integer }
   end
 
+  describe "game_board" do
+    it "returns an up to date version after the board changes" do
+      game = FactoryGirl.create(:game_turn_1)
+      game.game_board.vertex_is_free_for_building?(2,2,0).should be_true
+      game.players.find{|p|p.turn_status == PLACING_INITIAL_SETTLEMENT}.add_settlement?(2,2,0)
+      game.game_board.vertex_is_free_for_building?(2,2,0).should be_false
+    end
+  end
+
   describe "status_checkers" do
     let(:game) { FactoryGirl.build_stubbed(:game) }
 
@@ -485,11 +494,7 @@ describe Game do
       end
 
       context "when on turn 2" do
-        let(:game) do
-          g = FactoryGirl.create(:game_turn_1)
-          g.turn_num = 2
-          g
-        end
+        let(:game){FactoryGirl.create(:game_turn_2)}
 
         context "when the current player is not player 1" do
           let!(:current_player) do
@@ -510,6 +515,8 @@ describe Game do
         context "when the current player is player 1" do
           let!(:current_player) do
             player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
+            player.turn_status = WAITING_FOR_TURN
+            player = game.players.find{|player| player.turn_num == 1}
             player.turn_status = PLACING_INITIAL_ROAD
             player
           end

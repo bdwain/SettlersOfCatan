@@ -12,10 +12,8 @@ class Game < ActiveRecord::Base
   attr_accessible :num_players
 
   include GameBoard
-  attr_reader :game_board
-  after_initialize :init
-  def init
-    @game_board = GameBoard.new(map, players)
+  def game_board
+    GameBoard.new(map, players)
   end
 
   private
