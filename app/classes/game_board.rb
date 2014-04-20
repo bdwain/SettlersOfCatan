@@ -39,6 +39,10 @@ module GameBoard
       get_hexes_from_points(points)
     end
 
+    def edge_is_connected_to_vertex?(edge_x, edge_y, edge_side, vertex_x, vertex_y, vertex_side)
+      get_edge_points_from_vertex(vertex_x, vertex_y, vertex_side).include? [edge_x, edge_y, edge_side]
+    end
+
     private
     def get_hexes_from_points(points)
       points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}

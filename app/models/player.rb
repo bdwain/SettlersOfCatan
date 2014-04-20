@@ -44,9 +44,12 @@ class Player < ActiveRecord::Base
   end
 
   def add_road?(x, y, side)
+    last_settlement = settlements.last
     if !game.game_board.edge_is_free_for_building_by_player?(x, y, side, self)
       return false
     elsif turn_status != PLACING_INITIAL_ROAD # later make sure they're not buying either
+      return false
+    elsif !game.game_board.edge_is_connected_to_vertex?(x, y, side, last_settlement.vertex_x, last_settlement.vertex_y, last_settlement.side)
       return false
     end
 

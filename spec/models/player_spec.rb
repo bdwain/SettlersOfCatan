@@ -186,18 +186,18 @@ describe Player do
 
     shared_examples "add_road? failures" do
       it "returns false" do
-        player.add_road?(1, 1, 0).should be_false
+        player.add_road?(x, y, side).should be_false
       end
 
       it "does not create a new game log" do
         expect{
-          player.add_road?(1, 1, 0)
+          player.add_road?(x, y, side)
         }.to_not change(player.game_logs, :count)
       end
 
       it "does not create a new road" do
         expect{
-          player.add_road?(1, 1, 0)
+          player.add_road?(x, y, side)
         }.to_not change(player.roads, :count)
       end
     end
@@ -205,59 +205,94 @@ describe Player do
     shared_examples "does not call game.advance?" do
       it "does not call game.advance?" do
         game.should_not_receive(:advance?)
-        player.add_road?(1, 1, 0)
+        player.add_road?(x, y, side)
       end
     end
 
     context "when x,y is not free for building" do
-      before(:each) {board.stub(:edge_is_free_for_building_by_player?).and_return(false)}
+      let(:x) {-10}
+      let(:y) {-10}
+      let(:side) {0}
+      before(:each) {board.should_receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(false)}
 
       include_examples "add_road? failures"
       include_examples "does not call game.advance?"
     end
 
     context "when x,y is free for building" do
-      before(:each) {board.stub(:edge_is_free_for_building_by_player?).and_return(true)}
-
+      let(:x) {2}
+      let(:y) {2}
+      let(:side) {0}
+      before(:each) {board.should_receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(true)}
+      
       context "when player is status PLACING_INITIAL_ROAD" do
         before(:each) {player.turn_status = PLACING_INITIAL_ROAD}
 
-        context "when game.advance? returns true" do
-          before(:each) {game.stub(:advance?).and_return(true)}
-
-          it "returns true" do
-            player.add_road?(1, 1, 0).should be_true
+        context "when the edge is not touching the last settlement the player built" do
+          context "when the player has only 1 settlement" do
+            before(:each) do
+              player.settlements.build(:vertex_x => 0, :vertex_y => 2, :side => 0)
+              board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
+            end
+            include_examples "add_road? failures"
+            include_examples "does not call game.advance?"
           end
 
-          it "creates a new game_log with the game's turn number and proper text" do
-            expect{
-              player.add_road?(1, 1, 0)
-            }.to change(player.game_logs, :count).by(1)
+          context "when the player has 2 settlements" do
+            before(:each) do
+              player.settlements.build(:vertex_x => 2, :vertex_y => 2, :side => 0)
+              player.settlements.build(:vertex_x => 0, :vertex_y => 2, :side => 0)
+              board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
+            end
 
-            player.game_logs.last.turn_num.should eq(game.turn_num)
-            player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (1,1,0)")
-          end
-
-          it "creates a new road with for the user at x,y" do
-            expect{
-              player.add_road?(1, 1, 0)
-            }.to change(player.roads, :count).by(1)
-
-            player.roads.last.edge_x.should eq(1)
-            player.roads.last.edge_y.should eq(1)
-            player.roads.last.side.should eq(0)
-          end
-
-          it "calls game.advance?" do
-            game.should_receive(:advance?)
-            player.add_road?(1, 1, 0)
+            include_examples "add_road? failures"
+            include_examples "does not call game.advance?"
           end
         end
 
-        context "when game.advance? returns false" do
-          before(:each) {game.stub(:advance?).and_return(false)}
+        context "when the edge is touching the last settlement the player built" do
+          before(:each) do
+            player.settlements.build(:vertex_x => 2, :vertex_y => 2, :side => 0)
+            board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 2, 2, 0).and_return(true)
+          end
 
-          include_examples "add_road? failures"
+          context "when game.advance? returns true" do
+            before(:each) {game.stub(:advance?).and_return(true)}
+
+            it "returns true" do
+              player.add_road?(x, y, side).should be_true
+            end
+
+            it "creates a new game_log with the game's turn number and proper text" do
+              expect{
+                player.add_road?(x, y, side)
+              }.to change(player.game_logs, :count).by(1)
+
+              player.game_logs.last.turn_num.should eq(game.turn_num)
+              player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (#{x},#{y},#{side})")
+            end
+
+            it "creates a new road with for the user at x,y,side" do
+              expect{
+                player.add_road?(x, y, side)
+              }.to change(player.roads, :count).by(1)
+
+              player.roads.last.edge_x.should eq(x)
+              player.roads.last.edge_y.should eq(y)
+              player.roads.last.side.should eq(side)
+            end
+
+            it "calls game.advance?" do
+              game.should_receive(:advance?)
+              player.add_road?(x, y, side)
+            end
+          end
+
+          context "when game.advance? returns false" do
+            before(:each) {game.stub(:advance?).and_return(false)}
+
+            include_examples "add_road? failures"
+          end
         end
       end
 

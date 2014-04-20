@@ -150,4 +150,16 @@ describe GameBoard do
       include_examples "tests"
     end
   end
+
+  describe "edge_is_connected_to_vertex?" do
+    let(:players) {[]}
+
+    it "returns true when the edge is connected to the vertex" do
+      board.edge_is_connected_to_vertex?(2,2,0,2,2,0).should be_true
+    end
+
+    it "returns false when the edge is not connected to the vertex" do
+      board.edge_is_connected_to_vertex?(2,2,0,2,0,0).should be_false
+    end
+  end
 end
