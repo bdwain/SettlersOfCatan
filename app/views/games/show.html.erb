@@ -16,10 +16,10 @@
       <th>Victory Points</th>
       <th>Longest Road</th>
     </tr>
-    <% @game.players.each do |player| %>
+    <% @game.sorted_players.each do |player| %>
       <tr>
         <td><%= player.user.displayname %></td>
-        <td><%= player.resources.count %></td>
+        <td><%= player.resources.inject(0){|sum, resource| sum + resource.count} %></td>
         <td><%= player.development_cards.count %></td>
         <td><%= 0 %></td>
         <td><%= 0 %></td>
