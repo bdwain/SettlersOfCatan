@@ -2,10 +2,9 @@ require 'spec_helper'
 
 describe GameBoard do
   before(:all) {@map = Map.first}
+  let(:board) {GameBoard::GameBoard.new(@map, players)}
 
   describe "vertex_is_free_for_building?" do
-    let(:board) {GameBoard::GameBoard.new(@map, players)}
-
     shared_examples "returns false" do
       it "returns false" do
         board.vertex_is_free_for_building?(point[0], point[1], point[2]).should be_false
@@ -46,8 +45,6 @@ describe GameBoard do
   end
 
   describe "edge_is_free_for_building_by_player?" do
-    let(:board) {GameBoard::GameBoard.new(@map, players)}
-
     shared_examples "returns false" do
       it "returns false" do
         board.edge_is_free_for_building_by_player?(point[0], point[1], point[2], players.first).should be_false
@@ -106,6 +103,51 @@ describe GameBoard do
   end
 
   describe "get_hexes_from_vertex" do
+    let(:players) {[]}
+    let(:hex_points) {board.get_hexes_from_vertex(x, y, side).collect{|hex| [hex.pos_x, hex.pos_y]}}
 
+    shared_examples "tests" do
+      context "when all of the surrounding hexes are on the board" do
+        let(:x) {x_all}
+        let(:y) {y_all}
+        
+        it "returns all of the surrounding hexes" do
+          hex_points.sort.should eq(points_all)
+        end
+      end
+
+      context "when some of the hexes are not on the board" do
+        let(:x) {x_missing_hexes}
+        let(:y) {y_missing_hexes}
+
+        it "returns only the hexes that are on the board" do
+          hex_points.should eq(points_missing_hexes)
+        end
+      end
+    end
+
+    context "when side == 0" do
+      let(:side) {0}
+      let(:x_all) {2}
+      let(:y_all) {2}
+      let(:points_all) {[[1,3], [2,2], [2,3]]}
+      let(:x_missing_hexes) {1}
+      let(:y_missing_hexes) {4}
+      let(:points_missing_hexes) {[[1,4]]}
+
+      include_examples "tests"
+    end
+
+    context "when side == 1" do
+      let(:side) {1}
+      let(:x_all) {3}
+      let(:y_all) {3}
+      let(:points_all) {[[3,2], [3,3], [4,2]]}
+      let(:x_missing_hexes) {1}
+      let(:y_missing_hexes) {5}
+      let(:points_missing_hexes) {[[1,4], [2,4]]}
+
+      include_examples "tests"
+    end
   end
 end
