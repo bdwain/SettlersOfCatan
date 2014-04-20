@@ -366,7 +366,7 @@ describe Game do
       it "assigns each player a unique turn number from 1 to num_players" do
         game.players.each { |player| player.turn_num = 1 }
         game.save
-        game.players.sort_by! {|p| p.turn_num }.each_with_index do |player, index|
+        game.sorted_players.each_with_index do |player, index|
           player.turn_num.should eq(index + 1)
         end
       end

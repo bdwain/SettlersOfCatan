@@ -55,6 +55,10 @@ class Game < ActiveRecord::Base
     status == STATUS_COMPLETED
   end
 
+  def sorted_players
+    @sorted_players ||= players.sort{|p1, p2| p1.turn_num <=> p2.turn_num}
+  end
+
   #returns the player for a corresponding user, or nil if they aren't playing
   #Since this works for anything with an id, and id's are not guaranteed to be unique 
   #across different types of items, would it make sense to use email address?
