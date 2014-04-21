@@ -209,6 +209,13 @@ describe Player do
       end
     end
 
+    shared_examples "calls game.advance?" do
+      it "calls game.advance?" do
+        game.should_receive(:advance?)
+        player.add_road?(x, y, side)
+      end
+    end    
+
     context "when x,y is not free for building" do
       let(:x) {-10}
       let(:y) {-10}
@@ -282,16 +289,14 @@ describe Player do
               player.roads.last.side.should eq(side)
             end
 
-            it "calls game.advance?" do
-              game.should_receive(:advance?)
-              player.add_road?(x, y, side)
-            end
+            include_examples "calls game.advance?"
           end
 
           context "when game.advance? returns false" do
             before(:each) {game.stub(:advance?).and_return(false)}
 
             include_examples "add_road? failures"
+            include_examples "calls game.advance?"
           end
         end
       end
@@ -305,5 +310,99 @@ describe Player do
         include_examples "does not call game.advance?"
       end
     end
-  end  
+  end
+
+  describe "roll_dice?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_started) }
+    let(:player) {FactoryGirl.build(:player)}
+    before(:each) {player.game = game}
+
+    shared_examples "roll_dice? failures" do
+      it "returns false" do
+        player.roll_dice?.should be_false
+      end
+
+      it "does not create a new game log" do
+        expect{
+          player.roll_dice?
+        }.to_not change(player.game_logs, :count)
+      end
+
+      it "does not create a dice_roll object" do
+        expect{
+          player.roll_dice?
+        }.to_not change(player.dice_rolls, :count)
+      end
+
+      it "does not change the player's turn_status" do
+        expect{
+          player.roll_dice?
+        }.to_not change(player, :turn_status)
+      end
+    end
+
+    shared_examples "does not call game.process_dice_roll?" do
+      it "does not call game.process_dice_roll?" do
+        game.should_not_receive(:process_dice_roll?)
+        player.roll_dice?
+      end
+    end
+
+    shared_examples "calls game.process_dice_roll?" do
+      it "calls game.process_dice_roll?" do
+        game.should_receive(:process_dice_roll?).with(player, 2+rand_1+rand_2)
+        player.roll_dice?
+      end
+    end
+
+    context "when the player's turn_status is not ready to roll" do
+      before(:each) {player.turn_status = PLAYING_TURN}
+
+      include_examples "roll_dice? failures"
+      include_examples "does not call game.process_dice_roll?"
+    end
+
+    context "when the player's turn_status is ready to roll" do
+      before(:each) {player.turn_status = READY_TO_ROLL}
+      let(:rand_1) {1}
+      let(:rand_2) {5}
+      before(:each) {player.stub(:rand).and_return(rand_1, rand_2)}
+
+      context "when game.process_dice_roll? returns false" do
+        before(:each) {game.stub(:process_dice_roll?).and_return(false)}
+
+        include_examples "roll_dice? failures"
+        include_examples "calls game.process_dice_roll?"
+      end
+
+      context "when game.process_dice_roll? returns true" do
+        before(:each) {game.stub(:process_dice_roll?).and_return(true)}
+
+        it "returns true" do
+          player.roll_dice?.should be_true
+        end
+
+        it "creates a new game_log with the game's turn number and proper text" do
+          expect{
+            player.roll_dice?
+          }.to change(player.game_logs, :count).by(1)
+
+          player.game_logs.last.turn_num.should eq(game.turn_num)
+          player.game_logs.last.msg.should eq("#{player.user.displayname} rolled a (#{2 + rand_1 + rand_2})")
+        end
+
+        it "creates a new dice_roll object with the game's turn number and proper numbers" do
+          expect{
+            player.roll_dice?
+          }.to change(player.dice_rolls, :count).by(1)
+
+          player.dice_rolls.last.turn_num.should eq(game.turn_num)
+          player.dice_rolls.last.die_1.should eq(rand_1 + 1)
+          player.dice_rolls.last.die_2.should eq(rand_2 + 1)
+        end
+        
+        include_examples "calls game.process_dice_roll?"
+      end
+    end
+  end
 end

@@ -25,9 +25,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_log = game_logs.build
-    game_log.turn_num = game.turn_num
-    game_log.msg = "#{user.displayname} placed a settlement on (#{x},#{y},#{side})"
+    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
     settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
 
     if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
@@ -53,12 +51,24 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_log = game_logs.build
-    game_log.turn_num = game.turn_num
-    game_log.msg = "#{user.displayname} placed a road on (#{x},#{y},#{side})"
+    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} placed a road on (#{x},#{y},#{side})")
     roads.build(:edge_x => x, :edge_y => y, :side => side)
 
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
+    save
+  end
+
+  def roll_dice?
+    if turn_status != READY_TO_ROLL
+      return false
+    end
+
+    die_1 = 1 + rand(6)
+    die_2 = 1 + rand(6)
+    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} rolled a (#{die_1 + die_2})")
+    dice_roll = dice_rolls.build(:turn_num => game.turn_num, :die_1 => die_1, :die_2 => die_2)
+
+    return false unless game.process_dice_roll?(self, die_1 + die_2)
     save
   end
 end
