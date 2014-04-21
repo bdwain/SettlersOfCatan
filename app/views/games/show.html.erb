@@ -76,7 +76,10 @@
             </div>            
           <% end %>
         <% when READY_TO_ROLL %>
-          Ready to roll
+          <%= form_tag("/dice_rolls", :method => "post") do %>
+            <%= hidden_field_tag(:player_id, my_player.id) %>
+            <%= submit_tag("Roll the dice") %>
+          <% end %>
         <% when MOVING_ROBBER %>
         <% when PLAYING_TURN %>
         <% when WAITING_FOR_TRADE_RESPONSE %>
