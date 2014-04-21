@@ -162,4 +162,63 @@ describe GameBoard do
       board.edge_is_connected_to_vertex?(2,2,0,2,0,0).should be_false
     end
   end
+
+  describe "get_settlements_touching_hex" do
+    let(:x){2}
+    let(:y){2}
+
+    shared_examples "includes the settlement" do
+      it "includes the settlement" do
+        board.get_settlements_touching_hex(x,y).should eq([players.first.settlements.first])
+      end
+    end
+
+    context "when there is a settlement at x,y,0" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x,y,0]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there is a settlement at x,y,1" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x,y,1]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there is a settlement at x-1,y+1,1" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x-1,y+1,1]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there is a settlement at x,y-1,0" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x,y-1,0]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there is a settlement at x+1,y-1,0" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x+1,y-1,0]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there is a settlement at x,y+1,1" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x,y+1,1]]})]}
+
+      include_examples "includes the settlement"
+    end
+
+    context "when there are multiple settlements touching the hex" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { settlement_points: [[x,y,0], [x+1,y-1,0], [x,y-1,0]]})]}
+
+      it "returns all of the settlements touching the hex" do
+        res = board.get_settlements_touching_hex(x,y)
+
+        #TODO: maybe checj that the arrays have the same contents better
+        res.each{|s| players.first.settlements.include?(s).should be_true}
+        players.first.settlements.each{|s| res.include?(s).should be_true}
+      end
+    end
+  end
 end

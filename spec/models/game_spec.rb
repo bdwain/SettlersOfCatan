@@ -559,4 +559,102 @@ describe Game do
       end
     end
   end
+
+  describe "process_dice_roll?" do
+    let(:game) {FactoryGirl.create(:game_started)}
+    let(:player) {game.players.find{|p| p.turn_status == READY_TO_ROLL}}
+    let(:player1) {game.players.find{|p| p.turn_num == 1}}
+    let(:player2) {game.players.find{|p| p.turn_num == 2}}
+    let(:player3) {game.players.find{|p| p.turn_num == 3}}
+
+    context "when dice_num is a 7" do
+      #TODO
+    end
+
+    shared_examples "success when not 7" do
+      it "returns true" do
+        game.process_dice_roll?(player, dice_num).should be_true
+      end
+
+      it "changes the player's turn status to PLAYING_TURN" do
+        game.process_dice_roll?(player, dice_num)
+        player.turn_status.should eq(PLAYING_TURN)
+      end
+    end
+
+    context "when dice_num is not a 7" do
+      context "when there are no resources to give" do
+        let(:dice_num) {2}
+
+        include_examples "success when not 7"
+
+        it "does not call player.collect_resources? for any player" do
+          Player.any_instance.should_not_receive(:collect_resources?)
+        end
+      end
+
+      context "when there are resources to give" do
+        let(:dice_num) {6}
+
+        context "when the player.collect_resource? calls returns false" do
+          before(:each){game.players.each{|p| p.stub(:collect_resources?).and_return(false)}}
+
+          it "returns false" do
+            game.process_dice_roll?(player, dice_num).should be_false
+          end
+
+          it "does not change the player's turn status" do
+              game.process_dice_roll?(player, dice_num)
+              player.reload
+              player.turn_status.should eq(READY_TO_ROLL)
+          end
+        end
+
+        context "when all of the player.collect_resource? calls return true" do
+          before(:each){game.players.each{|p| p.stub(:collect_resources?).and_return(true)}}
+
+          include_examples "success when not 7"
+
+          it "hands out correct resources to players who have settlements on the hexes that were rolled" do
+            player1.should_receive(:collect_resources?).with({WOOD => 1})
+            player2.should_receive(:collect_resources?).with({ORE => 2})
+            player3.should_not_receive(:collect_resources?)
+            game.process_dice_roll?(player, dice_num)
+          end
+
+          context "when a player gets more than one type of resource" do
+            let(:dice_num){3}
+
+            it "hands out correct resources to players who have settlements on the hexes that were rolled" do
+              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1})
+              game.process_dice_roll?(player, dice_num)
+            end
+          end
+
+          context "when the robber is on one of the hexes that are rolled" do
+            before(:each) do
+              game.robber_x = 1
+              game.robber_y = 3
+            end
+
+            it "hands out correct resources to players who have settlements on the hexes that were rolled except the robber hex" do
+              player1.should_receive(:collect_resources?).with({WOOD => 1})
+              player2.should_not_receive(:collect_resources?)
+              player3.should_not_receive(:collect_resources?)
+              game.process_dice_roll?(player, dice_num)
+            end
+          end
+
+          context "when a city is on a hex that was rolled" do
+            before(:each) {player1.settlements.find{|s| s.vertex_x == 4 && s.vertex_y == 0 && s.side == 0}.is_city = true}
+
+            it "gives that player 2 resources instead of 1" do
+              player1.should_receive(:collect_resources?).with({WOOD => 2})
+              game.process_dice_roll?(player, dice_num)
+            end
+          end
+        end
+      end
+    end
+  end
 end

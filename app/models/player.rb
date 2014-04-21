@@ -71,4 +71,25 @@ class Player < ActiveRecord::Base
     return false unless game.process_dice_roll?(self, die_1 + die_2)
     save
   end
+
+  def collect_resources?(resources_gained)
+    if resources_gained.empty?
+      return true
+    end
+
+    msg = "#{user.displayname} got "
+
+    resources_gained.each_with_index do |keyval, index|
+      resources.find{|r| r.type == keyval[0]}.count += keyval[1]
+
+      if index != 0
+        msg << " and "
+      end
+
+      msg << "#{keyval[1]} #{RESOURCE_NAME_MAP[keyval[0]]}"
+    end
+
+    game_logs.build(:turn_num => game.turn_num, :msg => msg)
+    save
+  end
 end

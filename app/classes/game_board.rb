@@ -45,6 +45,10 @@ module GameBoard
       get_edge_points_from_vertex(vertex_x, vertex_y, vertex_side).include? [edge_x, edge_y, edge_side]
     end
 
+    def get_settlements_touching_hex(x,y)
+      get_vertex_points_touching_hex(x,y).reject{|point| !@settlements.has_key?(point)}.collect{|point| @settlements[point]}
+    end
+
     private
     def get_hexes_from_points(points)
       points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
@@ -72,7 +76,11 @@ module GameBoard
       end
 
       get_hexes_from_points(points)
-    end    
+    end
+
+    def get_vertex_points_touching_hex(x,y)
+      [[x,y,0], [x,y,1], [x-1,y+1,1], [x,y-1,0], [x+1,y-1,0], [x,y+1,1]]
+    end
 
     def get_vertex_points_adjacent_to_vertex(x, y, side)
       if side == 0

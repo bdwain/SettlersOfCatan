@@ -1,10 +1,12 @@
 #resource/hex types
-DESERT = 0
-WHEAT = 1
-BRICK = 2
-WOOD = 3
-WOOL = 4
-ORE = 5
+RESOURCE_NAME_MAP = {0 => "DESERT", 1 => "WHEAT", 2 => "BRICK", 3 => "WOOD", 4 => "WOOL", 5 => "ORE"}
+
+DESERT = RESOURCE_NAME_MAP.find{|k,v| v == "DESERT"}[0]
+WHEAT = RESOURCE_NAME_MAP.find{|k,v| v == "WHEAT"}[0]
+BRICK = RESOURCE_NAME_MAP.find{|k,v| v == "BRICK"}[0]
+WOOD = RESOURCE_NAME_MAP.find{|k,v| v == "WOOD"}[0]
+WOOL = RESOURCE_NAME_MAP.find{|k,v| v == "WOOL"}[0]
+ORE = RESOURCE_NAME_MAP.find{|k,v| v == "ORE"}[0]
 
 #development card types
 KNIGHT = 1

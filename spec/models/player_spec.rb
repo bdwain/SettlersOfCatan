@@ -61,8 +61,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.build(:in_game_player)}
-    before(:each) {player.game = game}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_settlement? failures" do
       it "returns false" do
@@ -181,8 +180,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.build(:player)}
-    before(:each) {player.game = game}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_road? failures" do
       it "returns false" do
@@ -314,8 +312,7 @@ describe Player do
 
   describe "roll_dice?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
-    let(:player) {FactoryGirl.build(:player)}
-    before(:each) {player.game = game}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "roll_dice? failures" do
       it "returns false" do
@@ -402,6 +399,72 @@ describe Player do
         end
         
         include_examples "calls game.process_dice_roll?"
+      end
+    end
+  end
+
+  describe "collect_resources?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_started) }
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
+
+    shared_examples "returns true" do
+      it "returns true" do
+        player.collect_resources?(resources).should be_true
+      end
+    end
+
+    context "when resources is empty" do
+      let(:resources) {{}}
+
+      include_examples "returns true"
+
+      it "does not create a game log" do
+        expect{
+          player.collect_resources?(resources)
+        }.to_not change(player.game_logs, :count)
+      end
+    end
+
+    context "when resources is not empty" do
+      let(:resources) {{WHEAT => 2}}
+      
+      include_examples "returns true"
+
+      it "creates a correct game log" do
+        expect{
+          player.collect_resources?(resources)
+        }.to change(player.game_logs, :count).by(1)
+
+        player.game_logs.last.turn_num.should eq(game.turn_num)
+        player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]}")
+      end
+
+      it "adds the proper amounts to the resource totals" do
+        original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
+        player.collect_resources?(resources)
+        player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count + resources.first[1])
+      end
+
+      context "when there is more than one reosurce type being gained" do
+        let(:resources) {{WHEAT => 2, ORE => 3}}
+        it "creates a correct game log" do
+          expect{
+            player.collect_resources?(resources)
+          }.to change(player.game_logs, :count).by(1)
+
+          player.game_logs.last.turn_num.should eq(game.turn_num)
+          expected_msg = "#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]} and "
+          expected_msg << "#{resources.entries.last[1]} #{RESOURCE_NAME_MAP[resources.entries.last[0]]}"
+          player.game_logs.last.msg.should eq(expected_msg)
+        end
+
+        it "adds the proper amounts to the resource totals" do
+          original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
+          original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
+          player.collect_resources?(resources)
+          player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count1 + resources.first[1])
+          player.resources.find{|r| r.type == resources.entries.last[0]}.count.should eq(original_resource_count2 + resources.entries.last[1])
+        end
       end
     end
   end

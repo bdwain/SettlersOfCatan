@@ -105,11 +105,22 @@ class Game < ActiveRecord::Base
       advance_while_placing_initial_pieces?
     end
   end
+
+  def process_dice_roll?(player, dice_num)
+    if dice_num == 7
+      return set_up_robber?(player)
+    end
+    process_dice_roll_after_robber_check?(player, dice_num)
+  end
   
   #when saving a game, initialize it for play if it's full but status is still waiting
   before_save do
     if num_players == players.length && waiting_for_players?
       return init_game?
+    elsif @resources_to_give
+      @resources_to_give.each do |cur_player, resources|
+        return false unless cur_player.collect_resources?(resources)
+      end
     end
     true
   end
@@ -168,6 +179,27 @@ class Game < ActiveRecord::Base
     else
       raise "There was an error"
     end
+    save
+  end
+
+  def set_up_robber?(player)
+    true #TODO: later
+  end
+
+  def process_dice_roll_after_robber_check?(player, dice_num)
+    producing_hexes = map.hexes.select{|hex| hex.dice_num == dice_num && (hex.pos_x != robber_x || hex.pos_y != robber_y)}
+    @resources_to_give = Hash.new
+    producing_hexes.each do |hex|
+      settlements = game_board.get_settlements_touching_hex(hex.pos_x, hex.pos_y)
+      settlements.each do |settlement|
+        if !@resources_to_give.has_key? settlement.player
+          @resources_to_give[settlement.player] = Hash.new(0)
+        end
+        @resources_to_give[settlement.player][hex.resource_type] += (settlement.is_city ? 2 : 1)
+      end
+    end
+
+    player.turn_status = PLAYING_TURN
     save
   end
 end
