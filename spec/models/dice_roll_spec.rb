@@ -13,8 +13,13 @@ describe DiceRoll do
     it { should allow_value(1).for(:turn_num) }
   end
 
- describe "dice_num" do
-    it { should validate_presence_of(:dice_num) }
-    it { should ensure_inclusion_of(:dice_num).in_range(2..12) } 
+  describe "die_1" do
+    it { should validate_presence_of(:die_1) }
+    it { should ensure_inclusion_of(:die_1).in_range(1..6) } 
   end
+
+  describe "die_2" do
+    it { should validate_presence_of(:die_2) }
+    it { should ensure_inclusion_of(:die_2).in_range(1..6) } 
+  end  
 end

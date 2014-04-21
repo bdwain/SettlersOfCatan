@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140419043837) do
+ActiveRecord::Schema.define(:version => 20140421050121) do
 
   create_table "chats", :force => true do |t|
     t.text     "msg",        :null => false
@@ -36,9 +36,10 @@ ActiveRecord::Schema.define(:version => 20140419043837) do
   create_table "dice_rolls", :force => true do |t|
     t.integer  "current_player_id", :null => false
     t.integer  "turn_num",          :null => false
-    t.integer  "dice_num",          :null => false
+    t.integer  "die_1",             :null => false
     t.datetime "created_at",        :null => false
     t.datetime "updated_at",        :null => false
+    t.integer  "die_2",             :null => false
   end
 
   add_index "dice_rolls", ["current_player_id"], :name => "index_dice_rolls_on_current_player_id"
