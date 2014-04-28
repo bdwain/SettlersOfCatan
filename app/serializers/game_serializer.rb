@@ -10,6 +10,6 @@ class GameSerializer < ActiveModel::Serializer
 
   def game_logs
     current_player_id = players.where(:user_id => current_user.id).first.id
-    object.game_logs.where("recipient_id IS NULL OR recipient_id = #{current_player_id}")
+    object.game_logs.where("is_private = false OR target_id = #{current_player_id}")
   end
 end

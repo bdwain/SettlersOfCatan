@@ -6,8 +6,9 @@ describe GameLog do
     it { should validate_presence_of(:current_player) }
   end
 
-  describe "recipient" do
-    it { should belong_to(:recipient).class_name(:Player) }
+  describe "target" do
+    it { should belong_to(:target).class_name(:Player) }
+    it { should validate_presence_of(:target) }
   end
 
   describe "turn_num" do

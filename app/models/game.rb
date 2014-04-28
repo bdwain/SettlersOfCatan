@@ -119,7 +119,7 @@ class Game < ActiveRecord::Base
       return init_game?
     elsif @resources_to_give
       @resources_to_give.each do |cur_player, resources|
-        return false unless cur_player.collect_resources?(resources)
+        return false unless cur_player.collect_resources?(resources, @current_turn_player)
       end
     end
     true
@@ -189,6 +189,8 @@ class Game < ActiveRecord::Base
   def process_dice_roll_after_robber_check?(player, dice_num)
     producing_hexes = map.hexes.select{|hex| hex.dice_num == dice_num && (hex.pos_x != robber_x || hex.pos_y != robber_y)}
     @resources_to_give = Hash.new
+    @current_turn_player = player
+
     producing_hexes.each do |hex|
       settlements = game_board.get_settlements_touching_hex(hex.pos_x, hex.pos_y)
       settlements.each do |settlement|

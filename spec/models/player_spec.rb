@@ -61,7 +61,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
 
     shared_examples "add_settlement? failures" do
       it "returns false" do
@@ -107,13 +107,14 @@ describe Player do
         player.turn_status.should eq(PLACING_INITIAL_ROAD)
       end
 
-      it "creates a new game_log with the game's turn number and proper text" do
+      it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
         expect{
           player.add_settlement?(1, 1, 0)
         }.to change(player.game_logs, :count).by(1)
 
         player.game_logs.last.turn_num.should eq(game.turn_num)
         player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,1,0)")
+        player.game_logs.last.current_player.should eq(player)
       end
 
       it "creates a new settlement for the user at x,y,side" do
@@ -180,7 +181,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
 
     shared_examples "add_road? failures" do
       it "returns false" do
@@ -268,13 +269,14 @@ describe Player do
               player.add_road?(x, y, side).should be_true
             end
 
-            it "creates a new game_log with the game's turn number and proper text" do
+            it "creates a new game_log with the game's turn number and proper text and self as current_player" do
               expect{
                 player.add_road?(x, y, side)
               }.to change(player.game_logs, :count).by(1)
 
               player.game_logs.last.turn_num.should eq(game.turn_num)
               player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (#{x},#{y},#{side})")
+              player.game_logs.last.current_player.should eq(player)
             end
 
             it "creates a new road with for the user at x,y,side" do
@@ -312,7 +314,7 @@ describe Player do
 
   describe "roll_dice?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
 
     shared_examples "roll_dice? failures" do
       it "returns false" do
@@ -379,13 +381,14 @@ describe Player do
           player.roll_dice?.should be_true
         end
 
-        it "creates a new game_log with the game's turn number and proper text" do
+        it "creates a new game_log with the game's turn number and proper text and self as current_player" do
           expect{
             player.roll_dice?
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
           player.game_logs.last.msg.should eq("#{player.user.displayname} rolled a (#{2 + rand_1 + rand_2})")
+          player.game_logs.last.current_player.should eq(player)
         end
 
         it "creates a new dice_roll object with the game's turn number and proper numbers" do
@@ -405,11 +408,12 @@ describe Player do
 
   describe "collect_resources?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
+    let(:calling_player) {player}
 
     shared_examples "returns true" do
       it "returns true" do
-        player.collect_resources?(resources).should be_true
+        player.collect_resources?(resources, calling_player).should be_true
       end
     end
 
@@ -420,7 +424,7 @@ describe Player do
 
       it "does not create a game log" do
         expect{
-          player.collect_resources?(resources)
+          player.collect_resources?(resources, calling_player)
         }.to_not change(player.game_logs, :count)
       end
     end
@@ -432,36 +436,48 @@ describe Player do
 
       it "creates a correct game log" do
         expect{
-          player.collect_resources?(resources)
+          player.collect_resources?(resources, calling_player)
         }.to change(player.game_logs, :count).by(1)
 
         player.game_logs.last.turn_num.should eq(game.turn_num)
         player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]}")
+        player.game_logs.last.current_player.should eq(calling_player)
       end
 
       it "adds the proper amounts to the resource totals" do
         original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
-        player.collect_resources?(resources)
+        player.collect_resources?(resources, player)
         player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count + resources.first[1])
+      end
+
+      context "when another player's turn causes the player to get the resources" do
+        let(:calling_player) {FactoryGirl.build(:in_game_player)}
+
+        it "sets the game_log's current_player to the calling player" do
+          player.collect_resources?(resources, calling_player)
+          player.game_logs.last.current_player.should eq(calling_player)
+        end
       end
 
       context "when there is more than one reosurce type being gained" do
         let(:resources) {{WHEAT => 2, ORE => 3}}
+
         it "creates a correct game log" do
           expect{
-            player.collect_resources?(resources)
+            player.collect_resources?(resources, player)
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
           expected_msg = "#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]} and "
           expected_msg << "#{resources.entries.last[1]} #{RESOURCE_NAME_MAP[resources.entries.last[0]]}"
           player.game_logs.last.msg.should eq(expected_msg)
+          player.game_logs.last.current_player.should eq(calling_player)
         end
 
         it "adds the proper amounts to the resource totals" do
           original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
           original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
-          player.collect_resources?(resources)
+          player.collect_resources?(resources, player)
           player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count1 + resources.first[1])
           player.resources.find{|r| r.type == resources.entries.last[0]}.count.should eq(original_resource_count2 + resources.entries.last[1])
         end

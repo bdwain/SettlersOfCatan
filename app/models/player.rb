@@ -6,7 +6,7 @@ class Player < ActiveRecord::Base
   has_many :settlements, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :roads, :inverse_of => :player, :autosave => true, :dependent => :destroy
   has_many :chats, :inverse_of => :sender, :autosave => true, :dependent => :destroy, :foreign_key => 'sender_id'
-  has_many :game_logs, :inverse_of => :current_player, :autosave => true, :dependent => :destroy, :foreign_key => 'current_player_id'
+  has_many :game_logs, :inverse_of => :target, :autosave => true, :dependent => :destroy, :foreign_key => 'target_id'
   has_many :dice_rolls, :inverse_of => :current_player, :autosave => true, :dependent => :destroy, :foreign_key => 'current_player_id'
 
   validates_presence_of :game, :user
@@ -25,7 +25,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
+    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
     settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
 
     if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
@@ -51,7 +51,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} placed a road on (#{x},#{y},#{side})")
+    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} placed a road on (#{x},#{y},#{side})")
     roads.build(:edge_x => x, :edge_y => y, :side => side)
 
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
@@ -65,14 +65,14 @@ class Player < ActiveRecord::Base
 
     die_1 = 1 + rand(6)
     die_2 = 1 + rand(6)
-    game_logs.build(:turn_num => game.turn_num, :msg => "#{user.displayname} rolled a (#{die_1 + die_2})")
+    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} rolled a (#{die_1 + die_2})")
     dice_roll = dice_rolls.build(:turn_num => game.turn_num, :die_1 => die_1, :die_2 => die_2)
 
     return false unless game.process_dice_roll?(self, die_1 + die_2)
     save
   end
 
-  def collect_resources?(resources_gained)
+  def collect_resources?(resources_gained, calling_player)
     if resources_gained.empty?
       return true
     end
@@ -89,7 +89,7 @@ class Player < ActiveRecord::Base
       msg << "#{keyval[1]} #{RESOURCE_NAME_MAP[keyval[0]]}"
     end
 
-    game_logs.build(:turn_num => game.turn_num, :msg => msg)
+    game_logs.build(:turn_num => game.turn_num, :current_player => calling_player, :msg => msg)
     save
   end
 end
