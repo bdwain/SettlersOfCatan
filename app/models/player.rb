@@ -18,6 +18,10 @@ class Player < ActiveRecord::Base
   validates :turn_status, :presence => true, 
             :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
   
+  def get_resource_count
+    resources.inject(0) {|sum, resource| sum + resource.count}
+  end
+
   def add_settlement?(x, y, side)
     if !game.game_board.vertex_is_free_for_building?(x, y, side)
       return false

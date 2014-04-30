@@ -57,6 +57,41 @@ describe Player do
     it { should allow_value(0).for(:turn_status) }        
   end
 
+  describe "get_resource_count" do
+    let(:player) {FactoryGirl.build_stubbed(:player)}
+    before(:each){player.stub(:resources).and_return(resources)}
+
+    context "when the player has no resources" do
+      let(:resources) {[FactoryGirl.build(:resource, {type: WOOD, count: 0, player: player}), 
+        FactoryGirl.build(:resource, {type: WHEAT, count: 0, player: player}), FactoryGirl.build(:resource, {type: WOOL, count: 0, player: player}), 
+        FactoryGirl.build(:resource, {type: BRICK, count: 0, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 0, player: player})]}
+
+      it "returns 0" do
+        player.get_resource_count.should eq(0)
+      end
+    end
+
+    context "when the player has one type of resource" do
+      let(:resources) {[FactoryGirl.build(:resource, {type: WOOD, count: 5, player: player}), 
+        FactoryGirl.build(:resource, {type: WHEAT, count: 0, player: player}), FactoryGirl.build(:resource, {type: WOOL, count: 0, player: player}), 
+        FactoryGirl.build(:resource, {type: BRICK, count: 0, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 0, player: player})]}
+
+      it "returns the resource count" do
+        player.get_resource_count.should eq(5)
+      end
+    end
+
+    context "when the player has multiple resources" do
+      let(:resources) {[FactoryGirl.build(:resource, {type: WOOD, count: 1, player: player}), 
+        FactoryGirl.build(:resource, {type: WHEAT, count: 2, player: player}), FactoryGirl.build(:resource, {type: WOOL, count: 3, player: player}), 
+        FactoryGirl.build(:resource, {type: BRICK, count: 4, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 5, player: player})]}
+
+      it "returns the total number of resources" do
+        player.get_resource_count.should eq(15)
+      end
+    end    
+  end
+
   describe "add_settlement?" do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
