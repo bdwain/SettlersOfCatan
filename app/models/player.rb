@@ -68,7 +68,7 @@ class Player < ActiveRecord::Base
     game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} rolled a (#{die_1 + die_2})")
     dice_roll = dice_rolls.build(:turn_num => game.turn_num, :die_1 => die_1, :die_2 => die_2)
 
-    return false unless game.process_dice_roll?(self, die_1 + die_2)
+    return false unless game.process_dice_roll?(die_1 + die_2)
     save
   end
 

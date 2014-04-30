@@ -349,7 +349,7 @@ describe Player do
 
     shared_examples "calls game.process_dice_roll?" do
       it "calls game.process_dice_roll?" do
-        game.should_receive(:process_dice_roll?).with(player, 2+rand_1+rand_2)
+        game.should_receive(:process_dice_roll?).with(2+rand_1+rand_2)
         player.roll_dice?
       end
     end

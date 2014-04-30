@@ -10,6 +10,10 @@ describe Game do
     it { should belong_to(:winner).class_name('User') }
   end
 
+  describe "current_player" do
+    it { should belong_to(:current_player).class_name('Player') }
+  end
+
   describe "map" do
     it { should belong_to(:map) }
     it { should validate_presence_of(:map) }
@@ -404,6 +408,11 @@ describe Game do
         game.save
         game.placing_initial_pieces?.should be_true
       end
+
+      it "sets the current_player to the player who ends up with the first turn" do
+        game.save
+        game.current_player.should eq(game.players.find{|p| p.turn_num == 1})
+      end
     end
 
     context "when the game isn't full" do
@@ -452,109 +461,130 @@ describe Game do
         game.advance?
         current_player.turn_status.should eq(WAITING_FOR_TURN)
       end
+
+      it "changes game.current_player to the next_player" do
+        game.advance?
+        game.current_player.should eq(next_player)
+      end
     end
 
     context "when the game is placing initial pieces" do
-      context "when on turn 1" do
+      context "when the current_player's status is not PLACING_INITIAL_ROAD" do
         let(:game){FactoryGirl.create(:game_turn_1)}
 
-        context "when the current player is not the last player" do
-          let!(:current_player) do
-            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
-            player.turn_status = PLACING_INITIAL_ROAD
-            player
-          end
-
-          let(:next_player) {game.players.find{|player| player.turn_num == current_player.turn_num + 1}}
-
-          include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
-        end
-
-        context "when the current player is the last player" do
-          let!(:current_player) do
-            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
-            player.turn_status = WAITING_FOR_TURN
-            player = game.players.find{|player| player.turn_num == game.num_players}
-            player.turn_status = PLACING_INITIAL_ROAD
-            player
-          end          
-
-          include_examples "returns true"
-
-          it "increments the game turn_num to 2" do
-            game.advance?
-            game.turn_num.should eq(2)
-          end
-
-          it "sets the current player's turn status to PLACING_INITIAL_SETTLEMENT" do
-            game.advance?
-            current_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
-          end
+        it "returns false" do
+          game.advance?.should be_false
         end
       end
 
-      context "when on turn 2" do
-        let(:game){FactoryGirl.create(:game_turn_2)}
+      context "when the current_player's status is PLACING_INITIAL_ROAD" do
+        context "when on turn 1" do
+          let(:game){FactoryGirl.create(:game_turn_1)}
 
-        context "when the current player is not player 1" do
-          let!(:current_player) do
-            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
-            player.turn_status = WAITING_FOR_TURN
-            player = game.players.find{|player| player.turn_num == game.num_players}
-            player.turn_status = PLACING_INITIAL_ROAD
-            player
-          end    
+          context "when the current player is not the last player" do
+            let!(:current_player) do
+              player = game.current_player.turn_status = PLACING_INITIAL_ROAD
+              game.current_player
+            end
 
-          let(:next_player) do
-            game.players.find{|player| player.turn_num == current_player.turn_num - 1}
+            let(:next_player) {game.players.find{|player| player.turn_num == current_player.turn_num + 1}}
+
+            include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
           end
 
-          include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
+          context "when the current player is the last player" do
+            let!(:current_player) do
+              game.current_player.turn_status = WAITING_FOR_TURN
+              game.current_player = game.players.find{|player| player.turn_num == game.num_players}
+              game.current_player.turn_status = PLACING_INITIAL_ROAD
+              game.current_player
+            end          
+
+            include_examples "returns true"
+
+            it "increments the game turn_num to 2" do
+              game.advance?
+              game.turn_num.should eq(2)
+            end
+
+            it "sets the current player's turn status to PLACING_INITIAL_SETTLEMENT" do
+              game.advance?
+              current_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
+            end
+
+            it "leaves game.current_player the same" do
+              expect{
+                game.advance?
+              }.to_not change(game, :current_player)
+            end
+          end
         end
 
-        context "when the current player is player 1" do
-          let!(:current_player) do
-            player = game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}
-            player.turn_status = WAITING_FOR_TURN
-            player = game.players.find{|player| player.turn_num == 1}
-            player.turn_status = PLACING_INITIAL_ROAD
-            player
+        context "when on turn 2" do
+          let(:game){FactoryGirl.create(:game_turn_2)}
+
+          context "when the current player is not player 1" do
+            let!(:current_player) do
+              game.current_player.turn_status = WAITING_FOR_TURN
+              game.current_player = game.players.find{|player| player.turn_num == game.num_players}
+              game.current_player.turn_status = PLACING_INITIAL_ROAD
+              game.current_player
+            end    
+
+            let(:next_player) do
+              game.players.find{|player| player.turn_num == current_player.turn_num - 1}
+            end
+
+            include_examples "first n-1 players on turn 1 or last n-1 players on turn 2"
           end
 
-          include_examples "returns true"
+          context "when the current player is player 1" do
+            let!(:current_player) do
+              game.current_player.turn_status = WAITING_FOR_TURN
+              game.current_player = game.players.find{|player| player.turn_num == 1}
+              game.current_player.turn_status = PLACING_INITIAL_ROAD
+              game.current_player
+            end
 
-          it "increments the game turn_num to 3" do
-            game.advance?
-            game.turn_num.should eq(3)
-          end
+            include_examples "returns true"
 
-          it "sets the game status to playing" do
-            game.advance?
-            game.playing?.should be_true
-          end
+            it "increments the game turn_num to 3" do
+              game.advance?
+              game.turn_num.should eq(3)
+            end
 
-          it "sets the current player's turn status to READY_TO_ROLL" do
-            game.advance?
-            current_player.turn_status.should eq(READY_TO_ROLL)
-          end
-        end            
-      end
+            it "sets the game status to playing" do
+              game.advance?
+              game.playing?.should be_true
+            end
 
-      context "when the current turn is not 1 or 2" do
-        let(:game) do
-          g = FactoryGirl.create(:game_turn_1)
-          g.turn_num = 3
-          g
+            it "sets the current player's turn status to READY_TO_ROLL" do
+              game.advance?
+              current_player.turn_status.should eq(READY_TO_ROLL)
+            end
+
+            it "leaves game.current_player the same" do
+              expect{
+                game.advance?
+              }.to_not change(game, :current_player)
+            end
+          end            
         end
 
-        before(:each) do
-          game.players.find{|player| player.turn_status == PLACING_INITIAL_SETTLEMENT}.turn_status = PLACING_INITIAL_ROAD
-        end
+        context "when the current turn is not 1 or 2" do
+          let(:game) do
+            g = FactoryGirl.create(:game_turn_1)
+            g.turn_num = 3
+            g
+          end
 
-        it "raises an exception" do
-          expect{
-            game.advance?
-          }.to raise_error("There was an error")
+          before(:each){game.current_player.turn_status = PLACING_INITIAL_ROAD}
+
+          it "raises an exception" do
+            expect{
+              game.advance?
+            }.to raise_error("There was an error")
+          end
         end
       end
     end
@@ -562,7 +592,6 @@ describe Game do
 
   describe "process_dice_roll?" do
     let(:game) {FactoryGirl.create(:game_started)}
-    let(:player) {game.players.find{|p| p.turn_status == READY_TO_ROLL}}
     let(:player1) {game.players.find{|p| p.turn_num == 1}}
     let(:player2) {game.players.find{|p| p.turn_num == 2}}
     let(:player3) {game.players.find{|p| p.turn_num == 3}}
@@ -573,12 +602,12 @@ describe Game do
 
     shared_examples "success when not 7" do
       it "returns true" do
-        game.process_dice_roll?(player, dice_num).should be_true
+        game.process_dice_roll?(dice_num).should be_true
       end
 
-      it "changes the player's turn status to PLAYING_TURN" do
-        game.process_dice_roll?(player, dice_num)
-        player.turn_status.should eq(PLAYING_TURN)
+      it "changes the current_player's turn status to PLAYING_TURN" do
+        game.process_dice_roll?(dice_num)
+        game.current_player.turn_status.should eq(PLAYING_TURN)
       end
     end
 
@@ -600,13 +629,13 @@ describe Game do
           before(:each){game.players.each{|p| p.stub(:collect_resources?).and_return(false)}}
 
           it "returns false" do
-            game.process_dice_roll?(player, dice_num).should be_false
+            game.process_dice_roll?(dice_num).should be_false
           end
 
           it "does not change the player's turn status" do
-              game.process_dice_roll?(player, dice_num)
-              player.reload
-              player.turn_status.should eq(READY_TO_ROLL)
+              game.process_dice_roll?(dice_num)
+              game.current_player.reload
+              game.current_player.turn_status.should eq(READY_TO_ROLL)
           end
         end
 
@@ -616,18 +645,18 @@ describe Game do
           include_examples "success when not 7"
 
           it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-            player1.should_receive(:collect_resources?).with({WOOD => 1}, player)
-            player2.should_receive(:collect_resources?).with({ORE => 2}, player)
+            player1.should_receive(:collect_resources?).with({WOOD => 1}, game.current_player)
+            player2.should_receive(:collect_resources?).with({ORE => 2}, game.current_player)
             player3.should_not_receive(:collect_resources?)
-            game.process_dice_roll?(player, dice_num)
+            game.process_dice_roll?(dice_num)
           end
 
           context "when a player gets more than one type of resource" do
             let(:dice_num){3}
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1}, player)
-              game.process_dice_roll?(player, dice_num)
+              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1}, game.current_player)
+              game.process_dice_roll?(dice_num)
             end
           end
 
@@ -638,10 +667,10 @@ describe Game do
             end
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled except the robber hex" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1}, player)
+              player1.should_receive(:collect_resources?).with({WOOD => 1}, game.current_player)
               player2.should_not_receive(:collect_resources?)
               player3.should_not_receive(:collect_resources?)
-              game.process_dice_roll?(player, dice_num)
+              game.process_dice_roll?(dice_num)
             end
           end
 
@@ -649,8 +678,8 @@ describe Game do
             before(:each) {player1.settlements.find{|s| s.vertex_x == 4 && s.vertex_y == 0 && s.side == 0}.is_city = true}
 
             it "gives that player 2 resources instead of 1" do
-              player1.should_receive(:collect_resources?).with({WOOD => 2}, player)
-              game.process_dice_roll?(player, dice_num)
+              player1.should_receive(:collect_resources?).with({WOOD => 2}, game.current_player)
+              game.process_dice_roll?(dice_num)
             end
           end
         end

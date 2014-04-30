@@ -1,7 +1,9 @@
 class Game < ActiveRecord::Base
   belongs_to :creator, :class_name => 'User', :foreign_key => 'creator_id'
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
+  belongs_to :current_player, :class_name => 'Player', :foreign_key => 'current_player_id'
   belongs_to :map
+
   has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
   has_many :development_cards, :inverse_of => :game, :autosave => true, :dependent => :destroy
 
@@ -106,11 +108,11 @@ class Game < ActiveRecord::Base
     end
   end
 
-  def process_dice_roll?(player, dice_num)
+  def process_dice_roll?(dice_num)
     if dice_num == 7
-      return set_up_robber?(player)
+      return set_up_robber?
     end
-    process_dice_roll_after_robber_check?(player, dice_num)
+    process_dice_roll_after_robber_check?(dice_num)
   end
   
   #when saving a game, initialize it for play if it's full but status is still waiting
@@ -119,7 +121,7 @@ class Game < ActiveRecord::Base
       return init_game?
     elsif @resources_to_give
       @resources_to_give.each do |cur_player, resources|
-        return false unless cur_player.collect_resources?(resources, @current_turn_player)
+        return false unless cur_player.collect_resources?(resources, current_player)
       end
     end
     true
@@ -141,6 +143,8 @@ class Game < ActiveRecord::Base
       end
     end
 
+    self.current_player = players.first
+
     14.times { development_cards.build(type: KNIGHT) }
     5.times { development_cards.build(type: VICTORY_POINT) }
     2.times do
@@ -156,8 +160,7 @@ class Game < ActiveRecord::Base
   end
 
   def advance_while_placing_initial_pieces?
-    current_player = players.find{|player| player.turn_status == PLACING_INITIAL_ROAD}
-    if !current_player
+    if current_player.turn_status != PLACING_INITIAL_ROAD
       return false
     end
 
@@ -165,6 +168,7 @@ class Game < ActiveRecord::Base
       next_player = players.find{|player| player.turn_num == current_player.turn_num + 1}
       next_player.turn_status = PLACING_INITIAL_SETTLEMENT
       current_player.turn_status = WAITING_FOR_TURN
+      self.current_player = next_player
     elsif turn_num == 1
       self.turn_num = 2
       current_player.turn_status = PLACING_INITIAL_SETTLEMENT
@@ -172,6 +176,7 @@ class Game < ActiveRecord::Base
       next_player = players.find{|player| player.turn_num == current_player.turn_num - 1}
       next_player.turn_status = PLACING_INITIAL_SETTLEMENT
       current_player.turn_status = WAITING_FOR_TURN
+      self.current_player = next_player
     elsif turn_num == 2
       self.turn_num = 3
       self.status = STATUS_PLAYING
@@ -182,14 +187,13 @@ class Game < ActiveRecord::Base
     save
   end
 
-  def set_up_robber?(player)
+  def set_up_robber?
     true #TODO: later
   end
 
-  def process_dice_roll_after_robber_check?(player, dice_num)
+  def process_dice_roll_after_robber_check?(dice_num)
     producing_hexes = map.hexes.select{|hex| hex.dice_num == dice_num && (hex.pos_x != robber_x || hex.pos_y != robber_y)}
     @resources_to_give = Hash.new
-    @current_turn_player = player
 
     producing_hexes.each do |hex|
       settlements = game_board.get_settlements_touching_hex(hex.pos_x, hex.pos_y)
@@ -201,7 +205,7 @@ class Game < ActiveRecord::Base
       end
     end
 
-    player.turn_status = PLAYING_TURN
+    current_player.turn_status = PLAYING_TURN
     save
   end
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140428005140) do
+ActiveRecord::Schema.define(:version => 20140430035855) do
 
   create_table "chats", :force => true do |t|
     t.text     "msg",        :null => false
@@ -58,16 +58,17 @@ ActiveRecord::Schema.define(:version => 20140428005140) do
   add_index "game_logs", ["target_id"], :name => "index_game_logs_on_target_id"
 
   create_table "games", :force => true do |t|
-    t.integer  "num_players",                :null => false
-    t.integer  "status",      :default => 1, :null => false
-    t.integer  "creator_id",                 :null => false
+    t.integer  "num_players",                      :null => false
+    t.integer  "status",            :default => 1, :null => false
+    t.integer  "creator_id",                       :null => false
     t.integer  "winner_id"
-    t.integer  "map_id",      :default => 1, :null => false
-    t.integer  "robber_x",    :default => 0, :null => false
-    t.integer  "robber_y",    :default => 0, :null => false
-    t.integer  "turn_num",    :default => 1, :null => false
-    t.datetime "created_at",                 :null => false
-    t.datetime "updated_at",                 :null => false
+    t.integer  "map_id",            :default => 1, :null => false
+    t.integer  "robber_x",          :default => 0, :null => false
+    t.integer  "robber_y",          :default => 0, :null => false
+    t.integer  "turn_num",          :default => 1, :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+    t.integer  "current_player_id"
   end
 
   add_index "games", ["creator_id"], :name => "index_games_on_creator_id"
