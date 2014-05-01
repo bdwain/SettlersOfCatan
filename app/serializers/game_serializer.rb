@@ -13,3 +13,6 @@ class GameSerializer < ActiveModel::Serializer
     object.game_logs.where("is_private = false OR target_id = #{current_player_id}")
   end
 end
+
+#use this in game page when needed
+#<%= content_tag "div", id: "game_container", data: {game: GameSerializer.new(@game, :scope => current_user, :scope_name => 'current_user')} do %>

@@ -4,89 +4,86 @@
 
 <p id="notice"><%= notice %></p>
 
-<%= content_tag "div", id: "game_container", data: {game: GameSerializer.new(@game, :scope => current_user, :scope_name => 'current_user')} do %>
-  <div id="map" style="width: 1000px; height: 500px; background-color: blue;">
-  </div>
+  <!--<div id="map" style="width: 1000px; height: 500px; background-color: blue;"></div>-->
 
-  <table id="stats">
+<table id="stats">
+  <tr>
+    <th>Player</th>
+    <th>Resources</th>
+    <th>Development Cards</th>
+    <th>Victory Points</th>
+    <th>Longest Road</th>
+  </tr>
+  <% @game.sorted_players.each do |player| %>
     <tr>
-      <th>Player</th>
-      <th>Resources</th>
-      <th>Development Cards</th>
-      <th>Victory Points</th>
-      <th>Longest Road</th>
+      <td><%= player.user.displayname %></td>
+      <td><%= player.resources.inject(0){|sum, resource| sum + resource.count} %></td>
+      <td><%= player.development_cards.count %></td>
+      <td><%= 0 %></td>
+      <td><%= 0 %></td>
     </tr>
-    <% @game.sorted_players.each do |player| %>
-      <tr>
-        <td><%= player.user.displayname %></td>
-        <td><%= player.resources.inject(0){|sum, resource| sum + resource.count} %></td>
-        <td><%= player.development_cards.count %></td>
-        <td><%= 0 %></td>
-        <td><%= 0 %></td>
-      </tr>
-    <% end %>
-  </table>
-
-  <% my_player = @game.players.where(:user_id => current_user.id).first %>
-  <% if my_player %>
-    <div>
-      <h4>Action</h4>
-      <div>
-        <% case my_player.turn_status %>
-        <% when WAITING_FOR_TURN %>
-          Waiting For Turn
-        <% when PLACING_INITIAL_SETTLEMENT %>
-          Place a settlement
-          <%= form_tag("/settlements", :method => "post") do %>
-            <%= hidden_field_tag(:player_id, my_player.id) %>
-            <div>
-              <%= label_tag(:vertex_x, "X Position: ") %>
-              <%= text_field_tag :vertex_x, nil, :required => true %>
-            </div>
-            <div>
-              <%= label_tag(:vertex_y, "Y Position: ") %>
-              <%= text_field_tag :vertex_y, nil, :required => true %>
-            </div>
-            <div>
-              <%= label_tag(:side, "Side: ") %>
-              <%= text_field_tag :side, nil, :required => true %>
-            </div>            
-            <div class="actions">
-              <%= submit_tag("Submit") %>
-            </div>            
-          <% end %>
-        <% when PLACING_INITIAL_ROAD %>
-          Place a road
-          <%= form_tag("/roads", :method => "post") do %>
-            <%= hidden_field_tag(:player_id, my_player.id) %>
-            <div>
-              <%= label_tag(:edge_x, "X Position: ") %>
-              <%= text_field_tag :edge_x, nil, :required => true %>
-            </div>
-            <div>
-              <%= label_tag(:edge_y, "Y Position: ") %>
-              <%= text_field_tag :edge_y, nil, :required => true %>
-            </div>
-            <div>
-              <%= label_tag(:side, "Side: ") %>
-              <%= text_field_tag :side, nil, :required => true %>
-            </div>                
-            <div class="actions">
-              <%= submit_tag("Submit") %>
-            </div>            
-          <% end %>
-        <% when READY_TO_ROLL %>
-          <%= form_tag("/dice_rolls", :method => "post") do %>
-            <%= hidden_field_tag(:player_id, my_player.id) %>
-            <%= submit_tag("Roll the dice") %>
-          <% end %>
-        <% when MOVING_ROBBER %>
-        <% when PLAYING_TURN %>
-        <% when WAITING_FOR_TRADE_RESPONSE %>
-          Waiting for Trade Response
-        <% when CONSIDERING_TRADE %>
-        <% end %>
-      </div>
-    </div>
   <% end %>
+</table>
+
+<% my_player = @game.players.where(:user_id => current_user.id).first %>
+<% if my_player %>
+  <div>
+    <h4>Action</h4>
+    <div>
+      <% case my_player.turn_status %>
+      <% when WAITING_FOR_TURN %>
+        Waiting For Turn
+      <% when PLACING_INITIAL_SETTLEMENT %>
+        Place a settlement
+        <%= form_tag("/settlements", :method => "post") do %>
+          <%= hidden_field_tag(:player_id, my_player.id) %>
+          <div>
+            <%= label_tag(:vertex_x, "X Position: ") %>
+            <%= text_field_tag :vertex_x, nil, :required => true %>
+          </div>
+          <div>
+            <%= label_tag(:vertex_y, "Y Position: ") %>
+            <%= text_field_tag :vertex_y, nil, :required => true %>
+          </div>
+          <div>
+            <%= label_tag(:side, "Side: ") %>
+            <%= text_field_tag :side, nil, :required => true %>
+          </div>            
+          <div class="actions">
+            <%= submit_tag("Submit") %>
+          </div>            
+        <% end %>
+      <% when PLACING_INITIAL_ROAD %>
+        Place a road
+        <%= form_tag("/roads", :method => "post") do %>
+          <%= hidden_field_tag(:player_id, my_player.id) %>
+          <div>
+            <%= label_tag(:edge_x, "X Position: ") %>
+            <%= text_field_tag :edge_x, nil, :required => true %>
+          </div>
+          <div>
+            <%= label_tag(:edge_y, "Y Position: ") %>
+            <%= text_field_tag :edge_y, nil, :required => true %>
+          </div>
+          <div>
+            <%= label_tag(:side, "Side: ") %>
+            <%= text_field_tag :side, nil, :required => true %>
+          </div>                
+          <div class="actions">
+            <%= submit_tag("Submit") %>
+          </div>            
+        <% end %>
+      <% when READY_TO_ROLL %>
+        <%= form_tag("/dice_rolls", :method => "post") do %>
+          <%= hidden_field_tag(:player_id, my_player.id) %>
+          <%= submit_tag("Roll the dice") %>
+        <% end %>
+      <% when MOVING_ROBBER %>
+      <% when PLAYING_TURN %>
+      <% when WAITING_FOR_TRADE_RESPONSE %>
+        Waiting for Trade Response
+      <% when CONSIDERING_TRADE %>
+      <% end %>
+    </div>
+  </div>
 <% end %>
