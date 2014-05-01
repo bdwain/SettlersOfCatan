@@ -475,7 +475,7 @@ describe Player do
         }.to change(player.game_logs, :count).by(1)
 
         player.game_logs.last.turn_num.should eq(game.turn_num)
-        player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]}")
+        player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
         player.game_logs.last.current_player.should eq(calling_player)
       end
 
@@ -503,8 +503,8 @@ describe Player do
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
-          expected_msg = "#{player.user.displayname} got #{resources.first[1]} #{RESOURCE_NAME_MAP[resources.first[0]]} and "
-          expected_msg << "#{resources.entries.last[1]} #{RESOURCE_NAME_MAP[resources.entries.last[0]]}"
+          expected_msg = "#{player.user.displayname} got #{resources.first[1]} WHEAT and "
+          expected_msg << "#{resources.entries.last[1]} ORE"
           player.game_logs.last.msg.should eq(expected_msg)
           player.game_logs.last.current_player.should eq(calling_player)
         end

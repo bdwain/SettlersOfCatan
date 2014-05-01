@@ -84,13 +84,14 @@ class Player < ActiveRecord::Base
     msg = "#{user.displayname} got "
 
     resources_gained.each_with_index do |keyval, index|
-      resources.find{|r| r.type == keyval[0]}.count += keyval[1]
-
+      resource = resources.find{|r| r.type == keyval[0]}
+      resource.count += keyval[1]
+      
       if index != 0
         msg << " and "
       end
 
-      msg << "#{keyval[1]} #{RESOURCE_NAME_MAP[keyval[0]]}"
+      msg << "#{keyval[1]} #{resource.name}"
     end
 
     game_logs.build(:turn_num => game.turn_num, :current_player => calling_player, :msg => msg)

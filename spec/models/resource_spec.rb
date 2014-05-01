@@ -22,4 +22,48 @@ describe Resource do
     it { should_not allow_value(-1).for(:count) }
     it { should allow_value(0).for(:count) }    
   end
+
+  describe "name" do
+    shared_examples "returns proper type string" do
+      it "returns the proper type string" do
+        resource.name.should eq(type_str)
+      end
+    end
+
+    context "when type is DESERT" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => DESERT})}
+      let(:type_str) {"DESERT"}
+      include_examples "returns proper type string"
+    end
+
+    context "when type is WOOD" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => WOOD})}
+      let(:type_str) {"WOOD"}
+      include_examples "returns proper type string"
+    end
+
+    context "when type is WHEAT" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => WHEAT})}
+      let(:type_str) {"WHEAT"}
+      include_examples "returns proper type string"
+    end
+
+    context "when type is WOOL" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => WOOL})}
+      let(:type_str) {"WOOL"}
+      include_examples "returns proper type string"
+    end
+
+    context "when type is ORE" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => ORE})}
+      let(:type_str) {"ORE"}
+      include_examples "returns proper type string"
+    end
+
+    context "when type is BRICK" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => BRICK})}
+      let(:type_str) {"BRICK"}
+      include_examples "returns proper type string"
+    end
+  end
 end

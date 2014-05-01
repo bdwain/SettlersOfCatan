@@ -11,4 +11,23 @@ class Resource < ActiveRecord::Base
 
   validates :type, :numericality => {:only_integer => true}
   validates :count, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0}
+
+  def name
+    case type
+    when DESERT
+      return "DESERT"
+    when WHEAT
+      return "WHEAT"
+    when BRICK
+      return "BRICK"
+    when WOOD
+      return "WOOD"
+    when WOOL
+      return "WOOL"
+    when ORE
+      return "ORE"
+    else
+      raise "Invalid resource type"
+    end
+  end
 end
