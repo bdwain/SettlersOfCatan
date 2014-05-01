@@ -1,7 +1,7 @@
 class DiceRollsController < ApplicationController
   before_filter :authenticate_user!
 
-  # POST /games
+  # POST /dice_rolls
   def create
     player = Player.find_by_id(params[:player_id])
     if player == nil || player.user != current_user
