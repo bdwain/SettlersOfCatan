@@ -1,7 +1,7 @@
 class Game < ActiveRecord::Base
   belongs_to :creator, :class_name => 'User', :foreign_key => 'creator_id'
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  belongs_to :current_player, :class_name => 'Player', :foreign_key => 'current_player_id'
+  belongs_to :current_player, :class_name => 'Player', :foreign_key => 'current_player_id', :autosave => true
   belongs_to :map
 
   has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
@@ -204,7 +204,7 @@ class Game < ActiveRecord::Base
 
   def handle_seven_roll?
     need_discards = false
-    
+
     players.each do |player|
       if player.get_resource_count > 7
         player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
@@ -218,6 +218,6 @@ class Game < ActiveRecord::Base
       current_player.turn_status = MOVING_ROBBER
     end
 
-    true
+    save
   end
 end
