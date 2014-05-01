@@ -65,5 +65,15 @@ describe Resource do
       let(:type_str) {"BRICK"}
       include_examples "returns proper type string"
     end
+
+    context "when type is an undefined type" do
+      let(:resource) {FactoryGirl.build(:resource, {:type => -1})}
+
+      it "raises an exception" do
+        expect{
+          resource.name
+        }.to raise_exception("Invalid resource type")
+      end
+    end
   end
 end
