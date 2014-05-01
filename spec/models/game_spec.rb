@@ -596,18 +596,96 @@ describe Game do
     let(:player2) {game.players.find{|p| p.turn_num == 2}}
     let(:player3) {game.players.find{|p| p.turn_num == 3}}
 
-    context "when dice_num is a 7" do
-      #TODO
+    shared_examples "returns true" do
+      it "returns true" do
+        game.process_dice_roll?(dice_num).should be_true
+      end      
+    end
+
+    shared_examples "leaves other players' statuses as WAITING_FOR_TURN" do
+      it "leaves other players' statuses as WAITING_FOR_TURN" do
+        game.process_dice_roll?(dice_num)
+        player2.turn_status.should eq(WAITING_FOR_TURN)
+        player3.turn_status.should eq(WAITING_FOR_TURN)
+      end
     end
 
     shared_examples "success when not 7" do
-      it "returns true" do
-        game.process_dice_roll?(dice_num).should be_true
-      end
+      include_examples "returns true"
 
       it "changes the current_player's turn status to PLAYING_TURN" do
         game.process_dice_roll?(dice_num)
         game.current_player.turn_status.should eq(PLAYING_TURN)
+      end
+    end
+
+    context "when dice_num is a 7" do
+      let(:dice_num) {7}
+
+      context "when no players have more than 7 cards" do
+        include_examples "returns true"
+
+        it "changes the current_player's turn_status to MOVING_ROBBER" do
+          game.process_dice_roll?(dice_num)
+          game.current_player.turn_status.should eq(MOVING_ROBBER)
+        end
+
+        include_examples "leaves other players' statuses as WAITING_FOR_TURN"
+      end
+
+      context "when the current_player doesn't have 8 or more cards but other players do" do
+        before(:each){player2.stub(:get_resource_count).and_return(8)}
+
+        include_examples "returns true"
+
+        it "changes the current_player's status to WAITING_FOR_TURN" do
+          game.process_dice_roll?(dice_num)
+          game.current_player.turn_status.should eq(WAITING_FOR_TURN)
+        end
+
+        it "changes the status of the player with 8 or more cards to DISCARDING_CARDS_DUE_TO_ROBBER" do
+          game.process_dice_roll?(dice_num)
+          player2.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+        end
+
+        it "leaves other players without 8 or more cards as WAITING_FOR_TURN" do
+          game.process_dice_roll?(dice_num)
+          player3.turn_status.should eq(WAITING_FOR_TURN)
+        end
+
+        context "when multiple other players have 8 or more cards" do
+          before(:each){player3.stub(:get_resource_count).and_return(9)}
+
+          it "sets all of their statuses to DISCARDING_CARDS_DUE_TO_ROBBER" do
+            game.process_dice_roll?(dice_num)
+            player2.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+            player3.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+          end
+        end
+      end
+
+      context "when the current player has 8 or more cards" do
+        before(:each) {game.current_player.stub(:get_resource_count).and_return(8)}
+
+        include_examples "returns true"
+
+        it "changes the current player's status to DISCARDING_CARDS_DUE_TO_ROBBER" do
+          game.process_dice_roll?(dice_num)
+          game.current_player.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+        end
+
+        context "when other players have 8 or more cards" do
+          before(:each){player3.stub(:get_resource_count).and_return(9)}
+
+          it "changes their status to DISCARDING_CARDS_DUE_TO_ROBBER" do
+            game.process_dice_roll?(dice_num)
+            player3.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+          end
+        end
+
+        context "when other player's don't have 8 or more cards" do
+          include_examples "leaves other players' statuses as WAITING_FOR_TURN"
+        end
       end
     end
 

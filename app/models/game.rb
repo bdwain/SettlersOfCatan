@@ -110,9 +110,24 @@ class Game < ActiveRecord::Base
 
   def process_dice_roll?(dice_num)
     if dice_num == 7
-      return set_up_robber?
+      return handle_seven_roll?
     end
-    process_dice_roll_after_robber_check?(dice_num)
+
+    producing_hexes = map.hexes.select{|hex| hex.dice_num == dice_num && (hex.pos_x != robber_x || hex.pos_y != robber_y)}
+    @resources_to_give = Hash.new
+
+    producing_hexes.each do |hex|
+      settlements = game_board.get_settlements_touching_hex(hex.pos_x, hex.pos_y)
+      settlements.each do |settlement|
+        if !@resources_to_give.has_key? settlement.player
+          @resources_to_give[settlement.player] = Hash.new(0)
+        end
+        @resources_to_give[settlement.player][hex.resource_type] += (settlement.is_city ? 2 : 1)
+      end
+    end
+
+    current_player.turn_status = PLAYING_TURN
+    save
   end
   
   #when saving a game, initialize it for play if it's full but status is still waiting
@@ -187,25 +202,22 @@ class Game < ActiveRecord::Base
     save
   end
 
-  def set_up_robber?
-    true #TODO: later
-  end
-
-  def process_dice_roll_after_robber_check?(dice_num)
-    producing_hexes = map.hexes.select{|hex| hex.dice_num == dice_num && (hex.pos_x != robber_x || hex.pos_y != robber_y)}
-    @resources_to_give = Hash.new
-
-    producing_hexes.each do |hex|
-      settlements = game_board.get_settlements_touching_hex(hex.pos_x, hex.pos_y)
-      settlements.each do |settlement|
-        if !@resources_to_give.has_key? settlement.player
-          @resources_to_give[settlement.player] = Hash.new(0)
-        end
-        @resources_to_give[settlement.player][hex.resource_type] += (settlement.is_city ? 2 : 1)
+  def handle_seven_roll?
+    need_discards = false
+    
+    players.each do |player|
+      if player.get_resource_count > 7
+        player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+        need_discards = true
+      elsif player == current_player
+        current_player.turn_status = WAITING_FOR_TURN
       end
     end
 
-    current_player.turn_status = PLAYING_TURN
-    save
+    if !need_discards && current_player.turn_status == WAITING_FOR_TURN
+      current_player.turn_status = MOVING_ROBBER
+    end
+
+    true
   end
 end
