@@ -1,4 +1,7 @@
 SettlersOfCatan::Application.routes.draw do
+  root :to => 'home#index'
+  get "home/index"
+
   resources :players
   resources :games
   resources :chats
@@ -8,12 +11,12 @@ SettlersOfCatan::Application.routes.draw do
   resources :harbors
   resources :hexes
   resources :maps
-  resources :resources
   resources :roads
   resources :settlements
   devise_for :users
 
-  get "home/index"
+  match "resources/update_multiple" => "resources#update_multiple", :via => [:patch]
+  resources :resources
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
@@ -64,7 +67,7 @@ SettlersOfCatan::Application.routes.draw do
 
   # You can have the root of your site routed with "root"
   # just remember to delete public/index.html.
-  root :to => 'home#index'
+  
 
   # See how all your routes lay out with "rake routes"
 

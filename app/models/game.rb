@@ -152,6 +152,15 @@ class Game < ActiveRecord::Base
     true
   end
 
+  def player_finished_discarding?(player)
+    player.turn_status = WAITING_FOR_TURN
+    if !players.any?{|p| p.id != player.id && p.turn_status != WAITING_FOR_TURN}
+      current_player.turn_status = MOVING_ROBBER
+    end
+
+    save
+  end
+
   private
   def init_game?
     #give each player their own turn

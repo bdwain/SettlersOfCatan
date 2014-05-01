@@ -97,4 +97,39 @@ class Player < ActiveRecord::Base
     game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
     save
   end
+
+  def discard_half_resources?(resources_to_discard)
+    if turn_status != DISCARDING_CARDS_DUE_TO_ROBBER
+      return false
+    end
+
+    num_discarded = 0
+    amount_needed_to_discard = get_resource_count/2
+
+    msg = "#{user.displayname} discarded "
+    start_using_and_in_msg = false
+    resources_to_discard.each_with_index do |keyval, index|
+      resource = resources.find{|r| r.type == keyval[0]}
+      resource.count -= keyval[1]
+      num_discarded += keyval[1]
+
+      next if keyval[1] == 0 #don't log that they discarded 0 of something
+
+      if index != 0 && start_using_and_in_msg
+        msg << " and "
+      end
+
+      msg << "#{keyval[1]} #{resource.name}"
+      start_using_and_in_msg = true
+    end
+
+    if num_discarded != amount_needed_to_discard
+      return false
+    end
+
+    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
+
+    return false unless game.player_finished_discarding?(self)
+    save
+  end
 end

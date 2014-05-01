@@ -4,7 +4,7 @@
 
 <p id="notice"><%= notice %></p>
 
-  <!--<div id="map" style="width: 1000px; height: 500px; background-color: blue;"></div>-->
+<!--<div id="map" style="width: 1000px; height: 500px; background-color: blue;"></div>-->
 
 <table id="stats">
   <tr>
@@ -17,7 +17,7 @@
   <% @game.sorted_players.each do |player| %>
     <tr>
       <td><%= player.user.displayname %></td>
-      <td><%= player.resources.inject(0){|sum, resource| sum + resource.count} %></td>
+      <td><%= player.get_resource_count %></td>
       <td><%= player.development_cards.count %></td>
       <td><%= 0 %></td>
       <td><%= 0 %></td>
@@ -78,11 +78,29 @@
           <%= hidden_field_tag(:player_id, my_player.id) %>
           <%= submit_tag("Roll the dice") %>
         <% end %>
+      <% when DISCARDING_CARDS_DUE_TO_ROBBER %>
+        <%= "Discard #{my_player.get_resource_count/2} resources" %>
+        <%= form_tag(resources_update_multiple_path, :method => "patch") do %>
+          <%= hidden_field_tag(:player_id, my_player.id) %>
+          <% my_player.resources.each do |resource| %>
+            <div>
+              <%= resource.name << ":" %>
+              <% options = (0..(resource.count)).map{|num| [num.to_s, num]} %>
+              <%= select_tag("delete[#{resource.type}]", options_for_select(options)) %>
+            </div>
+          <% end %>
+          <%= submit_tag("Discard") %>
+        <% end %>
       <% when MOVING_ROBBER %>
+        Moving robber
+      <% when CHOOSING_ROBBER_VICTIM %>
+        Choosing robber victim
       <% when PLAYING_TURN %>
+        Playing turn
       <% when WAITING_FOR_TRADE_RESPONSE %>
         Waiting for Trade Response
       <% when CONSIDERING_TRADE %>
+        Considering trade
       <% end %>
     </div>
   </div>

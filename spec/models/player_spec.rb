@@ -9,11 +9,7 @@ describe Player do
   describe "user" do
     it { should belong_to(:user) }
     it { should validate_presence_of(:user) }
-    it "validates_uniqueness_of user_id scoped to game_id" do
-      #needed because the validation fails without a player precreated. See docs.
-      FactoryGirl.create(:player)
-      should validate_uniqueness_of(:user_id).scoped_to(:game_id)
-     end 
+    it { should validate_uniqueness_of(:user_id).scoped_to(:game_id) }
   end
 
   describe "resources" do
@@ -96,7 +92,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_settlement? failures" do
       it "returns false" do
@@ -216,7 +212,7 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
     before(:each) { game.stub(:game_board).and_return(board) }
-    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_road? failures" do
       it "returns false" do
@@ -349,7 +345,7 @@ describe Player do
 
   describe "roll_dice?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
-    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "roll_dice? failures" do
       it "returns false" do
@@ -443,7 +439,7 @@ describe Player do
 
   describe "collect_resources?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
-    let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
+    let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
     before(:each) {game.stub(:current_player).and_return(player)}
 
     shared_examples "returns true" do
@@ -516,6 +512,143 @@ describe Player do
           player.collect_resources?(resources)
           player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count1 + resources.first[1])
           player.resources.find{|r| r.type == resources.entries.last[0]}.count.should eq(original_resource_count2 + resources.entries.last[1])
+        end
+      end
+    end
+  end
+
+  describe "discard_half_resources?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_started) }
+    let(:player) {FactoryGirl.create(:player_with_items, {game: game, 
+      resources: original_resources})}
+    before(:each) {game.stub(:current_player).and_return(player)}
+    let(:original_resources) {{WHEAT => 6, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 0}}
+
+    shared_examples "discard_half_resources failures" do
+      it "returns false" do
+        player.discard_half_resources?(resources_to_discard).should be_false
+      end
+
+      it "does not add a new game_log" do
+        expect{
+          player.discard_half_resources?(resources_to_discard)
+        }.to_not change(player.game_logs, :count)
+      end
+
+      it "does not change the player's status" do
+        expect{
+          player.discard_half_resources?(resources_to_discard)
+        }.to_not change(player, :turn_status)
+      end
+
+      it "does not change the count of resources" do
+        original_count = player.get_resource_count
+        player.discard_half_resources?(resources_to_discard)
+        player.reload
+        player.get_resource_count.should eq(original_count)
+      end
+    end
+
+    shared_examples "does not call game.player_finished_discarding?" do
+      it "does not call game.player_finished_discarding?" do
+        game.should_not_receive(:player_finished_discarding?)
+        player.discard_half_resources?(resources_to_discard)
+      end
+    end
+
+    context "when turn status is not DISCARDING_CARDS_DUE_TO_ROBBER" do
+      before(:each) {player.turn_status = PLAYING_TURN}
+      let(:resources_to_discard) {{WHEAT => 4, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
+
+      include_examples "discard_half_resources failures"
+      include_examples "does not call game.player_finished_discarding?"
+    end
+
+    context "when turn_status is DISCARDING_CARDS_DUE_TO_ROBBER" do
+      before(:each) {player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER}
+
+      context "when the total number of resources to discard is less than half of the current total" do
+        let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
+
+        include_examples "discard_half_resources failures"
+        include_examples "does not call game.player_finished_discarding?"
+      end
+
+      context "when the total number of resources to discard is greater than half of the current total" do
+        let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 2, ORE => 1, BRICK => 0}}
+
+        include_examples "discard_half_resources failures"
+        include_examples "does not call game.player_finished_discarding?"
+
+        context "when player has an odd number of resources and we should round down when dividing by 2" do
+          let(:original_resources) {{WHEAT => 6, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 1}}
+
+          include_examples "discard_half_resources failures"
+          include_examples "does not call game.player_finished_discarding?"
+        end
+      end
+
+      context "when the total number of resources to discard is equal to half of the current total" do
+        let(:resources_to_discard) {{WHEAT => 6, WOOD => 0, WOOL => 0, ORE => 0, BRICK => 0}}
+
+        context "when game.player_finished_discarding? returns false" do
+          before(:each) {game.stub(:player_finished_discarding?).and_return(false)}
+
+          include_examples "discard_half_resources failures"
+        end
+
+        context "when game.player_finished_discarding? returns true" do
+          before(:each) {game.stub(:player_finished_discarding?).and_return(true)}
+
+          it "returns true" do
+            player.discard_half_resources?(resources_to_discard).should be_true
+          end
+
+          it "discards the proper amounts of resources" do
+            player.discard_half_resources?(resources_to_discard)
+
+            original_resources.each do |type, amount|
+              player.resources.find{|r| r.type == type}.count.should eq(amount - resources_to_discard[type])
+            end
+          end
+
+          it "creates a new game_log with the game's turn number and proper text and correct current_player" do
+            expect{
+              player.discard_half_resources?(resources_to_discard)
+            }.to change(player.game_logs, :count).by(1)
+
+            player.game_logs.last.turn_num.should eq(game.turn_num)
+            player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 6 WHEAT")
+            player.game_logs.last.current_player.should eq(player)
+          end
+
+          context "when it's another player's turn" do
+            let(:other_player) {FactoryGirl.build(:in_game_player)}
+            before(:each) {game.stub(:current_player).and_return(other_player)}
+
+            it "sets the game_log's current_player to the other player" do
+              player.discard_half_resources?(resources_to_discard)
+              player.game_logs.last.current_player.should eq(other_player)
+            end
+          end
+
+          context "when there is more than one resource being discarded" do
+            let(:resources_to_discard) {{WHEAT => 4, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
+
+            it "properly formats the game_log msg" do
+              player.discard_half_resources?(resources_to_discard)
+              player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 4 WHEAT and 1 WOOD and 1 WOOL")
+            end
+
+            context "when the first resource in the hash is not discarded" do
+              let(:resources_to_discard) {{WHEAT => 0, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 0}}
+
+              it "does not say \"and\" before the first resource in the message" do
+                player.discard_half_resources?(resources_to_discard)
+                player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 1 WOOD and 2 WOOL and 3 ORE")
+              end
+            end
+          end
         end
       end
     end

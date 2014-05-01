@@ -788,4 +788,63 @@ describe Game do
       end
     end
   end
+
+  describe "player_finished_discarding?" do
+    let(:game) {FactoryGirl.create(:game_started)}
+
+    shared_examples "returns true" do
+      it "returns true" do
+        game.player_finished_discarding?(calling_player).should be_true
+      end
+    end
+
+    shared_examples "set's calling player to WAITING_FOR_TURN" do
+      it "sets the calling player's status to WAITING_FOR_TURN" do
+        game.player_finished_discarding?(calling_player)
+        calling_player.turn_status.should eq(WAITING_FOR_TURN)
+      end
+    end
+
+    shared_examples "set's current_player to MOVING_ROBBER" do
+      it "sets the current_player's status to MOVING_ROBBER" do
+        game.player_finished_discarding?(calling_player)
+        game.current_player.turn_status.should eq(MOVING_ROBBER)
+      end
+    end
+
+    context "when there are still other players who need to discard" do
+      before(:each) do
+        game.players.first.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+        game.players.last.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+      end
+      let(:calling_player) {game.players.first}
+
+      include_examples "returns true"
+      include_examples "set's calling player to WAITING_FOR_TURN"
+    end
+
+    context "when everyone else is done discarding" do
+      context "when the calling player is the current_player" do
+        before(:each) do
+          game.current_player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+        end
+        let(:calling_player) {game.current_player}
+
+        include_examples "returns true"
+        include_examples "set's current_player to MOVING_ROBBER"
+      end
+
+      context "when the calling player is not the current_player" do
+        before(:each) do
+          game.current_player.turn_status = WAITING_FOR_TURN
+          game.players.find{|p| p != game.current_player}.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+        end
+        let(:calling_player) {game.players.find{|p| p.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER}}
+
+        include_examples "returns true"
+        include_examples "set's current_player to MOVING_ROBBER"
+        include_examples "set's calling player to WAITING_FOR_TURN"
+      end
+    end
+  end
 end

@@ -21,6 +21,7 @@ FactoryGirl.define do
         ignore do
           settlement_points []
           road_points []
+          resources {}
         end
 
         after(:build) do |player, evaluator|
@@ -30,6 +31,12 @@ FactoryGirl.define do
           
           evaluator.road_points.each do |point|
             player.roads.build(:edge_x => point[0], :edge_y => point[1], :side => point[2])
+          end
+
+          if evaluator.resources != nil #it seems to ignore the default value of an empty hash for some reason
+            evaluator.resources.each_pair do |type, amount|
+              player.resources.find{|r| r.type == type}.count = amount
+            end
           end
         end
       end
