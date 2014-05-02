@@ -1,6 +1,5 @@
 class Harbor < ActiveRecord::Base
   belongs_to :map, :inverse_of => :harbors
-  attr_accessible :edge_x, :edge_y, :resource_type, :side
 
   validates_presence_of :map
 

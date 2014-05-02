@@ -10,10 +10,6 @@ describe Game do
     it { should belong_to(:winner).class_name('User') }
   end
 
-  describe "current_player" do
-    it { should belong_to(:current_player).class_name('Player') }
-  end
-
   describe "map" do
     it { should belong_to(:map) }
     it { should validate_presence_of(:map) }
@@ -73,6 +69,34 @@ describe Game do
       game.game_board.vertex_is_free_for_building?(2,2,0).should be_true
       game.players.find{|p|p.turn_status == PLACING_INITIAL_SETTLEMENT}.add_settlement?(2,2,0)
       game.game_board.vertex_is_free_for_building?(2,2,0).should be_false
+    end
+  end
+
+  describe "current_player" do
+    context "when the current player is player 1" do
+      let(:game) {FactoryGirl.create(:game_turn_1)}
+
+      it "returns the player with id current_player_id" do
+        game.current_player.id = game.current_player_id
+      end
+    end
+
+    context "when the current player is not player 1" do
+      let(:game) {FactoryGirl.create(:game_turn_2)}
+      
+      it "returns the player with id current_player_id" do
+        game.current_player.id = game.current_player_id
+      end
+    end
+  end
+
+  describe "current_player=" do
+    let(:game) {FactoryGirl.create(:game_turn_1)}
+    let(:new_player) {game.players.find{|p| p.id != game.current_player_id}}
+
+    it "sets current_player_id to the player's id" do
+      game.current_player = new_player
+      game.current_player_id.should eq(new_player.id)
     end
   end
 
@@ -483,7 +507,7 @@ describe Game do
 
           context "when the current player is not the last player" do
             let!(:current_player) do
-              player = game.current_player.turn_status = PLACING_INITIAL_ROAD
+              game.current_player.turn_status = PLACING_INITIAL_ROAD
               game.current_player
             end
 

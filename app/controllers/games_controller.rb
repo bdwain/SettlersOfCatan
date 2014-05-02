@@ -18,7 +18,7 @@ class GamesController < ApplicationController
 
   # POST /games
   def create
-    @game = Game.new(params[:game])
+    @game = Game.new(game_params)
     @game.creator = current_user
     if @game.save
       redirect_to @game
@@ -28,9 +28,8 @@ class GamesController < ApplicationController
     end
   end
 
-  # PUT /games/1
-  def update
-    #prob do something later
-    redirect_to games_url
+  private
+  def game_params
+    params.require(:game).permit(:num_players)
   end
 end

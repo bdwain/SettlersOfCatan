@@ -1,6 +1,5 @@
 class Chat < ActiveRecord::Base
   belongs_to :sender, :class_name => 'Player', :foreign_key => 'sender_id'
-  attr_accessible :msg
 
   validates_presence_of :sender
   validates :msg, :presence => true, 

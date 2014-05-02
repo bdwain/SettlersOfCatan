@@ -1,7 +1,6 @@
 class Game < ActiveRecord::Base
   belongs_to :creator, :class_name => 'User', :foreign_key => 'creator_id'
   belongs_to :winner, :class_name => 'User', :foreign_key => 'winner_id'
-  belongs_to :current_player, :class_name => 'Player', :foreign_key => 'current_player_id', :autosave => true
   belongs_to :map
 
   has_many :players, :inverse_of => :game, :autosave => true, :dependent => :destroy
@@ -10,12 +9,18 @@ class Game < ActiveRecord::Base
   has_many :chats, :through => :players
   has_many :game_logs, :through => :players
   has_many :dice_rolls, :through => :players
-
-  attr_accessible :num_players
-
+  
   include GameBoard
   def game_board
     GameBoard.new(map, players)
+  end
+
+  def current_player
+    players.find{|p| p.id == current_player_id}
+  end
+
+  def current_player=(player)
+    self.current_player_id = player.id
   end
 
   private
@@ -130,14 +135,19 @@ class Game < ActiveRecord::Base
     save
   end
   
-  #when saving a game, initialize it for play if it's full but status is still waiting
   before_save do
-    if num_players == players.length && waiting_for_players?
-      return init_game?
-    elsif @resources_to_give
+    if @resources_to_give
       @resources_to_give.each do |cur_player, resources|
         return false unless cur_player.collect_resources?(resources, current_player)
       end
+    end
+    true
+  end
+
+  #when saving a game, initialize it for play if it's full but status is still waiting
+  after_save do
+    if num_players == players.length && waiting_for_players?
+      raise ActiveRecord::Rollback unless init_game?
     end
     true
   end
@@ -158,7 +168,7 @@ class Game < ActiveRecord::Base
       end
     end
 
-    self.current_player = players.first
+    self.current_player = players.find{|p| p.turn_num == 1}
 
     14.times { development_cards.build(type: KNIGHT) }
     5.times { development_cards.build(type: VICTORY_POINT) }
@@ -171,7 +181,7 @@ class Game < ActiveRecord::Base
     development_cards.shuffle!.each_with_index { |card, index| card.position = index }
 
     self.status = STATUS_PLACING_INITIAL_PIECES
-    true
+    save
   end
 
   def advance_while_placing_initial_pieces?

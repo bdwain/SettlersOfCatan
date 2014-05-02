@@ -12,7 +12,7 @@ SettlersOfCatan::Application.configure do
   config.serve_static_assets = false
 
   # Compress JavaScripts and CSS
-  config.assets.compress = true
+  config.assets.js_compressor = :uglifier
 
   # Don't fallback to assets pipeline if a precompiled asset is missed
   config.assets.compile = false
@@ -71,4 +71,6 @@ SettlersOfCatan::Application.configure do
   config.action_mailer.perform_deliveries = false
   #config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = { :host => ENV["default_url"] }
+
+  config.eager_load = true
 end

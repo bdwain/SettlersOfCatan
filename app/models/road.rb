@@ -1,6 +1,5 @@
 class Road < ActiveRecord::Base
   belongs_to :player, :inverse_of => :roads
-  attr_accessible :edge_x, :edge_y, :side
 
   validates_presence_of :player
 

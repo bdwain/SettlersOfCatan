@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.12'
+gem 'rails', '4.0.4'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -31,18 +31,12 @@ gem 'factory_girl_rails', :require => false #don't require because of http://goo
 gem "active_model_serializers", "~> 0.8.0"
 gem "backbone-on-rails"
 
-# Gems used only for assets and not required
-# in production environments by default.
-group :assets do
-  #gem 'sass-rails',   '~> 3.2.3'
-  #gem 'coffee-rails', '~> 3.2.1'
+# See https://github.com/sstephenson/execjs#readme for more supported runtimes
+gem "therubyracer", ">= 0.11.3", :platform => :ruby, :require => "v8"
 
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  gem "therubyracer", ">= 0.11.3", :platform => :ruby, :require => "v8"
-  gem "less-rails", ">= 2.2.6"
-  gem "twitter-bootstrap-rails", ">= 2.2.4"
-  gem 'uglifier', '>= 1.0.3'
-end
+gem "less-rails", ">= 2.2.6"
+gem "twitter-bootstrap-rails", ">= 2.2.4"
+gem 'uglifier', '>= 2.5.0'
 
 group :development do
   gem "rails-erd"
@@ -56,7 +50,7 @@ group :development, :test do
 end
 
 group :test do
-  gem 'shoulda-matchers', "~> 2.1.0"
+  gem 'shoulda-matchers', "~> 2.6.0"
 end
 
 group :production do

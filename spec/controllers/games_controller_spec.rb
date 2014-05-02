@@ -8,7 +8,6 @@ describe GamesController do
     it { get :new }
     it { get :show, :id => game.to_param }
     it { post :create, :game => FactoryGirl.attributes_for(:game) }
-    it { put :update, :id => game.to_param, :game => {'these' => 'params'} }
   end
 
   context "When Logged In" do
@@ -39,34 +38,41 @@ describe GamesController do
 
     describe "POST create" do
       context "with valid params" do
+        let(:params) {{:game => {:num_players => 3}}}
         it "creates a new Game" do
           expect {
-            post :create, {:game => FactoryGirl.attributes_for(:game)}
+            post :create, params
           }.to change(Game, :count).by(1)
         end
 
         it "assigns a newly created game as @game" do
-          post :create, {:game => FactoryGirl.attributes_for(:game)}
+          post :create, params
           assigns(:game).should be_a(Game)
           assigns(:game).should be_persisted
         end
 
         it "sets the creator of game to the current_user" do
-          post :create, {:game => FactoryGirl.attributes_for(:game)}
+          post :create, params
           assigns(:game).creator.should eq(@current_user)
         end
 
         it "redirects to the created game" do
-          post :create, {:game => FactoryGirl.attributes_for(:game)}
+          post :create, params
           response.should redirect_to(Game.last)
         end
       end
 
-      context "with invalid params" do
-        before(:each) do
-          Game.any_instance.stub(:save).and_return(false)
-          post :create, {:game => {  }}
+      context "with params not in the game hash" do
+        it "throws a ParameterMissing exception" do
+          expect{
+            post :create, {:foo => { :num_players => 3 }}
+          }.to raise_exception(ActionController::ParameterMissing)
         end
+      end
+
+      context "with invalid params" do
+        before(:each) {post :create, {:game => { :foo => 1 }}}
+
         it "assigns a newly created but unsaved game as @game" do
           assigns(:game).should be_a_new(Game)
         end
@@ -79,10 +85,14 @@ describe GamesController do
           should set_the_flash[:error].to("Something went wrong creating the game")
         end
       end
-    end
 
-    describe "PUT update" do
-      #nothing yet
+      context "with empty params" do
+        it "throws a ParameterMissing exception" do
+          expect{
+            post :create, {:game => { }}
+          }.to raise_exception(ActionController::ParameterMissing)
+        end
+      end
     end
   end
 end

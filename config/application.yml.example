@@ -1,7 +1,7 @@
 # Add application configuration variables here, as shown below.
 
 #REQUIRED: Generate a key by saying "rake secret" on the command line
-app_secret_token: SET_ME
+app_secret_key_base: SET_ME
 devise_secret_key: SET_ME
 devise_pepper: SET_ME
 

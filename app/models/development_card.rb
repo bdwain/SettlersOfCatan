@@ -5,8 +5,6 @@ class DevelopmentCard < ActiveRecord::Base
   belongs_to :player, :inverse_of => :development_cards
   belongs_to :game, :inverse_of => :development_cards
 
-  attr_accessible :position, :type, :was_used
-
   validates_presence_of :game
 
   validates :position, :allow_nil=> true, 

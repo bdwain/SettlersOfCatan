@@ -1,9 +1,7 @@
 class Map < ActiveRecord::Base
   has_many :hexes, :inverse_of => :map, :autosave => true, :dependent => :destroy
   has_many :harbors, :inverse_of => :map, :autosave => true, :dependent => :destroy
-
-  attr_accessible :name, :middle_row_width, :num_middle_rows, :num_rows
-
+  
   validates :name, :presence => true, :length => { :in => 3..50 }
 
   validates :middle_row_width, :presence => true, 
