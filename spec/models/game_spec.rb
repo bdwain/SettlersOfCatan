@@ -836,10 +836,13 @@ describe Game do
 
       context "when the calling player is not the current_player" do
         before(:each) do
-          game.current_player.turn_status = WAITING_FOR_TURN
-          game.players.find{|p| p != game.current_player}.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+          game.current_player.turn_status = WAITING_FOR_TURN          
         end
-        let(:calling_player) {game.players.find{|p| p.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER}}
+        let(:calling_player) do
+          player = game.players.find{|p| p != game.current_player}
+          player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+          player
+        end
 
         include_examples "returns true"
         include_examples "set's current_player to MOVING_ROBBER"
