@@ -137,11 +137,10 @@ class Game < ActiveRecord::Base
   
   before_save do
     if @resources_to_give
-      @resources_to_give.each do |cur_player, resources|
-        return false unless cur_player.collect_resources?(resources)
-      end
+      @resources_to_give.all?{|cur_player, resources| cur_player.collect_resources?(resources) }
+    else
+      true
     end
-    true
   end
 
   #when saving a game, initialize it for play if it's full but status is still waiting
@@ -164,7 +163,7 @@ class Game < ActiveRecord::Base
   private
   def init_game?
     #give each player their own turn
-    players.shuffle!.each_with_index do |player, index|
+    players.shuffle.each_with_index do |player, index|
       player.turn_num = index + 1
       player.turn_status = (index == 0 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
       player.resources.build(type: WHEAT)
@@ -187,7 +186,7 @@ class Game < ActiveRecord::Base
       development_cards.build(type: MONOPOLY)
     end
 
-    development_cards.shuffle!.each_with_index { |card, index| card.position = index }
+    development_cards.shuffle.each_with_index { |card, index| card.position = index }
 
     self.status = STATUS_PLACING_INITIAL_PIECES
     save
