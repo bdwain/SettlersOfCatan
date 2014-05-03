@@ -46,11 +46,12 @@ group :development do
 end
 
 group :development, :test do
+  gem 'spring-commands-rspec' 
   gem "rspec-rails", "~> 2.12"
 end
 
 group :test do
-  gem 'shoulda-matchers', "~> 2.6.0"
+  gem 'shoulda-matchers', "~> 2.6.0", require: false
 end
 
 group :production do

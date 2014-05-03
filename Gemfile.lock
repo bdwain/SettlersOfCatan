@@ -150,6 +150,9 @@ GEM
     ruby-graphviz (1.0.9)
     shoulda-matchers (2.6.1)
       activesupport (>= 3.0.0)
+    spring (1.1.2)
+    spring-commands-rspec (1.0.2)
+      spring (>= 0.9.1)
     sprockets (2.12.1)
       hike (~> 1.2)
       multi_json (~> 1.0)
@@ -207,6 +210,7 @@ DEPENDENCIES
   rolify (>= 3.2.0)
   rspec-rails (~> 2.12)
   shoulda-matchers (~> 2.6.0)
+  spring-commands-rspec
   therubyracer (>= 0.11.3)
   thin (>= 1.5.0)
   twitter-bootstrap-rails (>= 2.2.4)
