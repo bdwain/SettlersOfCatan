@@ -138,7 +138,7 @@ class Game < ActiveRecord::Base
   before_save do
     if @resources_to_give
       @resources_to_give.each do |cur_player, resources|
-        return false unless cur_player.collect_resources?(resources, current_player)
+        return false unless cur_player.collect_resources?(resources)
       end
     end
     true

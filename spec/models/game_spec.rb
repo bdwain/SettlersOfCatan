@@ -747,8 +747,8 @@ describe Game do
           include_examples "success when not 7"
 
           it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-            player1.should_receive(:collect_resources?).with({WOOD => 1}, game.current_player)
-            player2.should_receive(:collect_resources?).with({ORE => 2}, game.current_player)
+            player1.should_receive(:collect_resources?).with({WOOD => 1})
+            player2.should_receive(:collect_resources?).with({ORE => 2})
             player3.should_not_receive(:collect_resources?)
             game.process_dice_roll?(dice_num)
           end
@@ -757,7 +757,7 @@ describe Game do
             let(:dice_num){3}
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1}, game.current_player)
+              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1})
               game.process_dice_roll?(dice_num)
             end
           end
@@ -769,7 +769,7 @@ describe Game do
             end
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled except the robber hex" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1}, game.current_player)
+              player1.should_receive(:collect_resources?).with({WOOD => 1})
               player2.should_not_receive(:collect_resources?)
               player3.should_not_receive(:collect_resources?)
               game.process_dice_roll?(dice_num)
@@ -780,7 +780,7 @@ describe Game do
             before(:each) {player1.settlements.find{|s| s.vertex_x == 4 && s.vertex_y == 0 && s.side == 0}.is_city = true}
 
             it "gives that player 2 resources instead of 1" do
-              player1.should_receive(:collect_resources?).with({WOOD => 2}, game.current_player)
+              player1.should_receive(:collect_resources?).with({WOOD => 2})
               game.process_dice_roll?(dice_num)
             end
           end

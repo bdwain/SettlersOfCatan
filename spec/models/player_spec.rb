@@ -444,11 +444,11 @@ describe Player do
   describe "collect_resources?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
     let(:player) {FactoryGirl.create(:in_game_player, {game: game})}
-    let(:calling_player) {player}
+    before(:each) {game.stub(:current_player).and_return(player)}
 
     shared_examples "returns true" do
       it "returns true" do
-        player.collect_resources?(resources, calling_player).should be_true
+        player.collect_resources?(resources).should be_true
       end
     end
 
@@ -459,7 +459,7 @@ describe Player do
 
       it "does not create a game log" do
         expect{
-          player.collect_resources?(resources, calling_player)
+          player.collect_resources?(resources)
         }.to_not change(player.game_logs, :count)
       end
     end
@@ -471,26 +471,27 @@ describe Player do
 
       it "creates a correct game log" do
         expect{
-          player.collect_resources?(resources, calling_player)
+          player.collect_resources?(resources)
         }.to change(player.game_logs, :count).by(1)
 
         player.game_logs.last.turn_num.should eq(game.turn_num)
         player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
-        player.game_logs.last.current_player.should eq(calling_player)
+        player.game_logs.last.current_player.should eq(player)
       end
 
       it "adds the proper amounts to the resource totals" do
         original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
-        player.collect_resources?(resources, player)
+        player.collect_resources?(resources)
         player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count + resources.first[1])
       end
 
       context "when another player's turn causes the player to get the resources" do
-        let(:calling_player) {FactoryGirl.build(:in_game_player)}
+        let(:other_player) {FactoryGirl.build(:in_game_player)}
+        before(:each) {game.stub(:current_player).and_return(other_player)}
 
-        it "sets the game_log's current_player to the calling player" do
-          player.collect_resources?(resources, calling_player)
-          player.game_logs.last.current_player.should eq(calling_player)
+        it "sets the game_log's current_player to the other player" do
+          player.collect_resources?(resources)
+          player.game_logs.last.current_player.should eq(other_player)
         end
       end
 
@@ -499,20 +500,20 @@ describe Player do
 
         it "creates a correct game log" do
           expect{
-            player.collect_resources?(resources, player)
+            player.collect_resources?(resources)
           }.to change(player.game_logs, :count).by(1)
 
           player.game_logs.last.turn_num.should eq(game.turn_num)
           expected_msg = "#{player.user.displayname} got #{resources.first[1]} WHEAT and "
           expected_msg << "#{resources.entries.last[1]} ORE"
           player.game_logs.last.msg.should eq(expected_msg)
-          player.game_logs.last.current_player.should eq(calling_player)
+          player.game_logs.last.current_player.should eq(player)
         end
 
         it "adds the proper amounts to the resource totals" do
           original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
           original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
-          player.collect_resources?(resources, player)
+          player.collect_resources?(resources)
           player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count1 + resources.first[1])
           player.resources.find{|r| r.type == resources.entries.last[0]}.count.should eq(original_resource_count2 + resources.entries.last[1])
         end

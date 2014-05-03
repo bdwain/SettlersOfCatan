@@ -76,7 +76,7 @@ class Player < ActiveRecord::Base
     save
   end
 
-  def collect_resources?(resources_gained, calling_player)
+  def collect_resources?(resources_gained)
     if resources_gained.empty?
       return true
     end
@@ -94,7 +94,7 @@ class Player < ActiveRecord::Base
       msg << "#{keyval[1]} #{resource.name}"
     end
 
-    game_logs.build(:turn_num => game.turn_num, :current_player => calling_player, :msg => msg)
+    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
     save
   end
 end
