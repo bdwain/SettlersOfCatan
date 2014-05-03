@@ -15,24 +15,24 @@ describe User do
     it "calls game.remove_player? on each of a user's players' games" do
       game2 = FactoryGirl.create(:game, creator: game.creator)
 
-      game.creator.stub(:players).and_return([game.players.first, game2.players.first])
+      allow(game.creator).to receive(:players).and_return([game.players.first, game2.players.first])
 
-      game.should_receive(:remove_player?).with(game.creator.players.first)
-      game2.should_receive(:remove_player?).with(game.creator.players.last)
+      expect(game).to receive(:remove_player?).with(game.creator.players.first)
+      expect(game2).to receive(:remove_player?).with(game.creator.players.last)
       game.creator.destroy
     end
 
     it "destroys a game when remove_player? return true" do
-      game.creator.stub(:players).and_return([game.players.first])
-      game.stub(:remove_player?).and_return(false)
+      allow(game.creator).to receive(:players).and_return([game.players.first])
+      allow(game).to receive(:remove_player?).and_return(false)
       expect{
         game.creator.destroy
       }.to change(Game, :count).by(-1)
     end
 
     it "doesn't destroy a game when remove_player returns true" do
-      game.creator.stub(:players).and_return([game.players.first])      
-      game.stub(:remove_player?).and_return(true)
+      allow(game.creator).to receive(:players).and_return([game.players.first])      
+      allow(game).to receive(:remove_player?).and_return(true)
       expect{
         game.creator.destroy
       }.to_not change(Game, :count)

@@ -55,7 +55,7 @@ describe Player do
 
   describe "get_resource_count" do
     let(:player) {FactoryGirl.build_stubbed(:player)}
-    before(:each){player.stub(:resources).and_return(resources)}
+    before(:each){allow(player).to receive(:resources).and_return(resources)}
 
     context "when the player has no resources" do
       let(:resources) {[FactoryGirl.build(:resource, {type: WOOD, count: 0, player: player}), 
@@ -63,7 +63,7 @@ describe Player do
         FactoryGirl.build(:resource, {type: BRICK, count: 0, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 0, player: player})]}
 
       it "returns 0" do
-        player.get_resource_count.should eq(0)
+        expect(player.get_resource_count).to eq(0)
       end
     end
 
@@ -73,7 +73,7 @@ describe Player do
         FactoryGirl.build(:resource, {type: BRICK, count: 0, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 0, player: player})]}
 
       it "returns the resource count" do
-        player.get_resource_count.should eq(5)
+        expect(player.get_resource_count).to eq(5)
       end
     end
 
@@ -83,7 +83,7 @@ describe Player do
         FactoryGirl.build(:resource, {type: BRICK, count: 4, player: player}), FactoryGirl.build(:resource, {type: ORE, count: 5, player: player})]}
 
       it "returns the total number of resources" do
-        player.get_resource_count.should eq(15)
+        expect(player.get_resource_count).to eq(15)
       end
     end    
   end
@@ -91,12 +91,12 @@ describe Player do
   describe "add_settlement?" do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
-    before(:each) { game.stub(:game_board).and_return(board) }
+    before(:each) { allow(game).to receive(:game_board).and_return(board) }
     let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_settlement? failures" do
       it "returns false" do
-        player.add_settlement?(1, 1, 0).should be_false
+        expect(player.add_settlement?(1, 1, 0)).to be_falsey
       end
 
       it "does not change the player's turn_status" do
@@ -130,12 +130,12 @@ describe Player do
 
     shared_examples "add_settlement? successes" do
       it "returns true" do
-        player.add_settlement?(1, 1, 0).should be_true
+        expect(player.add_settlement?(1, 1, 0)).to be true
       end
 
       it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
         player.add_settlement?(1, 1, 0)
-        player.turn_status.should eq(PLACING_INITIAL_ROAD)
+        expect(player.turn_status).to eq(PLACING_INITIAL_ROAD)
       end
 
       it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
@@ -143,9 +143,9 @@ describe Player do
           player.add_settlement?(1, 1, 0)
         }.to change(player.game_logs, :count).by(1)
 
-        player.game_logs.last.turn_num.should eq(game.turn_num)
-        player.game_logs.last.msg.should eq("#{player.user.displayname} placed a settlement on (1,1,0)")
-        player.game_logs.last.current_player.should eq(player)
+        expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+        expect(player.game_logs.last.msg).to eq("#{player.user.displayname} placed a settlement on (1,1,0)")
+        expect(player.game_logs.last.current_player).to eq(player)
       end
 
       it "creates a new settlement for the user at x,y,side" do
@@ -153,26 +153,26 @@ describe Player do
           player.add_settlement?(1, 1, 0)
         }.to change(player.settlements, :count).by(1)
 
-        player.settlements.last.vertex_x.should eq(1)
-        player.settlements.last.vertex_y.should eq(1)
-        player.settlements.last.side.should eq(0)
+        expect(player.settlements.last.vertex_x).to eq(1)
+        expect(player.settlements.last.vertex_y).to eq(1)
+        expect(player.settlements.last.side).to eq(0)
       end
     end
 
     context "when x,y is not free for building" do
-      before(:each) {board.stub(:vertex_is_free_for_building?).and_return(false)}
+      before(:each) {allow(board).to receive(:vertex_is_free_for_building?).and_return(false)}
 
       include_examples "add_settlement? failures"
     end
 
     context "when x,y is free for building" do
-      before(:each) {board.stub(:vertex_is_free_for_building?).and_return(true)}
+      before(:each) {allow(board).to receive(:vertex_is_free_for_building?).and_return(true)}
 
       context "when player is status PLACING_INITIAL_SETTLEMENT" do
         before(:each) do
           player.turn_status = PLACING_INITIAL_SETTLEMENT
           hexes = [Hex.new(resource_type: WOOD), Hex.new(resource_type: WOOL), Hex.new(resource_type: WOOD)]
-          board.stub(:get_hexes_from_vertex).and_return(hexes)
+          allow(board).to receive(:get_hexes_from_vertex).and_return(hexes)
         end
 
         context "when turn number is 1" do
@@ -189,11 +189,11 @@ describe Player do
           
           it "sets the player's resource counts properly" do
             player.add_settlement?(1, 1, 0)
-            player.resources.find{|resource| resource.type == WOOD}.count.should eq(2)
-            player.resources.find{|resource| resource.type == WOOL}.count.should eq(1)
-            player.resources.find{|resource| resource.type == ORE}.count.should eq(0)
-            player.resources.find{|resource| resource.type == BRICK}.count.should eq(0)
-            player.resources.find{|resource| resource.type == WHEAT}.count.should eq(0)
+            expect(player.resources.find{|resource| resource.type == WOOD}.count).to eq(2)
+            expect(player.resources.find{|resource| resource.type == WOOL}.count).to eq(1)
+            expect(player.resources.find{|resource| resource.type == ORE}.count).to eq(0)
+            expect(player.resources.find{|resource| resource.type == BRICK}.count).to eq(0)
+            expect(player.resources.find{|resource| resource.type == WHEAT}.count).to eq(0)
           end
         end        
       end
@@ -201,7 +201,7 @@ describe Player do
       #TODO: add in when player is playing turn
       
       context "when player is not status PLACING_INITIAL_SETTLEMENT" do
-        before(:each) {player.stub(:turn_status).and_return(WAITING_FOR_TURN)}
+        before(:each) {allow(player).to receive(:turn_status).and_return(WAITING_FOR_TURN)}
 
         include_examples "add_settlement? failures"
       end
@@ -211,12 +211,12 @@ describe Player do
   describe "add_road?" do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
-    before(:each) { game.stub(:game_board).and_return(board) }
+    before(:each) { allow(game).to receive(:game_board).and_return(board) }
     let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
 
     shared_examples "add_road? failures" do
       it "returns false" do
-        player.add_road?(x, y, side).should be_false
+        expect(player.add_road?(x, y, side)).to be_falsey
       end
 
       it "does not create a new game log" do
@@ -234,14 +234,14 @@ describe Player do
 
     shared_examples "does not call game.advance?" do
       it "does not call game.advance?" do
-        game.should_not_receive(:advance?)
+        expect(game).to_not receive(:advance?)
         player.add_road?(x, y, side)
       end
     end
 
     shared_examples "calls game.advance?" do
       it "calls game.advance?" do
-        game.should_receive(:advance?)
+        expect(game).to receive(:advance?)
         player.add_road?(x, y, side)
       end
     end    
@@ -250,7 +250,7 @@ describe Player do
       let(:x) {-10}
       let(:y) {-10}
       let(:side) {0}
-      before(:each) {board.should_receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(false)}
+      before(:each) {expect(board).to receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(false)}
 
       include_examples "add_road? failures"
       include_examples "does not call game.advance?"
@@ -260,7 +260,7 @@ describe Player do
       let(:x) {2}
       let(:y) {2}
       let(:side) {0}
-      before(:each) {board.should_receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(true)}
+      before(:each) {expect(board).to receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(true)}
       
       context "when player is status PLACING_INITIAL_ROAD" do
         before(:each) {player.turn_status = PLACING_INITIAL_ROAD}
@@ -269,7 +269,7 @@ describe Player do
           context "when the player has only 1 settlement" do
             before(:each) do
               player.settlements.build(:vertex_x => 0, :vertex_y => 2, :side => 0)
-              board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
+              expect(board).to receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
             end
             include_examples "add_road? failures"
             include_examples "does not call game.advance?"
@@ -279,7 +279,7 @@ describe Player do
             before(:each) do
               player.settlements.build(:vertex_x => 2, :vertex_y => 2, :side => 0)
               player.settlements.build(:vertex_x => 0, :vertex_y => 2, :side => 0)
-              board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
+              expect(board).to receive(:edge_is_connected_to_vertex?).with(x, y, side, 0, 2, 0).and_return(false)
             end
 
             include_examples "add_road? failures"
@@ -290,14 +290,14 @@ describe Player do
         context "when the edge is touching the last settlement the player built" do
           before(:each) do
             player.settlements.build(:vertex_x => 2, :vertex_y => 2, :side => 0)
-            board.should_receive(:edge_is_connected_to_vertex?).with(x, y, side, 2, 2, 0).and_return(true)
+            expect(board).to receive(:edge_is_connected_to_vertex?).with(x, y, side, 2, 2, 0).and_return(true)
           end
 
           context "when game.advance? returns true" do
-            before(:each) {game.stub(:advance?).and_return(true)}
+            before(:each) {allow(game).to receive(:advance?).and_return(true)}
 
             it "returns true" do
-              player.add_road?(x, y, side).should be_true
+              expect(player.add_road?(x, y, side)).to be true
             end
 
             it "creates a new game_log with the game's turn number and proper text and self as current_player" do
@@ -305,9 +305,9 @@ describe Player do
                 player.add_road?(x, y, side)
               }.to change(player.game_logs, :count).by(1)
 
-              player.game_logs.last.turn_num.should eq(game.turn_num)
-              player.game_logs.last.msg.should eq("#{player.user.displayname} placed a road on (#{x},#{y},#{side})")
-              player.game_logs.last.current_player.should eq(player)
+              expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+              expect(player.game_logs.last.msg).to eq("#{player.user.displayname} placed a road on (#{x},#{y},#{side})")
+              expect(player.game_logs.last.current_player).to eq(player)
             end
 
             it "creates a new road with for the user at x,y,side" do
@@ -315,16 +315,16 @@ describe Player do
                 player.add_road?(x, y, side)
               }.to change(player.roads, :count).by(1)
 
-              player.roads.last.edge_x.should eq(x)
-              player.roads.last.edge_y.should eq(y)
-              player.roads.last.side.should eq(side)
+              expect(player.roads.last.edge_x).to eq(x)
+              expect(player.roads.last.edge_y).to eq(y)
+              expect(player.roads.last.side).to eq(side)
             end
 
             include_examples "calls game.advance?"
           end
 
           context "when game.advance? returns false" do
-            before(:each) {game.stub(:advance?).and_return(false)}
+            before(:each) {allow(game).to receive(:advance?).and_return(false)}
 
             include_examples "add_road? failures"
             include_examples "calls game.advance?"
@@ -335,7 +335,7 @@ describe Player do
       #TODO: add in when player is playing turn
       
       context "when player is not status PLACING_INITIAL_ROAD" do
-        before(:each) {player.stub(:turn_status).and_return(WAITING_FOR_TURN)}
+        before(:each) {allow(player).to receive(:turn_status).and_return(WAITING_FOR_TURN)}
 
         include_examples "add_road? failures"
         include_examples "does not call game.advance?"
@@ -349,7 +349,7 @@ describe Player do
 
     shared_examples "roll_dice? failures" do
       it "returns false" do
-        player.roll_dice?.should be_false
+        expect(player.roll_dice?).to be_falsey
       end
 
       it "does not create a new game log" do
@@ -373,14 +373,14 @@ describe Player do
 
     shared_examples "does not call game.process_dice_roll?" do
       it "does not call game.process_dice_roll?" do
-        game.should_not_receive(:process_dice_roll?)
+        expect(game).to_not receive(:process_dice_roll?)
         player.roll_dice?
       end
     end
 
     shared_examples "calls game.process_dice_roll?" do
       it "calls game.process_dice_roll?" do
-        game.should_receive(:process_dice_roll?).with(2+rand_1+rand_2)
+        expect(game).to receive(:process_dice_roll?).with(2+rand_1+rand_2)
         player.roll_dice?
       end
     end
@@ -396,20 +396,20 @@ describe Player do
       before(:each) {player.turn_status = READY_TO_ROLL}
       let(:rand_1) {1}
       let(:rand_2) {5}
-      before(:each) {player.stub(:rand).and_return(rand_1, rand_2)}
+      before(:each) {allow(player).to receive(:rand).and_return(rand_1, rand_2)}
 
       context "when game.process_dice_roll? returns false" do
-        before(:each) {game.stub(:process_dice_roll?).and_return(false)}
+        before(:each) {allow(game).to receive(:process_dice_roll?).and_return(false)}
 
         include_examples "roll_dice? failures"
         include_examples "calls game.process_dice_roll?"
       end
 
       context "when game.process_dice_roll? returns true" do
-        before(:each) {game.stub(:process_dice_roll?).and_return(true)}
+        before(:each) {allow(game).to receive(:process_dice_roll?).and_return(true)}
 
         it "returns true" do
-          player.roll_dice?.should be_true
+          expect(player.roll_dice?).to be true
         end
 
         it "creates a new game_log with the game's turn number and proper text and self as current_player" do
@@ -417,9 +417,9 @@ describe Player do
             player.roll_dice?
           }.to change(player.game_logs, :count).by(1)
 
-          player.game_logs.last.turn_num.should eq(game.turn_num)
-          player.game_logs.last.msg.should eq("#{player.user.displayname} rolled a (#{2 + rand_1 + rand_2})")
-          player.game_logs.last.current_player.should eq(player)
+          expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+          expect(player.game_logs.last.msg).to eq("#{player.user.displayname} rolled a (#{2 + rand_1 + rand_2})")
+          expect(player.game_logs.last.current_player).to eq(player)
         end
 
         it "creates a new dice_roll object with the game's turn number and proper numbers" do
@@ -427,9 +427,9 @@ describe Player do
             player.roll_dice?
           }.to change(player.dice_rolls, :count).by(1)
 
-          player.dice_rolls.last.turn_num.should eq(game.turn_num)
-          player.dice_rolls.last.die_1.should eq(rand_1 + 1)
-          player.dice_rolls.last.die_2.should eq(rand_2 + 1)
+          expect(player.dice_rolls.last.turn_num).to eq(game.turn_num)
+          expect(player.dice_rolls.last.die_1).to eq(rand_1 + 1)
+          expect(player.dice_rolls.last.die_2).to eq(rand_2 + 1)
         end
         
         include_examples "calls game.process_dice_roll?"
@@ -440,11 +440,11 @@ describe Player do
   describe "collect_resources?" do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
     let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
-    before(:each) {game.stub(:current_player).and_return(player)}
+    before(:each) {allow(game).to receive(:current_player).and_return(player)}
 
     shared_examples "returns true" do
       it "returns true" do
-        player.collect_resources?(resources).should be_true
+        expect(player.collect_resources?(resources)).to be true
       end
     end
 
@@ -470,24 +470,24 @@ describe Player do
           player.collect_resources?(resources)
         }.to change(player.game_logs, :count).by(1)
 
-        player.game_logs.last.turn_num.should eq(game.turn_num)
-        player.game_logs.last.msg.should eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
-        player.game_logs.last.current_player.should eq(player)
+        expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+        expect(player.game_logs.last.msg).to eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
+        expect(player.game_logs.last.current_player).to eq(player)
       end
 
       it "adds the proper amounts to the resource totals" do
         original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
         player.collect_resources?(resources)
-        player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count + resources.first[1])
+        expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count + resources.first[1])
       end
 
       context "when another player's turn causes the player to get the resources" do
         let(:other_player) {FactoryGirl.build(:in_game_player)}
-        before(:each) {game.stub(:current_player).and_return(other_player)}
+        before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
 
         it "sets the game_log's current_player to the other player" do
           player.collect_resources?(resources)
-          player.game_logs.last.current_player.should eq(other_player)
+          expect(player.game_logs.last.current_player).to eq(other_player)
         end
       end
 
@@ -499,19 +499,19 @@ describe Player do
             player.collect_resources?(resources)
           }.to change(player.game_logs, :count).by(1)
 
-          player.game_logs.last.turn_num.should eq(game.turn_num)
+          expect(player.game_logs.last.turn_num).to eq(game.turn_num)
           expected_msg = "#{player.user.displayname} got #{resources.first[1]} WHEAT and "
           expected_msg << "#{resources.entries.last[1]} ORE"
-          player.game_logs.last.msg.should eq(expected_msg)
-          player.game_logs.last.current_player.should eq(player)
+          expect(player.game_logs.last.msg).to eq(expected_msg)
+          expect(player.game_logs.last.current_player).to eq(player)
         end
 
         it "adds the proper amounts to the resource totals" do
           original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
           original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
           player.collect_resources?(resources)
-          player.resources.find{|r| r.type == resources.first[0]}.count.should eq(original_resource_count1 + resources.first[1])
-          player.resources.find{|r| r.type == resources.entries.last[0]}.count.should eq(original_resource_count2 + resources.entries.last[1])
+          expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count1 + resources.first[1])
+          expect(player.resources.find{|r| r.type == resources.entries.last[0]}.count).to eq(original_resource_count2 + resources.entries.last[1])
         end
       end
     end
@@ -521,12 +521,12 @@ describe Player do
     let(:game) { FactoryGirl.build_stubbed(:game_started) }
     let(:player) {FactoryGirl.create(:player_with_items, {game: game, 
       resources: original_resources})}
-    before(:each) {game.stub(:current_player).and_return(player)}
+    before(:each) {allow(game).to receive(:current_player).and_return(player)}
     let(:original_resources) {{WHEAT => 6, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 0}}
 
     shared_examples "discard_half_resources failures" do
       it "returns false" do
-        player.discard_half_resources?(resources_to_discard).should be_false
+        expect(player.discard_half_resources?(resources_to_discard)).to be_falsey
       end
 
       it "does not add a new game_log" do
@@ -545,13 +545,13 @@ describe Player do
         original_count = player.get_resource_count
         player.discard_half_resources?(resources_to_discard)
         player.reload
-        player.get_resource_count.should eq(original_count)
+        expect(player.get_resource_count).to eq(original_count)
       end
     end
 
     shared_examples "does not call game.player_finished_discarding?" do
       it "does not call game.player_finished_discarding?" do
-        game.should_not_receive(:player_finished_discarding?)
+        expect(game).to_not receive(:player_finished_discarding?)
         player.discard_half_resources?(resources_to_discard)
       end
     end
@@ -592,23 +592,23 @@ describe Player do
         let(:resources_to_discard) {{WHEAT => 6, WOOD => 0, WOOL => 0, ORE => 0, BRICK => 0}}
 
         context "when game.player_finished_discarding? returns false" do
-          before(:each) {game.stub(:player_finished_discarding?).and_return(false)}
+          before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(false)}
 
           include_examples "discard_half_resources failures"
         end
 
         context "when game.player_finished_discarding? returns true" do
-          before(:each) {game.stub(:player_finished_discarding?).and_return(true)}
+          before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(true)}
 
           it "returns true" do
-            player.discard_half_resources?(resources_to_discard).should be_true
+            expect(player.discard_half_resources?(resources_to_discard)).to be true
           end
 
           it "discards the proper amounts of resources" do
             player.discard_half_resources?(resources_to_discard)
 
             original_resources.each do |type, amount|
-              player.resources.find{|r| r.type == type}.count.should eq(amount - resources_to_discard[type])
+              expect(player.resources.find{|r| r.type == type}.count).to eq(amount - resources_to_discard[type])
             end
           end
 
@@ -617,18 +617,18 @@ describe Player do
               player.discard_half_resources?(resources_to_discard)
             }.to change(player.game_logs, :count).by(1)
 
-            player.game_logs.last.turn_num.should eq(game.turn_num)
-            player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 6 WHEAT")
-            player.game_logs.last.current_player.should eq(player)
+            expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+            expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 6 WHEAT")
+            expect(player.game_logs.last.current_player).to eq(player)
           end
 
           context "when it's another player's turn" do
             let(:other_player) {FactoryGirl.build(:in_game_player)}
-            before(:each) {game.stub(:current_player).and_return(other_player)}
+            before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
 
             it "sets the game_log's current_player to the other player" do
               player.discard_half_resources?(resources_to_discard)
-              player.game_logs.last.current_player.should eq(other_player)
+              expect(player.game_logs.last.current_player).to eq(other_player)
             end
           end
 
@@ -637,7 +637,7 @@ describe Player do
 
             it "properly formats the game_log msg" do
               player.discard_half_resources?(resources_to_discard)
-              player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 4 WHEAT and 1 WOOD and 1 WOOL")
+              expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 4 WHEAT and 1 WOOD and 1 WOOL")
             end
 
             context "when the first resource in the hash is not discarded" do
@@ -645,7 +645,7 @@ describe Player do
 
               it "does not say \"and\" before the first resource in the message" do
                 player.discard_half_resources?(resources_to_discard)
-                player.game_logs.last.msg.should eq("#{player.user.displayname} discarded 1 WOOD and 2 WOOL and 3 ORE")
+                expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 1 WOOD and 2 WOOL and 3 ORE")
               end
             end
           end

@@ -4,7 +4,7 @@ describe PlayersController do
   context "When Not Logged In" do
     let(:game) {FactoryGirl.build_stubbed(:game)}
     let(:player) {FactoryGirl.build_stubbed(:player)}
-    after { response.should redirect_to new_user_session_path }
+    after { expect(response).to redirect_to new_user_session_path }
     it { post :create, :game_id => game }
     it { delete :destroy, :id => player }
   end
@@ -16,7 +16,7 @@ describe PlayersController do
       shared_examples "POST create failures" do
         it "redirects to the games index" do
           post :create, :game_id => game
-          response.should redirect_to(games_url)
+          expect(response).to redirect_to(games_url)
         end
 
         it "flashes an error" do
@@ -27,18 +27,18 @@ describe PlayersController do
 
       context "with valid input" do
         let(:game) {FactoryGirl.build_stubbed(:game)}
-        before(:each) { Game.should_receive(:find_by_id).and_return(game) }
+        before(:each) { expect(Game).to receive(:find_by_id).and_return(game) }
 
         context "on success" do          
           it "redirects to the game with valid input" do
-            game.should_receive(:add_user?).with(@current_user).and_return(true)            
+            expect(game).to receive(:add_user?).with(@current_user).and_return(true)            
             post :create, :game_id => game
-            response.should redirect_to(game)
+            expect(response).to redirect_to(game)
           end
         end
 
         context "when add_user? returns false" do
-          before(:each) { game.stub(:add_user?).and_return(false) }
+          before(:each) { allow(game).to receive(:add_user?).and_return(false) }
           include_examples "POST create failures"
         end
       end
@@ -53,7 +53,7 @@ describe PlayersController do
       shared_examples "destroy redirects to games_url" do
         it "redirects to games_url" do
           delete :destroy, {:id => player}
-          response.should redirect_to(games_url)
+          expect(response).to redirect_to(games_url)
         end
       end
 
@@ -66,12 +66,12 @@ describe PlayersController do
 
       let(:player) { FactoryGirl.build_stubbed(:player) }
       context "with a valid player id" do
-        before(:each) { Player.stub(:find_by_id).and_return(player) }
+        before(:each) { allow(Player).to receive(:find_by_id).and_return(player) }
         context "owned by the current user" do
-          before(:each) { player.should_receive(:user).at_least(:once).and_return(@current_user) }
+          before(:each) { expect(player).to receive(:user).at_least(:once).and_return(@current_user) }
 
           context "when remove_player? returns true" do
-            before(:each) { player.game.should_receive(:remove_player?).with(player).and_return(true) }
+            before(:each) { expect(player.game).to receive(:remove_player?).with(player).and_return(true) }
 
             include_examples "destroy redirects to games_url"
             
@@ -82,7 +82,7 @@ describe PlayersController do
           end
 
           context "when remove_player? returns false" do
-            before(:each) { player.game.stub(:remove_player?).and_return(false) }
+            before(:each) { allow(player.game).to receive(:remove_player?).and_return(false) }
 
             include_examples "destroy redirects to games_url"
             include_examples "destroy sets the flash", "The game already started. You can't quit now"
@@ -92,8 +92,8 @@ describe PlayersController do
         context "not owned by the current user" do
           let(:other_user) { FactoryGirl.build_stubbed(:confirmed_user) }
           before(:each) do
-            player.stub(:user).and_return(other_user)
-            Player.any_instance.should_not_receive(:remove_player?)
+            allow(player).to receive(:user).and_return(other_user)
+            expect_any_instance_of(Player).to_not receive(:remove_player?)
           end
 
           include_examples "destroy redirects to games_url"
@@ -102,7 +102,7 @@ describe PlayersController do
       end
 
       context "with an invlaid player id" do
-        before(:each) { Game.any_instance.should_not_receive(:remove_player?) }
+        before(:each) { expect_any_instance_of(Game).to_not receive(:remove_player?) }
 
         include_examples "destroy redirects to games_url"
         include_examples "destroy sets the flash", "Invalid request"

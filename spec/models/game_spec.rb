@@ -66,9 +66,9 @@ describe Game do
   describe "game_board" do
     it "returns an up to date version after the board changes" do
       game = FactoryGirl.create(:game_turn_1)
-      game.game_board.vertex_is_free_for_building?(2,2,0).should be_true
+      expect(game.game_board.vertex_is_free_for_building?(2,2,0)).to be true
       game.players.find{|p|p.turn_status == PLACING_INITIAL_SETTLEMENT}.add_settlement?(2,2,0)
-      game.game_board.vertex_is_free_for_building?(2,2,0).should be_false
+      expect(game.game_board.vertex_is_free_for_building?(2,2,0)).to be_falsey
     end
   end
 
@@ -96,7 +96,7 @@ describe Game do
 
     it "sets current_player_id to the player's id" do
       game.current_player = new_player
-      game.current_player_id.should eq(new_player.id)
+      expect(game.current_player_id).to eq(new_player.id)
     end
   end
 
@@ -106,48 +106,48 @@ describe Game do
     describe "waiting_for_players?" do
       it "returns true if status is 1" do
         game.status = 1
-        game.waiting_for_players?.should be_true
+        expect(game.waiting_for_players?).to be true
       end
       
       it "returns false if status is not 1" do
         game.status = 2
-        game.waiting_for_players?.should be_false
+        expect(game.waiting_for_players?).to be_falsey
       end
     end
 
     describe "placing_initial_pieces?" do
       it "returns true if status is 2" do
         game.status = 2
-        game.placing_initial_pieces?.should be_true
+        expect(game.placing_initial_pieces?).to be true
       end
       
       it "returns false if status is not 2" do
         game.status = 3
-        game.placing_initial_pieces?.should be_false
+        expect(game.placing_initial_pieces?).to be_falsey
       end
     end    
 
     describe "playing?" do
       it "returns true if status is 3" do
         game.status = 3
-        game.playing?.should be_true
+        expect(game.playing?).to be true
       end
       
       it "returns false if status is not 2" do
         game.status = 4
-        game.playing?.should be_false
+        expect(game.playing?).to be_falsey
       end
     end
 
     describe "completed?" do
       it "returns true if status is 4" do
         game.status = 4
-        game.completed?.should be_true
+        expect(game.completed?).to be true
       end
       
       it "returns false if status is not 4" do
         game.status = 1
-        game.completed?.should be_false
+        expect(game.completed?).to be_falsey
       end
     end
   end
@@ -156,22 +156,22 @@ describe Game do
     let(:game) { FactoryGirl.create(:partially_filled_game) }
 
     it "returns the first player when passed the corresponding user" do
-      game.player(game.players.first.user).should equal(game.players.first)
+      expect(game.player(game.players.first.user)).to equal(game.players.first)
     end
 
     #Added this test after accidentally looking for a player with user_id == id,
     #which caused it to return the wrong player while passing the other tests
     it "returns the last player when passed the corresponding user" do
-      game.player(game.players.last.user).should equal(game.players.last)
+      expect(game.player(game.players.last.user)).to equal(game.players.last)
     end
 
     it "returns nil if the user isn't playing" do
       user = FactoryGirl.build_stubbed(:confirmed_user)
-      game.player(user).should be_nil
+      expect(game.player(user)).to be_nil
     end
 
     it "returs nil if passed nil" do
-      game.player(nil).should be_nil
+      expect(game.player(nil)).to be_nil
     end
   end
 
@@ -179,16 +179,16 @@ describe Game do
     let(:game) { FactoryGirl.create(:partially_filled_game) }
 
     it "returns true if a game's players include user" do
-      game.player?(game.players.first.user).should be_true
+      expect(game.player?(game.players.first.user)).to be true
     end
 
     it "returns false if a game's players do not include user" do
       user = FactoryGirl.build_stubbed(:confirmed_user)
-      game.player?(user).should be_false
+      expect(game.player?(user)).to be_falsey
     end
 
     it "returns false if user is nil" do
-      game.player?(nil).should be_false
+      expect(game.player?(nil)).to be_falsey
     end
   end
 
@@ -203,11 +203,11 @@ describe Game do
 
     it "the created player is owned by the creator" do
       game.save
-      game.players.first.user.should be game.creator
+      expect(game.players.first.user).to be game.creator
     end
 
     it "doesn't save the game when creating the player fails" do
-      game.should_receive(:add_user?).and_return(false)
+      expect(game).to receive(:add_user?).and_return(false)
       expect{
         game.save
       }.to_not change(Game, :count)
@@ -225,7 +225,7 @@ describe Game do
 
     shared_examples "add_user? failures" do
       it "returns false" do
-        game.add_user?(user).should be_false
+        expect(game.add_user?(user)).to be_falsey
       end
 
       it "does not add players to the game" do
@@ -240,11 +240,11 @@ describe Game do
       context "when user is confirmed" do
         let(:user) { game.creator }        
         context "when waiting for players" do
-          before(:each) { game.should_receive(:waiting_for_players?).at_least(:once).and_return(true) }
+          before(:each) { expect(game).to receive(:waiting_for_players?).at_least(:once).and_return(true) }
 
           context "when the user is not already in the game" do
             it "returns true" do
-              game.add_user?(user).should be_true
+              expect(game.add_user?(user)).to be true
             end
 
             it "add a player with the right user to the game" do
@@ -252,7 +252,7 @@ describe Game do
                 game.add_user?(user)
               }.to change(game.players, :count).by(1)
 
-              game.players.last.user.should eq(user)
+              expect(game.players.last.user).to eq(user)
             end
           end
 
@@ -263,7 +263,7 @@ describe Game do
         end
 
         context "when not waiting for players" do
-          before(:each) { game.stub(:waiting_for_players?).and_return(false) }
+          before(:each) { allow(game).to receive(:waiting_for_players?).and_return(false) }
           include_examples "add_user? failures"
         end
       end
@@ -283,7 +283,7 @@ describe Game do
   describe "remove_player?" do
     shared_examples "remove_player? returns true" do
       it "returns true" do
-        game.remove_player?(player).should be_true
+        expect(game.remove_player?(player)).to be_truthy
       end
     end
 
@@ -323,14 +323,14 @@ describe Game do
       end
 
       it "returns false" do
-        game.remove_player?(player).should be_false
+        expect(game.remove_player?(player)).to be_falsey
       end      
     end    
 
     let!(:game) { FactoryGirl.create(:game) }
     context "when the player is not nil" do
       context "when the game is still waiting for players" do
-        before(:each) { game.should_receive(:waiting_for_players?).and_return(true) }
+        before(:each) { expect(game).to receive(:waiting_for_players?).and_return(true) }
 
         context "when the player is in the game" do
           context "when the player is the creator" do
@@ -372,7 +372,7 @@ describe Game do
 
       context "when the game is not waiting for players anymore" do
         let!(:player) { game.creator.players.first }
-        before(:each) { game.stub(:waiting_for_players?).and_return(false) }
+        before(:each) { allow(game).to receive(:waiting_for_players?).and_return(false) }
         include_examples "remove_player? failures"
       end
     end
@@ -395,7 +395,7 @@ describe Game do
         game.players.each { |player| player.turn_num = 1 }
         game.save
         game.sorted_players.each_with_index do |player, index|
-          player.turn_num.should eq(index + 1)
+          expect(player.turn_num).to eq(index + 1)
         end
       end
 
@@ -404,8 +404,8 @@ describe Game do
           game.save
         }.to change(Resource, :count).by(5*game.num_players)
         game.players.each do |player|
-          player.resources.collect {|resource| resource.type}.sort.should eq([WOOL, WOOD, WHEAT, ORE, BRICK].sort)
-          player.resources.all?{|resource| resource.count == 0}.should be_true
+          expect(player.resources.collect {|resource| resource.type}.sort).to eq([WOOL, WOOD, WHEAT, ORE, BRICK].sort)
+          expect(player.resources.all?{|resource| resource.count == 0}).to be true
         end
       end
 
@@ -413,29 +413,29 @@ describe Game do
         expect{
           game.save
         }.to change(DevelopmentCard, :count).by(25)
-        game.development_cards.where(:type => KNIGHT).count.should eq(14)
-        game.development_cards.where(:type => VICTORY_POINT).count.should eq(5)
-        game.development_cards.where(:type => ROAD_BUILDING).count.should eq(2)
-        game.development_cards.where(:type => YEAR_OF_PLENTY).count.should eq(2)
-        game.development_cards.where(:type => MONOPOLY).count.should eq(2)
+        expect(game.development_cards.where(:type => KNIGHT).count).to eq(14)
+        expect(game.development_cards.where(:type => VICTORY_POINT).count).to eq(5)
+        expect(game.development_cards.where(:type => ROAD_BUILDING).count).to eq(2)
+        expect(game.development_cards.where(:type => YEAR_OF_PLENTY).count).to eq(2)
+        expect(game.development_cards.where(:type => MONOPOLY).count).to eq(2)
       end
 
       it "sets player 1's status to PLAYING_TURN and everyone else to WAITING_FOR_TURN" do
         game.save
         game.players.each do |player|
-          player.turn_status.should eq(player.turn_num == 1 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
+          expect(player.turn_status).to eq(player.turn_num == 1 ? PLACING_INITIAL_SETTLEMENT : WAITING_FOR_TURN)
         end
       end
 
       it "changes the status to placing initial pieces" do
-        game.placing_initial_pieces?.should be_false
+        expect(game.placing_initial_pieces?).to be_falsey
         game.save
-        game.placing_initial_pieces?.should be_true
+        expect(game.placing_initial_pieces?).to be true
       end
 
       it "sets the current_player to the player who ends up with the first turn" do
         game.save
-        game.current_player.should eq(game.players.find{|p| p.turn_num == 1})
+        expect(game.current_player).to eq(game.players.find{|p| p.turn_num == 1})
       end
     end
 
@@ -463,13 +463,13 @@ describe Game do
       let(:game) { FactoryGirl.create(:game) }
 
       it "returns false" do
-        game.advance?.should be_false
+        expect(game.advance?).to be_falsey
       end
     end
 
     shared_examples "returns true" do
       it "returns true" do
-        game.advance?.should be_true
+        expect(game.advance?).to be true
       end
     end
 
@@ -478,17 +478,17 @@ describe Game do
 
       it "sets the next player's turn status to PLACING_INITIAL_SETTLEMENT" do
         game.advance?
-        next_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
+        expect(next_player.turn_status).to eq(PLACING_INITIAL_SETTLEMENT)
       end
 
       it "sets the current player's turn status to WAITING_FOR_TURN" do
         game.advance?
-        current_player.turn_status.should eq(WAITING_FOR_TURN)
+        expect(current_player.turn_status).to eq(WAITING_FOR_TURN)
       end
 
       it "changes game.current_player to the next_player" do
         game.advance?
-        game.current_player.should eq(next_player)
+        expect(game.current_player).to eq(next_player)
       end
     end
 
@@ -497,7 +497,7 @@ describe Game do
         let(:game){FactoryGirl.create(:game_turn_1)}
 
         it "returns false" do
-          game.advance?.should be_false
+          expect(game.advance?).to be_falsey
         end
       end
 
@@ -528,12 +528,12 @@ describe Game do
 
             it "increments the game turn_num to 2" do
               game.advance?
-              game.turn_num.should eq(2)
+              expect(game.turn_num).to eq(2)
             end
 
             it "sets the current player's turn status to PLACING_INITIAL_SETTLEMENT" do
               game.advance?
-              current_player.turn_status.should eq(PLACING_INITIAL_SETTLEMENT)
+              expect(current_player.turn_status).to eq(PLACING_INITIAL_SETTLEMENT)
             end
 
             it "leaves game.current_player the same" do
@@ -574,17 +574,17 @@ describe Game do
 
             it "increments the game turn_num to 3" do
               game.advance?
-              game.turn_num.should eq(3)
+              expect(game.turn_num).to eq(3)
             end
 
             it "sets the game status to playing" do
               game.advance?
-              game.playing?.should be_true
+              expect(game.playing?).to be true
             end
 
             it "sets the current player's turn status to READY_TO_ROLL" do
               game.advance?
-              current_player.turn_status.should eq(READY_TO_ROLL)
+              expect(current_player.turn_status).to eq(READY_TO_ROLL)
             end
 
             it "leaves game.current_player the same" do
@@ -622,15 +622,15 @@ describe Game do
 
     shared_examples "returns true" do
       it "returns true" do
-        game.process_dice_roll?(dice_num).should be_true
+        expect(game.process_dice_roll?(dice_num)).to be true
       end      
     end
 
     shared_examples "leaves other players' statuses as WAITING_FOR_TURN" do
       it "leaves other players' statuses as WAITING_FOR_TURN" do
         game.process_dice_roll?(dice_num)
-        player2.turn_status.should eq(WAITING_FOR_TURN)
-        player3.turn_status.should eq(WAITING_FOR_TURN)
+        expect(player2.turn_status).to eq(WAITING_FOR_TURN)
+        expect(player3.turn_status).to eq(WAITING_FOR_TURN)
       end
     end
 
@@ -639,7 +639,7 @@ describe Game do
 
       it "changes the current_player's turn status to PLAYING_TURN" do
         game.process_dice_roll?(dice_num)
-        game.current_player.turn_status.should eq(PLAYING_TURN)
+        expect(game.current_player.turn_status).to eq(PLAYING_TURN)
       end
     end
 
@@ -651,59 +651,59 @@ describe Game do
 
         it "changes the current_player's turn_status to MOVING_ROBBER" do
           game.process_dice_roll?(dice_num)
-          game.current_player.turn_status.should eq(MOVING_ROBBER)
+          expect(game.current_player.turn_status).to eq(MOVING_ROBBER)
         end
 
         include_examples "leaves other players' statuses as WAITING_FOR_TURN"
       end
 
       context "when the current_player doesn't have 8 or more cards but other players do" do
-        before(:each){player2.stub(:get_resource_count).and_return(8)}
+        before(:each){allow(player2).to receive(:get_resource_count).and_return(8)}
 
         include_examples "returns true"
 
         it "changes the current_player's status to WAITING_FOR_TURN" do
           game.process_dice_roll?(dice_num)
-          game.current_player.turn_status.should eq(WAITING_FOR_TURN)
+          expect(game.current_player.turn_status).to eq(WAITING_FOR_TURN)
         end
 
         it "changes the status of the player with 8 or more cards to DISCARDING_CARDS_DUE_TO_ROBBER" do
           game.process_dice_roll?(dice_num)
-          player2.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+          expect(player2.turn_status).to eq(DISCARDING_CARDS_DUE_TO_ROBBER)
         end
 
         it "leaves other players without 8 or more cards as WAITING_FOR_TURN" do
           game.process_dice_roll?(dice_num)
-          player3.turn_status.should eq(WAITING_FOR_TURN)
+          expect(player3.turn_status).to eq(WAITING_FOR_TURN)
         end
 
         context "when multiple other players have 8 or more cards" do
-          before(:each){player3.stub(:get_resource_count).and_return(9)}
+          before(:each){allow(player3).to receive(:get_resource_count).and_return(9)}
 
           it "sets all of their statuses to DISCARDING_CARDS_DUE_TO_ROBBER" do
             game.process_dice_roll?(dice_num)
-            player2.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
-            player3.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+            expect(player2.turn_status).to eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+            expect(player3.turn_status).to eq(DISCARDING_CARDS_DUE_TO_ROBBER)
           end
         end
       end
 
       context "when the current player has 8 or more cards" do
-        before(:each) {game.current_player.stub(:get_resource_count).and_return(8)}
+        before(:each) {allow(game.current_player).to receive(:get_resource_count).and_return(8)}
 
         include_examples "returns true"
 
         it "changes the current player's status to DISCARDING_CARDS_DUE_TO_ROBBER" do
           game.process_dice_roll?(dice_num)
-          game.current_player.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+          expect(game.current_player.turn_status).to eq(DISCARDING_CARDS_DUE_TO_ROBBER)
         end
 
         context "when other players have 8 or more cards" do
-          before(:each){player3.stub(:get_resource_count).and_return(9)}
+          before(:each){allow(player3).to receive(:get_resource_count).and_return(9)}
 
           it "changes their status to DISCARDING_CARDS_DUE_TO_ROBBER" do
             game.process_dice_roll?(dice_num)
-            player3.turn_status.should eq(DISCARDING_CARDS_DUE_TO_ROBBER)
+            expect(player3.turn_status).to eq(DISCARDING_CARDS_DUE_TO_ROBBER)
           end
         end
 
@@ -720,7 +720,7 @@ describe Game do
         include_examples "success when not 7"
 
         it "does not call player.collect_resources? for any player" do
-          Player.any_instance.should_not_receive(:collect_resources?)
+          expect_any_instance_of(Player).to_not receive(:collect_resources?)
         end
       end
 
@@ -728,28 +728,28 @@ describe Game do
         let(:dice_num) {6}
 
         context "when the player.collect_resource? calls returns false" do
-          before(:each){game.players.each{|p| p.stub(:collect_resources?).and_return(false)}}
+          before(:each){game.players.each{|p| allow(p).to receive(:collect_resources?).and_return(false)}}
 
           it "returns false" do
-            game.process_dice_roll?(dice_num).should be_false
+            expect(game.process_dice_roll?(dice_num)).to be_falsey
           end
 
           it "does not change the player's turn status" do
               game.process_dice_roll?(dice_num)
               game.current_player.reload
-              game.current_player.turn_status.should eq(READY_TO_ROLL)
+              expect(game.current_player.turn_status).to eq(READY_TO_ROLL)
           end
         end
 
         context "when all of the player.collect_resource? calls return true" do
-          before(:each){game.players.each{|p| p.stub(:collect_resources?).and_return(true)}}
+          before(:each){game.players.each{|p| allow(p).to receive(:collect_resources?).and_return(true)}}
 
           include_examples "success when not 7"
 
           it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-            player1.should_receive(:collect_resources?).with({WOOD => 1})
-            player2.should_receive(:collect_resources?).with({ORE => 2})
-            player3.should_not_receive(:collect_resources?)
+            expect(player1).to receive(:collect_resources?).with({WOOD => 1})
+            expect(player2).to receive(:collect_resources?).with({ORE => 2})
+            expect(player3).to_not receive(:collect_resources?)
             game.process_dice_roll?(dice_num)
           end
 
@@ -757,7 +757,7 @@ describe Game do
             let(:dice_num){3}
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1, ORE => 1})
+              expect(player1).to receive(:collect_resources?).with({WOOD => 1, ORE => 1})
               game.process_dice_roll?(dice_num)
             end
           end
@@ -769,9 +769,9 @@ describe Game do
             end
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled except the robber hex" do
-              player1.should_receive(:collect_resources?).with({WOOD => 1})
-              player2.should_not_receive(:collect_resources?)
-              player3.should_not_receive(:collect_resources?)
+              expect(player1).to receive(:collect_resources?).with({WOOD => 1})
+              expect(player2).to_not receive(:collect_resources?)
+              expect(player3).to_not receive(:collect_resources?)
               game.process_dice_roll?(dice_num)
             end
           end
@@ -780,7 +780,7 @@ describe Game do
             before(:each) {player1.settlements.find{|s| s.vertex_x == 4 && s.vertex_y == 0 && s.side == 0}.is_city = true}
 
             it "gives that player 2 resources instead of 1" do
-              player1.should_receive(:collect_resources?).with({WOOD => 2})
+              expect(player1).to receive(:collect_resources?).with({WOOD => 2})
               game.process_dice_roll?(dice_num)
             end
           end
@@ -794,21 +794,21 @@ describe Game do
 
     shared_examples "returns true" do
       it "returns true" do
-        game.player_finished_discarding?(calling_player).should be_true
+        expect(game.player_finished_discarding?(calling_player)).to be true
       end
     end
 
     shared_examples "set's calling player to WAITING_FOR_TURN" do
       it "sets the calling player's status to WAITING_FOR_TURN" do
         game.player_finished_discarding?(calling_player)
-        calling_player.turn_status.should eq(WAITING_FOR_TURN)
+        expect(calling_player.turn_status).to eq(WAITING_FOR_TURN)
       end
     end
 
     shared_examples "set's current_player to MOVING_ROBBER" do
       it "sets the current_player's status to MOVING_ROBBER" do
         game.player_finished_discarding?(calling_player)
-        game.current_player.turn_status.should eq(MOVING_ROBBER)
+        expect(game.current_player.turn_status).to eq(MOVING_ROBBER)
       end
     end
 

@@ -7,7 +7,7 @@ describe GameBoard do
   describe "vertex_is_free_for_building?" do
     shared_examples "returns false" do
       it "returns false" do
-        board.vertex_is_free_for_building?(point[0], point[1], point[2]).should be_false
+        expect(board.vertex_is_free_for_building?(point[0], point[1], point[2])).to be_falsey
       end
     end
 
@@ -37,7 +37,7 @@ describe GameBoard do
           let(:players) {[]}
           
           it "returns true" do
-            board.vertex_is_free_for_building?(point[0], point[1], point[2]).should be_true
+            expect(board.vertex_is_free_for_building?(point[0], point[1], point[2])).to be true
           end
         end
       end
@@ -47,13 +47,13 @@ describe GameBoard do
   describe "edge_is_free_for_building_by_player?" do
     shared_examples "returns false" do
       it "returns false" do
-        board.edge_is_free_for_building_by_player?(point[0], point[1], point[2], players.first).should be_false
+        expect(board.edge_is_free_for_building_by_player?(point[0], point[1], point[2], players.first)).to be_falsey
       end
     end
 
     shared_examples "returns true" do
       it "returns true" do
-        board.edge_is_free_for_building_by_player?(point[0], point[1], point[2], players.first).should be_true
+        expect(board.edge_is_free_for_building_by_player?(point[0], point[1], point[2], players.first)).to be true
       end
     end    
 
@@ -112,7 +112,7 @@ describe GameBoard do
         let(:y) {y_all}
         
         it "returns all of the surrounding hexes" do
-          hex_points.sort.should eq(points_all)
+          expect(hex_points.sort).to eq(points_all)
         end
       end
 
@@ -121,7 +121,7 @@ describe GameBoard do
         let(:y) {y_missing_hexes}
 
         it "returns only the hexes that are on the board" do
-          hex_points.should eq(points_missing_hexes)
+          expect(hex_points).to eq(points_missing_hexes)
         end
       end
     end
@@ -155,11 +155,11 @@ describe GameBoard do
     let(:players) {[]}
 
     it "returns true when the edge is connected to the vertex" do
-      board.edge_is_connected_to_vertex?(2,2,0,2,2,0).should be_true
+      expect(board.edge_is_connected_to_vertex?(2,2,0,2,2,0)).to be true
     end
 
     it "returns false when the edge is not connected to the vertex" do
-      board.edge_is_connected_to_vertex?(2,2,0,2,0,0).should be_false
+      expect(board.edge_is_connected_to_vertex?(2,2,0,2,0,0)).to be_falsey
     end
   end
 
@@ -169,7 +169,7 @@ describe GameBoard do
 
     shared_examples "includes the settlement" do
       it "includes the settlement" do
-        board.get_settlements_touching_hex(x,y).should eq([players.first.settlements.first])
+        expect(board.get_settlements_touching_hex(x,y)).to eq([players.first.settlements.first])
       end
     end
 
@@ -215,9 +215,9 @@ describe GameBoard do
       it "returns all of the settlements touching the hex" do
         res = board.get_settlements_touching_hex(x,y)
 
-        #TODO: maybe checj that the arrays have the same contents better
-        res.each{|s| players.first.settlements.include?(s).should be_true}
-        players.first.settlements.each{|s| res.include?(s).should be_true}
+        #TODO: maybe check that the arrays have the same contents better
+        res.each{|s| expect(players.first.settlements.include?(s)).to be true}
+        players.first.settlements.each{|s| expect(res.include?(s)).to be true}
       end
     end
   end

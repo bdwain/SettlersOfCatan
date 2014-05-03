@@ -26,7 +26,7 @@ describe Resource do
   describe "name" do
     shared_examples "returns proper type string" do
       it "returns the proper type string" do
-        resource.name.should eq(type_str)
+        expect(resource.name).to eq(type_str)
       end
     end
 

@@ -47,7 +47,7 @@ end
 
 group :development, :test do
   gem 'spring-commands-rspec' 
-  gem "rspec-rails", "~> 2.12"
+  gem "rspec-rails", "~> 3.0.0.beta"
 end
 
 group :test do
