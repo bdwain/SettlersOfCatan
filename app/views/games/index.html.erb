@@ -9,7 +9,7 @@
   <tr>
     <td>
       <% if game.waiting_for_players? && !game.player?(current_user) %>
-        <%= link_to 'Join Game', players_path(:game_id => game.id), :method => :post %>
+        <%= link_to 'Join Game', game_players_path(game.id), :method => :post %>
       <% elsif game.waiting_for_players? %>
         <%= link_to 'Leave Game', game.player(current_user), :method => :delete, 
         data: { confirm: 'Are you sure?' } %>
