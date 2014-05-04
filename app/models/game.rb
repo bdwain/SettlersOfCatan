@@ -160,6 +160,10 @@ class Game < ActiveRecord::Base
     save
   end
 
+  def move_robber?(player, x, y)
+    true
+  end
+
   private
   def init_game?
     #give each player their own turn

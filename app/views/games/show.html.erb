@@ -92,7 +92,21 @@
           <%= submit_tag("Discard") %>
         <% end %>
       <% when MOVING_ROBBER %>
-        Moving the robber
+        Move the robber
+        <%= form_tag(game_robber_path(@game), :method => "put") do %>
+          <%= hidden_field_tag(:game_id, @game.id) %>
+          <div>
+            <%= label_tag(:pos_x, "X Position: ") %>
+            <%= text_field_tag :pos_x, nil, :required => true %>
+          </div>
+          <div>
+            <%= label_tag(:pos_y, "Y Position: ") %>
+            <%= text_field_tag :pos_y, nil, :required => true %>
+          </div>
+          <div class="actions">
+            <%= submit_tag("Submit") %>
+          </div>
+        <% end %>
       <% when CHOOSING_ROBBER_VICTIM %>
         Choosing robber victim
       <% when PLAYING_TURN %>

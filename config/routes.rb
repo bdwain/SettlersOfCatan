@@ -11,6 +11,8 @@ SettlersOfCatan::Application.routes.draw do
         resource :settlements, only: [:create]
         resource :resources, only: [:update], via: [:patch]
       end
+
+      match "robber" => "games#move_robber", via: [:put]
       #resources :chats
       #resources :development_cards
   end

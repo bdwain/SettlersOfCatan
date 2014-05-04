@@ -8,6 +8,7 @@ describe GamesController do
     it { get :new }
     it { get :show, :id => game.to_param }
     it { post :create, :game => FactoryGirl.attributes_for(:game) }
+    it { put :move_robber, :game_id => game}
   end
 
   context "When Logged In" do
@@ -91,6 +92,59 @@ describe GamesController do
           expect{
             post :create, {:game => { }}
           }.to raise_exception(ActionController::ParameterMissing)
+        end
+      end
+    end
+
+    describe "PUT move_robber" do
+      context "with an invalid game" do
+        before(:each) { allow(Game).to receive(:find_by_id).and_return(nil) }
+
+        it "redirects to the games index" do
+          put :move_robber, :game_id => -1, :robber_x => "1", :robber_y => "1"
+          expect(response).to redirect_to(games_url)
+        end
+      end
+
+      context "with a valid game" do
+        let(:game) {FactoryGirl.build_stubbed(:game)}
+        let(:player) {double("Player")}
+        let(:move_robber_retval) {true}
+        before(:each) do
+          allow(Game).to receive(:find_by_id).and_return(game)
+          allow(game).to receive(:player).and_return(player)
+          allow(game).to receive(:move_robber?).and_return(move_robber_retval)
+          put :move_robber, :game_id => game, :robber_x => "2", :robber_y => "3"
+        end
+
+        it "calls game.player with current_user" do
+          expect(game).to have_received(:player).with(@current_user)
+        end
+
+        it "calls game.move_robber? with the result of game.player and the params as ints" do
+          expect(game).to have_received(:move_robber?).with(player, 2, 3)
+        end
+
+        context "when game.move_robber? returns true" do
+          it "redirects you to the game" do
+            expect(response).to redirect_to(game)
+          end
+
+          it "does not set the flash" do
+            should_not set_the_flash
+          end
+        end
+
+        context "when game.move_robber? returns false" do
+          let(:move_robber_retval) {false}
+
+          it "redirects you to the game" do
+            expect(response).to redirect_to(game)
+          end
+
+          it "should set the flash to say that moving the robber failed" do
+            should set_the_flash[:error].to("There was an error moving the robber")
+          end
         end
       end
     end

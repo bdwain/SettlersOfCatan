@@ -18,5 +18,9 @@ describe GamesController do
     it "routes to #create" do
       expect(post("/games")).to route_to("games#create")
     end
+
+    it "routes to #move_robber via the robber resource" do
+      expect(put("/games/1/robber")).to route_to("games#move_robber", :game_id => "1")
+    end
   end
 end
