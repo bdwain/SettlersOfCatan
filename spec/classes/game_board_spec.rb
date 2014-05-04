@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe GameBoard do
   before(:all) {@map = Map.first}
-  let(:board) {GameBoard::GameBoard.new(@map, players)}
+  let(:map) {@map}
+  let(:board) {GameBoard::GameBoard.new(map, players)}
 
   describe "vertex_is_free_for_building?" do
     shared_examples "returns false" do
@@ -219,6 +220,20 @@ describe GameBoard do
         res.each{|s| expect(players.first.settlements.include?(s)).to be true}
         players.first.settlements.each{|s| expect(res.include?(s)).to be true}
       end
+    end
+  end
+
+  describe "hex_is_on_board?" do
+    let(:players) {[]}
+
+    it "returns true for every hex on the map" do
+      map.hexes.each do |hex|
+        expect(board.hex_is_on_board?(hex.pos_x, hex.pos_y)).to be_truthy
+      end
+    end
+
+    it "returns false when there is no hex with x,y" do
+      expect(board.hex_is_on_board?(0, 0)).to be_falsey
     end
   end
 end

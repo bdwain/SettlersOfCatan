@@ -49,13 +49,13 @@ module GameBoard
       get_vertex_points_touching_hex(x,y).reject{|point| !@settlements.has_key?(point)}.collect{|point| @settlements[point]}
     end
 
+    def hex_is_on_board?(x, y)
+      @hexes[x] && @hexes[x][y]
+    end
+
     private
     def get_hexes_from_points(points)
       points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
-    end
-
-    def hex_is_on_board?(x, y)
-      x >= 0 && y >= 0 && x < @hexes.count && y < @hexes.count && @hexes[x][y]
     end
 
     def vertex_is_on_board?(x, y, side)
