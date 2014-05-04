@@ -113,7 +113,7 @@ describe GamesController do
         before(:each) do
           allow(Game).to receive(:find_by_id).and_return(game)
           allow(game).to receive(:player).and_return(player)
-          allow(game).to receive(:move_robber?).and_return(move_robber_retval)
+          allow(player).to receive(:move_robber?).and_return(move_robber_retval)
           put :move_robber, :game_id => game, :robber_x => "2", :robber_y => "3"
         end
 
@@ -121,11 +121,11 @@ describe GamesController do
           expect(game).to have_received(:player).with(@current_user)
         end
 
-        it "calls game.move_robber? with the result of game.player and the params as ints" do
-          expect(game).to have_received(:move_robber?).with(player, 2, 3)
+        it "calls move_robber? on the result of game.player and the params as ints" do
+          expect(player).to have_received(:move_robber?).with(2, 3)
         end
 
-        context "when game.move_robber? returns true" do
+        context "when player.move_robber? returns true" do
           it "redirects you to the game" do
             expect(response).to redirect_to(game)
           end
@@ -135,7 +135,7 @@ describe GamesController do
           end
         end
 
-        context "when game.move_robber? returns false" do
+        context "when player.move_robber? returns false" do
           let(:move_robber_retval) {false}
 
           it "redirects you to the game" do

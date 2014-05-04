@@ -160,7 +160,7 @@ class Game < ActiveRecord::Base
     save
   end
 
-  def move_robber?(player, x, y)
+  def player_moved_robber?(player, x, y)
     true
   end
 

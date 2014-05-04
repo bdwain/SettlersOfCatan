@@ -29,7 +29,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
+    build_game_log("#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
     settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
 
     if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
@@ -55,7 +55,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} placed a road on (#{x},#{y},#{side})")
+    build_game_log("#{user.displayname} placed a road on (#{x},#{y},#{side})")
     roads.build(:edge_x => x, :edge_y => y, :side => side)
 
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
@@ -69,7 +69,7 @@ class Player < ActiveRecord::Base
 
     die_1 = 1 + rand(6)
     die_2 = 1 + rand(6)
-    game_logs.build(:turn_num => game.turn_num, :current_player => self, :msg => "#{user.displayname} rolled a (#{die_1 + die_2})")
+    build_game_log("#{user.displayname} rolled a (#{die_1 + die_2})")
     dice_roll = dice_rolls.build(:turn_num => game.turn_num, :die_1 => die_1, :die_2 => die_2)
 
     return false unless game.process_dice_roll?(die_1 + die_2)
@@ -94,7 +94,7 @@ class Player < ActiveRecord::Base
       msg << "#{keyval[1]} #{resource.name}"
     end
 
-    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
+    build_game_log(msg)
     save
   end
 
@@ -127,9 +127,25 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
+    build_game_log(msg)
 
     return false unless game.player_finished_discarding?(self)
     save
+  end
+
+  def move_robber?(x, y)
+    if turn_status != MOVING_ROBBER || !game.game_board.hex_is_on_board?(x,y)
+      return false
+    end
+
+    build_game_log("#{user.displayname} moved the robber")
+
+    return false unless game.player_moved_robber?(self,x,y)
+    save
+  end
+
+  private
+  def build_game_log(msg)
+    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
   end
 end

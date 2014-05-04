@@ -34,7 +34,7 @@ class GamesController < ApplicationController
 
     if game == nil
       redirect_to games_url
-    elsif game.move_robber?(game.player(current_user), params[:robber_x].to_i, params[:robber_y].to_i)
+    elsif game.player(current_user).move_robber?(params[:robber_x].to_i, params[:robber_y].to_i)
       redirect_to game
     else
       redirect_to game, :flash => { :error => "There was an error moving the robber" }
