@@ -35,7 +35,7 @@
         Waiting For Turn
       <% when PLACING_INITIAL_SETTLEMENT %>
         Place a settlement
-        <%= form_tag("/settlements", :method => "post") do %>
+        <%= form_tag(player_settlements_path(my_player), :method => "post") do %>
           <%= hidden_field_tag(:player_id, my_player.id) %>
           <div>
             <%= label_tag(:vertex_x, "X Position: ") %>
@@ -55,7 +55,7 @@
         <% end %>
       <% when PLACING_INITIAL_ROAD %>
         Place a road
-        <%= form_tag("/roads", :method => "post") do %>
+        <%= form_tag(player_roads_path(my_player), :method => "post") do %>
           <%= hidden_field_tag(:player_id, my_player.id) %>
           <div>
             <%= label_tag(:edge_x, "X Position: ") %>
@@ -74,13 +74,13 @@
           </div>            
         <% end %>
       <% when READY_TO_ROLL %>
-        <%= form_tag("/dice_rolls", :method => "post") do %>
+        <%= form_tag(player_dice_rolls_path(my_player), :method => "post") do %>
           <%= hidden_field_tag(:player_id, my_player.id) %>
           <%= submit_tag("Roll the dice") %>
         <% end %>
       <% when DISCARDING_CARDS_DUE_TO_ROBBER %>
         <%= "Discard #{my_player.get_resource_count/2} resources" %>
-        <%= form_tag(resources_update_multiple_path, :method => "patch") do %>
+        <%= form_tag(player_resources_path(my_player), :method => "patch") do %>
           <%= hidden_field_tag(:player_id, my_player.id) %>
           <% my_player.resources.each do |resource| %>
             <div>
@@ -92,7 +92,7 @@
           <%= submit_tag("Discard") %>
         <% end %>
       <% when MOVING_ROBBER %>
-        Moving robber
+        Moving the robber
       <% when CHOOSING_ROBBER_VICTIM %>
         Choosing robber victim
       <% when PLAYING_TURN %>

@@ -2,21 +2,25 @@ SettlersOfCatan::Application.routes.draw do
   root :to => 'home#index'
   get "home/index"
 
-  resources :players
-  resources :games
-  resources :chats
-  resources :development_cards
-  resources :dice_rolls
-  resources :game_logs
-  resources :harbors
-  resources :hexes
-  resources :maps
-  resources :roads
-  resources :settlements
-  devise_for :users
 
-  match "resources/update_multiple" => "resources#update_multiple", :via => [:patch]
-  resources :resources
+  resources :games, only: [:index, :show, :new, :create], shallow: true do
+      resources :players, only: [:create, :destroy], shallow: true do
+        resource :dice_rolls, only: [:create]
+        #resources :game_logs
+        resource :roads, only: [:create]
+        resource :settlements, only: [:create]
+        resource :resources, only: [:update], via: [:patch]
+      end
+      #resources :chats
+      #resources :development_cards
+  end
+  
+  #resources :maps, :shallow: true do
+    #resources :harbors
+    #resources :hexes
+  #end
+
+  devise_for :users
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

@@ -1,7 +1,7 @@
 class SettlementsController < ApplicationController
   before_filter :authenticate_user!
 
-  # POST /settlements
+  # POST /player/:player_id/settlements
   def create
     player = Player.find_by_id(params[:player_id])
     if player == nil || player.user != current_user

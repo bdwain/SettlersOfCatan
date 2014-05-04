@@ -1,8 +1,8 @@
 class ResourcesController < ApplicationController
   before_filter :authenticate_user!
   
-  # PATCH /resources
-  def update_multiple
+  # PATCH /player/:player_id/resources/:delete
+  def update
     player = Player.find_by_id(params[:player_id])
 
     if params[:delete]

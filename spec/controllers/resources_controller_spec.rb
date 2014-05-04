@@ -5,7 +5,7 @@ describe ResourcesController do
     let(:game) {FactoryGirl.build_stubbed(:game)}
     let(:player) {FactoryGirl.build_stubbed(:player)}
     after { expect(response).to redirect_to new_user_session_path }
-    it { patch :update_multiple, :player_id => player, :delete => {} }
+    it { patch :update, :player_id => player, :delete => {} }
   end
 
   context "When Logged In" do
@@ -16,7 +16,7 @@ describe ResourcesController do
         before(:each) { expect(Player).to receive(:find_by_id).and_return(nil) }
 
         it "redirects to the games index" do
-          patch :update_multiple, :player_id => -1, :delete => {}
+          patch :update, :player_id => -1, :delete => {}
           expect(response).to redirect_to(games_url)
         end
       end
@@ -33,7 +33,7 @@ describe ResourcesController do
           context "when params[:delete] does not exist" do
             before(:each) do
               expect(player).to receive(:discard_half_resources?).with(nil).and_return(false)
-              patch :update_multiple, :player_id => player, :foo => {"1" => "0", "2" => "4"}
+              patch :update, :player_id => player, :foo => {"1" => "0", "2" => "4"}
             end
 
             it "redirects to the game" do
@@ -51,13 +51,13 @@ describe ResourcesController do
 
             it "calls player.discard_half_resources? with the params casted to integers" do
               expect(player).to receive(:discard_half_resources?).with(params_delete_as_ints)
-              patch :update_multiple, :player_id => player, :delete => params_delete
+              patch :update, :player_id => player, :delete => params_delete
             end
 
             context "when player.discard_half_resources? returns true" do
               before(:each) do
                 allow(player).to receive(:discard_half_resources?).and_return(true)
-                patch :update_multiple, :player_id => player, :delete => params_delete
+                patch :update, :player_id => player, :delete => params_delete
               end
 
               it "redirects to the game" do
@@ -68,7 +68,7 @@ describe ResourcesController do
             context "when player.discard_half_resources? returns false" do
               before(:each) do
                 allow(player).to receive(:discard_half_resources?).and_return(false)
-                patch :update_multiple, :player_id => player, :delete => params_delete
+                patch :update, :player_id => player, :delete => params_delete
               end
 
               it "redirects to the game" do
@@ -87,7 +87,7 @@ describe ResourcesController do
           before(:each) {allow(player).to receive(:user).and_return(other_user)}
 
           it "redirects to the games index" do
-            patch :update_multiple, :player_id => player, :delete => {}
+            patch :update, :player_id => player, :delete => {}
             expect(response).to redirect_to(games_url)
           end
         end

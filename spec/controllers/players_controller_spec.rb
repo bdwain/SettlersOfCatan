@@ -43,8 +43,9 @@ describe PlayersController do
         end
       end
 
-      context "with a nil game" do
-        let(:game) {nil}
+      context "with an invalid game game" do
+        let(:game) {FactoryGirl.build_stubbed(:game, id: -1)}
+
         include_examples "POST create failures"
       end
     end

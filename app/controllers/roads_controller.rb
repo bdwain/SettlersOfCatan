@@ -1,7 +1,7 @@
 class RoadsController < ApplicationController
   before_filter :authenticate_user!
 
-  # POST /roads
+  # POST /player/:player_id/roads
   def create
     player = Player.find_by_id(params[:player_id])
     if player == nil || player.user != current_user

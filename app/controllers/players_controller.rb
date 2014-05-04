@@ -1,7 +1,7 @@
 class PlayersController < ApplicationController
   before_filter :authenticate_user!
 
-  # POST /players
+  # POST /game/:game_id/players
   def create
     game = Game.find_by_id(params[:game_id])
     if game != nil && game.add_user?(current_user)
@@ -11,7 +11,7 @@ class PlayersController < ApplicationController
     end
   end
 
-  # DELETE /players/1
+  # DELETE /players/:id
   def destroy
     player = Player.find_by_id(params[:id])
     if !player
