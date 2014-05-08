@@ -154,6 +154,10 @@ class Game < ActiveRecord::Base
   end
 
   def player_finished_discarding?(player)
+    if player.game != self
+      return false
+    end
+    
     player.turn_status = WAITING_FOR_TURN
     if !players.any?{|p| p.id != player.id && p.turn_status != WAITING_FOR_TURN}
       current_player.turn_status = MOVING_ROBBER

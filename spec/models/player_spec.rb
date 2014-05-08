@@ -815,7 +815,7 @@ describe Player do
 
         context "when the hex is touching only one other player's settlements" do
           let(:new_status) {PLAYING_TURN}
-          let(:other_player) {FactoryGirl.build_stubbed(:in_game_player)}
+          let(:other_player) {FactoryGirl.build_stubbed(:in_game_player, {game: game})}
           before(:each) {allow(board).to receive(:get_settlements_touching_hex).and_return([FactoryGirl.build(:settlement, {player: other_player})])}
 
           it "calls other_player.resources_stolen" do

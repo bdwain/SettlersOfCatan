@@ -801,7 +801,7 @@ describe Game do
 
     shared_examples "returns true" do
       it "returns true" do
-        expect(game.player_finished_discarding?(calling_player)).to be true
+        expect(game.player_finished_discarding?(calling_player)).to be_truthy
       end
     end
 
@@ -819,41 +819,52 @@ describe Game do
       end
     end
 
-    context "when there are still other players who need to discard" do
-      before(:each) do
-        game.players.first.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
-        game.players.last.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
-      end
-      let(:calling_player) {game.players.first}
+    context "when the player is not part of this game" do
+      let(:other_game) {FactoryGirl.build_stubbed(:game_started)}
+      let(:calling_player) {FactoryGirl.build(:in_game_player, {game: other_game})}
 
-      include_examples "returns true"
-      include_examples "set's calling player to WAITING_FOR_TURN"
+      it "returns false" do
+        expect(game.player_finished_discarding?(calling_player)).to be_falsey
+      end
     end
 
-    context "when everyone else is done discarding" do
-      context "when the calling player is the current_player" do
+    context "when the player is part of this game" do
+      context "when there are still other players who need to discard" do
         before(:each) do
-          game.current_player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+          game.players.first.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+          game.players.last.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
         end
-        let(:calling_player) {game.current_player}
+        let(:calling_player) {game.players.first}
 
         include_examples "returns true"
-        include_examples "set's current_player to MOVING_ROBBER"
+        include_examples "set's calling player to WAITING_FOR_TURN"
       end
 
-      context "when the calling player is not the current_player" do
-        before(:each) do
-          game.current_player.turn_status = WAITING_FOR_TURN          
-        end
-        let(:calling_player) do
-          player = game.players.find{|p| p != game.current_player}
-          player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
-          player
+      context "when everyone else is done discarding" do
+        context "when the calling player is the current_player" do
+          before(:each) do
+            game.current_player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+          end
+          let(:calling_player) {game.current_player}
+
+          include_examples "returns true"
+          include_examples "set's current_player to MOVING_ROBBER"
         end
 
-        include_examples "returns true"
-        include_examples "set's current_player to MOVING_ROBBER"
-        include_examples "set's calling player to WAITING_FOR_TURN"
+        context "when the calling player is not the current_player" do
+          before(:each) do
+            game.current_player.turn_status = WAITING_FOR_TURN          
+          end
+          let(:calling_player) do
+            player = game.players.find{|p| p != game.current_player}
+            player.turn_status = DISCARDING_CARDS_DUE_TO_ROBBER
+            player
+          end
+
+          include_examples "returns true"
+          include_examples "set's current_player to MOVING_ROBBER"
+          include_examples "set's calling player to WAITING_FOR_TURN"
+        end
       end
     end
   end

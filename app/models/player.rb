@@ -223,9 +223,15 @@ class Player < ActiveRecord::Base
     end
   end
 
-  def steal_resources_from?(player, num_to_steal)
+  def steal_resources_from?(victim, num_to_steal)
+    if victim.game != game
+      puts game.inspect
+      puts victim.game.inspect
+      return false
+    end
+
     begin
-      new_resource_counts = player.resources_stolen(num_to_steal)
+      new_resource_counts = victim.resources_stolen(num_to_steal)
     rescue RuntimeError => e
       if e.to_s != "resources_stolen_error"
         raise e
@@ -233,7 +239,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    build_game_log("#{user.displayname} stole #{new_resource_counts.count} resources from #{player.user.displayname}")
+    build_game_log("#{user.displayname} stole #{new_resource_counts.count} resources from #{victim.user.displayname}")
 
     if new_resource_counts.count != 0
       msg = "You stole "
@@ -248,7 +254,7 @@ class Player < ActiveRecord::Base
         msg << "#{keyval[1]} #{resource.name} "
       end
 
-      msg << "from #{player.user.displayname}"
+      msg << "from #{victim.user.displayname}"
 
       build_game_log(msg, true)
       true
