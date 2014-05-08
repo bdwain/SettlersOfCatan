@@ -5,7 +5,7 @@ SettlersOfCatan
 You can create a game, but can't play it yet. Gameplay is in progress
 
 ## Setup
-1. Set up ruby 2.1.0 and rubygems. I used rvm and followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.1.0. Also there's no need to install rails manually as the correct version will be installed later if not already installed.
+1. Set up ruby 2.1.1 and rubygems. I used rvm and followed the instructions [here](https://www.digitalocean.com/community/articles/how-to-install-ruby-on-rails-on-ubuntu-12-04-lts-precise-pangolin-with-rvm), except I used ruby 2.1.1. Also there's no need to install rails manually as the correct version will be installed later if not already installed.
 
 2. Clone the repo
 
