@@ -987,4 +987,165 @@ describe Player do
       end
     end
   end
+
+  describe "choose_robber_victim?" do
+    let(:game) { FactoryGirl.build_stubbed(:game_started) }
+    let(:player) {FactoryGirl.create(:in_game_player, {game: game, turn_status: turn_status})}
+    let(:board) {double("GameBoard")}
+    before(:each) do
+      allow(game).to receive(:game_board).and_return(board)
+      allow(game).to receive(:current_player).and_return(player)
+    end
+
+    shared_examples "choose_robber_victim? failures" do
+      it "returns false" do
+        expect(player.choose_robber_victim?(victim)).to be_falsey
+      end
+
+      it "does not create a new game log" do
+        expect{
+          player.choose_robber_victim?(victim)
+        }.to_not change(player.game_logs, :count)
+      end
+
+      it "leaves the status as whatver it was before" do
+        original_status = player.turn_status
+        player.choose_robber_victim?(victim)
+        player.reload
+        expect(player.turn_status).to eq(original_status)
+      end
+    end
+
+    let(:num_new_game_logs) {1}
+    shared_examples "choose_robber_victim? successes" do
+      it "returns true" do
+        expect(player.choose_robber_victim?(victim)).to be_truthy
+      end
+
+      it "saves" do
+        expect(player).to receive(:save).and_call_original
+        player.choose_robber_victim?(victim)
+      end
+
+      it "updates the player's turn status to PLAYING_TURN" do
+        expect{
+          player.choose_robber_victim?(victim)
+        }.to change(player, :turn_status).to(PLAYING_TURN)
+      end
+
+      it "creates a game_log with the proper message and format to say player stole n resources" do
+        player.choose_robber_victim?(victim)
+        
+        expect(player.game_logs[-1*num_new_game_logs].turn_num).to eq(game.turn_num)
+        expect(player.game_logs[-1*num_new_game_logs].current_player).to eq(game.current_player)
+        expect(player.game_logs[-1*num_new_game_logs].msg).to eq("#{player.user.displayname} stole #{stolen_resources.count} resources from #{victim.user.displayname}")
+        expect(player.game_logs[-1*num_new_game_logs].is_private).to be_falsey
+      end
+
+      it "creates the right number of new game_logs" do
+        expect{
+          player.choose_robber_victim?(victim)
+        }.to change(player.game_logs, :count).by(num_new_game_logs)
+      end
+    end
+
+    context "when player's turn status is not CHOOSING_ROBBER_VICTIM" do
+      let(:turn_status) {PLAYING_TURN}
+      let(:victim) {FactoryGirl.build(:in_game_player, {game: game, turn_status: WAITING_FOR_TURN})}
+
+      include_examples "choose_robber_victim? failures"
+    end
+
+    context "when player's turn status is CHOOSING_ROBBER_VICTIM" do
+      let(:turn_status) {CHOOSING_ROBBER_VICTIM}
+
+      context "when the victim is not part of the game" do
+        let(:other_game) {FactoryGirl.build_stubbed(:game_started)}
+        let(:victim) {FactoryGirl.build(:in_game_player, {game: other_game, turn_status: WAITING_FOR_TURN})}
+        before(:each) { allow(board).to receive(:get_settlements_touching_hex).and_return([FactoryGirl.build(:settlement, {player: victim})]) }
+
+        include_examples "choose_robber_victim? failures"
+      end
+
+      context "when the victim is part of the game" do
+        context "when the victim is the player" do
+          let(:victim) {player}
+          before(:each) { allow(board).to receive(:get_settlements_touching_hex).and_return([FactoryGirl.build(:settlement, {player: victim})]) }
+
+          include_examples "choose_robber_victim? failures"
+        end
+
+        context "when the victim is not the player" do
+          let(:victim) {FactoryGirl.build(:in_game_player, {game: game, turn_status: WAITING_FOR_TURN})}
+
+          it "calls game_board.get_settlements_touching_hex with the robber coordinates" do
+            expect(board).to receive(:get_settlements_touching_hex).with(game.robber_x, game.robber_y).and_return([])
+            player.choose_robber_victim?(victim)
+          end
+
+          context "when there are no settlement's touching the robber hex" do
+            before(:each) { allow(board).to receive(:get_settlements_touching_hex).and_return([]) }
+
+            include_examples "choose_robber_victim? failures"
+          end
+
+          context "when the victim does not have a settlement on the robber's hex" do
+            before(:each) { allow(board).to receive(:get_settlements_touching_hex).and_return([FactoryGirl.build(:settlement, {player: player})]) }
+
+            include_examples "choose_robber_victim? failures"
+          end
+
+          context "when the victim has settlements on the robber hex" do
+            before(:each) { allow(board).to receive(:get_settlements_touching_hex).and_return([FactoryGirl.build(:settlement, {player: victim})]) }
+
+            it "calls victim.resources_stolen" do
+              expect(victim).to receive(:resources_stolen).once.with(1).and_return({})
+              player.choose_robber_victim?(victim)
+            end
+
+            context "when victim.resources_stolen raises an exception that is not a resources_stolen_error RuntimeError" do
+              before(:each) {allow(victim).to receive(:resources_stolen).and_raise("test123")}
+
+              it "allows that exception to be re-raised" do
+                expect{
+                  player.choose_robber_victim?(victim)
+                }.to raise_error("test123")
+              end
+            end
+
+            context "when victim.resources_stolen raises a resources_stolen_error RuntimeError" do
+              before(:each) {allow(victim).to receive(:resources_stolen).and_raise("resources_stolen_error")}
+
+              include_examples "choose_robber_victim? failures"
+            end
+
+            context "when victim.resources_stolen returns an empty list" do
+              let(:num_new_game_logs) {1}
+              let(:stolen_resources) {{}}
+              before(:each) {allow(victim).to receive(:resources_stolen).and_return(stolen_resources)}
+
+              include_examples "choose_robber_victim? successes"
+            end
+
+            context "when victim.resources_stolen returns a list with a resource" do
+              let(:num_new_game_logs) {2}
+              let(:stolen_resources) {{WHEAT => 1}}
+              before(:each) {allow(victim).to receive(:resources_stolen).and_return(stolen_resources)}
+
+              include_examples "choose_robber_victim? successes"
+
+              it "creates a private game_log to tell the player what he or she stole" do
+                player.choose_robber_victim?(victim)
+                
+                expect(player.game_logs[-1].turn_num).to eq(game.turn_num)
+                expect(player.game_logs[-1].current_player).to eq(game.current_player)
+                expect(player.game_logs[-1].msg).to eq("You stole 1 WHEAT from #{victim.user.displayname}")
+                expect(player.game_logs[-1].is_private).to be_truthy
+              end
+            end
+          end
+        end
+      end
+    end
+  end
 end

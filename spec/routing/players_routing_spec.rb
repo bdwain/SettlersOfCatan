@@ -11,5 +11,8 @@ describe PlayersController do
       expect(delete("/players/1")).to route_to("players#destroy", :id => "1")
     end
 
+    it "routes to #choose_robber_victim" do
+      expect(post("/players/1/robber_victim")).to route_to("players#choose_robber_victim", :player_id => "1")
+    end
   end
 end

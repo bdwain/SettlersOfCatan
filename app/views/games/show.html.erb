@@ -108,7 +108,21 @@
           </div>
         <% end %>
       <% when CHOOSING_ROBBER_VICTIM %>
-        Choosing robber victim
+        Choose robber victim
+        <%= form_tag(player_robber_victim_path(my_player), :method => "post") do %>
+          <%= hidden_field_tag(:player_id, my_player.id) %>
+          <div>
+            Victim: 
+            <% 
+              settlements = @game.game_board.get_settlements_touching_hex(@game.robber_x, @game.robber_y)
+              options = settlements.collect{|s| s.player}.uniq.reject{|p| p == my_player}.map{|p| [p.user.displayname, p.id]}
+            %>
+            <%= select_tag("victim_id", options_for_select(options)) %>
+          </div>
+          <div class="actions">
+            <%= submit_tag("Submit") %>
+          </div>
+        <% end %>
       <% when PLAYING_TURN %>
         Playing turn
       <% when WAITING_FOR_TRADE_RESPONSE %>

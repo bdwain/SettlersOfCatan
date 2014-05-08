@@ -7,6 +7,7 @@ describe PlayersController do
     after { expect(response).to redirect_to new_user_session_path }
     it { post :create, :game_id => game }
     it { delete :destroy, :id => player }
+    it { post :choose_robber_victim, :player_id => player}
   end
 
   context "When Logged In" do
@@ -107,6 +108,81 @@ describe PlayersController do
 
         include_examples "destroy redirects to games_url"
         include_examples "destroy sets the flash", "Invalid request"
+      end
+    end
+
+    describe "POST choose_robber_victim" do
+
+      shared_examples "redirecs to games index" do
+        it "redirects to the games index" do
+          post :choose_robber_victim, :player_id => player_id, :victim_id => victim_id
+          expect(response).to redirect_to(games_url)
+        end
+      end
+
+      context "with an invalid player" do
+        let(:player_id) {-1}
+        let(:victim_id) {1}
+
+        include_examples "redirecs to games index"
+      end
+
+      context "with a valid player" do
+        let(:game) {FactoryGirl.build_stubbed(:game)}
+        let(:player) {FactoryGirl.build_stubbed(:in_game_player, {game: game})}
+        let(:player_id) {player.id}
+        before(:each) { allow(player).to receive(:game).and_return(game) }
+        before(:each) { allow(Player).to receive(:find_by_id).with(player_id.to_s).and_return(player) }
+
+        context "with an invalid vicitm" do
+          let(:victim_id) {-1}
+          before(:each) { allow(Player).to receive(:find_by_id).with(victim_id.to_s).and_return(nil) }
+
+          include_examples "redirecs to games index"
+        end
+
+        context "with a valid vicitim" do
+          let(:victim) {FactoryGirl.build_stubbed(:in_game_player, {game: game})}
+          let(:victim_id) {victim.id}
+          before(:each) { allow(Player).to receive(:find_by_id).with(victim.id.to_s).and_return(victim) }
+
+          context "when the current_user does not control the player" do
+            let(:other_user) { FactoryGirl.build_stubbed(:confirmed_user) }
+            before(:each) {allow(player).to receive(:user).and_return(other_user)}
+
+            include_examples "redirecs to games index"
+          end
+
+          context "when the current_user does control the player" do
+            before(:each) {allow(player).to receive(:user).and_return(@current_user)}
+
+            context "when player.choose_robber_victim? returns true" do
+              before(:each) do
+                allow(player).to receive(:choose_robber_victim?).and_return(true)
+                post :choose_robber_victim, :player_id => player, :victim_id => victim
+              end
+
+              it "redirects to the game" do
+                expect(response).to redirect_to(game)
+              end
+            end
+
+            context "when player.choose_robber_victim? returns false" do
+              before(:each) do
+                allow(player).to receive(:choose_robber_victim?).and_return(false)
+                post :choose_robber_victim, :player_id => player, :victim_id => victim
+              end
+
+              it "redirects to the game" do
+                expect(response).to redirect_to(game)
+              end
+
+              it "flashes an error message" do
+                should set_the_flash[:error].to("There was a problem choosing the robber victim")
+              end
+            end
+          end
+        end
       end
     end
   end

@@ -10,6 +10,7 @@ SettlersOfCatan::Application.routes.draw do
         resource :roads, only: [:create]
         resource :settlements, only: [:create]
         resource :resources, only: [:update], via: [:patch]
+        match "robber_victim" => "players#choose_robber_victim", via: [:post]
       end
 
       match "robber" => "games#move_robber", via: [:put]

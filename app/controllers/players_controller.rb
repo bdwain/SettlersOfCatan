@@ -23,4 +23,18 @@ class PlayersController < ApplicationController
     end
     redirect_to games_url
   end
+
+  # POST /players/:player_id/robber_victim
+  def choose_robber_victim
+    player = Player.find_by_id(params[:player_id])
+    victim = Player.find_by_id(params[:victim_id])
+
+    if player == nil || victim == nil || player.user != current_user
+      redirect_to games_url
+    elsif player.choose_robber_victim?(victim)
+      redirect_to player.game
+    else
+      redirect_to player.game, :flash => { :error => "There was a problem choosing the robber victim" }
+    end
+  end
 end

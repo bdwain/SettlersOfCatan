@@ -193,6 +193,16 @@ class Player < ActiveRecord::Base
     save
   end
 
+  def choose_robber_victim?(victim)
+    if turn_status != CHOOSING_ROBBER_VICTIM || !game.game_board.get_settlements_touching_hex(game.robber_x, game.robber_y).any?{|s| s.player == victim}
+      return false
+    end
+
+    @player_to_rob = victim
+    self.turn_status = PLAYING_TURN
+    save
+  end
+
   before_save :rob_players
   before_save :move_robber
 
@@ -224,9 +234,7 @@ class Player < ActiveRecord::Base
   end
 
   def steal_resources_from?(victim, num_to_steal)
-    if victim.game != game
-      puts game.inspect
-      puts victim.game.inspect
+    if victim.game != game || victim == self
       return false
     end
 
