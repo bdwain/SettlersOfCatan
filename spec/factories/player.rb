@@ -3,6 +3,7 @@ FactoryGirl.define do
     #repeat sequences from 1 to 4 to always have a valid number
     sequence(:turn_num, 0) {|n| (n % 4) + 1}
     association :user, factory: :confirmed_user
+    turn_status WAITING_FOR_TURN
     game
 
     factory :in_game_player do

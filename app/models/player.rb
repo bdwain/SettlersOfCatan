@@ -133,19 +133,125 @@ class Player < ActiveRecord::Base
     save
   end
 
+  def resources_stolen(num)
+    return {} if num == 0 || get_resource_count == 0
+    resource_array = Array.new
+    resources.each do |resource|
+      resource.count.times do
+        resource_array << resource.type
+      end
+    end
+
+    msg = ""
+    types_to_lose = Hash[resource_array.sample(num).group_by {|x| x}.map {|k,v| [k,v.count]}]
+
+    types_to_lose.each_with_index do |keyval, index|
+      resource = resources.find{|r| r.type == keyval[0]}
+      resource.count -= keyval[1]
+
+      if index != 0
+        msg << " and "
+      end
+
+      msg << "#{keyval[1]} #{resource.name}"
+    end
+
+    if num == 1 || (types_to_lose.count == 1 && types_to_lose.first[1] == 1)
+      msg << " was stolen"
+    else
+      msg << " were stolen"
+    end
+
+
+    build_game_log(msg, true)
+
+    raise "resources_stolen_error" unless save
+    types_to_lose
+  end
+
   def move_robber?(x, y)
-    if turn_status != MOVING_ROBBER || !game.game_board.hex_is_on_board?(x,y)
+    if turn_status != MOVING_ROBBER
       return false
     end
 
     build_game_log("#{user.displayname} moved the robber")
 
-    return false unless game.player_moved_robber?(self,x,y)
+    other_player_settlements = game.game_board.get_settlements_touching_hex(x, y).reject{|s| s.player == self}
+
+    @robber_x = x
+    @robber_y = y
+
+    if other_player_settlements.count == 0
+      self.turn_status = PLAYING_TURN
+    elsif other_player_settlements.all?{|s| s.player == other_player_settlements.first.player}
+      @player_to_rob = other_player_settlements.first.player
+      self.turn_status = PLAYING_TURN
+    else
+      self.turn_status = CHOOSING_ROBBER_VICTIM
+    end
+
     save
   end
 
+  before_save :rob_players
+  before_save :move_robber
+
   private
-  def build_game_log(msg)
-    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg)
+  def build_game_log(msg, is_private = false)
+    game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg, :is_private => is_private)
+  end
+
+  def move_robber
+    if @robber_x && @robber_y
+      x = @robber_x
+      y = @robber_y
+      @robber_x = nil
+      @robber_y = nil
+      game.move_robber?(x,y)
+    else
+      true
+    end
+  end
+
+  def rob_players
+    if @player_to_rob
+      res = steal_resources_from?(@player_to_rob, 1)
+      @player_to_rob = nil
+      res
+    else
+      true
+    end
+  end
+
+  def steal_resources_from?(player, num_to_steal)
+    begin
+      new_resource_counts = player.resources_stolen(num_to_steal)
+    rescue RuntimeError => e
+      if e.to_s != "resources_stolen_error"
+        raise e
+      end
+      return false
+    end
+
+    build_game_log("#{user.displayname} stole #{new_resource_counts.count} resources from #{player.user.displayname}")
+
+    if new_resource_counts.count != 0
+      msg = "You stole "
+      new_resource_counts.each_with_index do |keyval, index|
+        resource = resources.find{|r| r.type == keyval[0]}
+        resource.count += keyval[1]
+
+        if index != 0
+          msg << "and "
+        end
+
+        msg << "#{keyval[1]} #{resource.name} "
+      end
+
+      msg << "from #{player.user.displayname}"
+
+      build_game_log(msg, true)
+      true
+    end
   end
 end

@@ -433,6 +433,13 @@ describe Game do
         expect(game.placing_initial_pieces?).to be true
       end
 
+      it "puts the robber on the desert hex" do
+        game.save
+        desert_hex = game.map.hexes.find{|hex| hex.resource_type == DESERT}
+        expect(game.robber_x).to eq(desert_hex.pos_x)
+        expect(game.robber_y).to eq(desert_hex.pos_y)
+      end
+
       it "sets the current_player to the player who ends up with the first turn" do
         game.save
         expect(game.current_player).to eq(game.players.find{|p| p.turn_num == 1})
@@ -727,7 +734,7 @@ describe Game do
       context "when there are resources to give" do
         let(:dice_num) {6}
 
-        context "when the player.collect_resource? calls returns false" do
+        context "when the player.collect_resource? call returns false" do
           before(:each){game.players.each{|p| allow(p).to receive(:collect_resources?).and_return(false)}}
 
           it "returns false" do
@@ -747,8 +754,8 @@ describe Game do
           include_examples "success when not 7"
 
           it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-            expect(player1).to receive(:collect_resources?).with({WOOD => 1})
-            expect(player2).to receive(:collect_resources?).with({ORE => 2})
+            expect(player1).to receive(:collect_resources?).once.with({WOOD => 1})
+            expect(player2).to receive(:collect_resources?).once.with({ORE => 2})
             expect(player3).to_not receive(:collect_resources?)
             game.process_dice_roll?(dice_num)
           end
@@ -757,7 +764,7 @@ describe Game do
             let(:dice_num){3}
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled" do
-              expect(player1).to receive(:collect_resources?).with({WOOD => 1, ORE => 1})
+              expect(player1).to receive(:collect_resources?).once.with({WOOD => 1, ORE => 1})
               game.process_dice_roll?(dice_num)
             end
           end
@@ -769,7 +776,7 @@ describe Game do
             end
 
             it "hands out correct resources to players who have settlements on the hexes that were rolled except the robber hex" do
-              expect(player1).to receive(:collect_resources?).with({WOOD => 1})
+              expect(player1).to receive(:collect_resources?).once.with({WOOD => 1})
               expect(player2).to_not receive(:collect_resources?)
               expect(player3).to_not receive(:collect_resources?)
               game.process_dice_roll?(dice_num)
@@ -780,7 +787,7 @@ describe Game do
             before(:each) {player1.settlements.find{|s| s.vertex_x == 4 && s.vertex_y == 0 && s.side == 0}.is_city = true}
 
             it "gives that player 2 resources instead of 1" do
-              expect(player1).to receive(:collect_resources?).with({WOOD => 2})
+              expect(player1).to receive(:collect_resources?).once.with({WOOD => 2})
               game.process_dice_roll?(dice_num)
             end
           end
@@ -847,6 +854,42 @@ describe Game do
         include_examples "returns true"
         include_examples "set's current_player to MOVING_ROBBER"
         include_examples "set's calling player to WAITING_FOR_TURN"
+      end
+    end
+  end
+
+  describe "move_robber?" do
+    let(:game) {FactoryGirl.build(:game_started)}
+
+    context "when x,y is not on the board" do
+      let(:x) {0}
+      let(:y) {0}
+
+      it "returns false" do
+        expect(game.move_robber?(x,y)).to be_falsey
+      end
+
+      it "does not change x or y" do
+        original_x = game.robber_x
+        original_y = game.robber_y
+        game.move_robber?(x,y)
+        expect(game.robber_x).to eq(original_x)
+        expect(game.robber_y).to eq(original_y)
+      end
+    end
+
+    context "when x,y is on the board" do
+      let(:x) {3}
+      let(:y) {3}
+
+      it "returns true" do
+        expect(game.move_robber?(x,y)).to be_truthy
+      end
+
+      it "change x and y to the new values" do
+        game.move_robber?(x,y)
+        expect(game.robber_x).to eq(x)
+        expect(game.robber_y).to eq(y)
       end
     end
   end

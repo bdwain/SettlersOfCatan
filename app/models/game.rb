@@ -137,7 +137,9 @@ class Game < ActiveRecord::Base
   
   before_save do
     if @resources_to_give
-      @resources_to_give.all?{|cur_player, resources| cur_player.collect_resources?(resources) }
+      res = @resources_to_give.all?{|cur_player, resources| cur_player.collect_resources?(resources) }
+      @resources_to_give = nil
+      res
     else
       true
     end
@@ -160,8 +162,14 @@ class Game < ActiveRecord::Base
     save
   end
 
-  def player_moved_robber?(player, x, y)
-    true
+  def move_robber?(x, y)
+    if !game_board.hex_is_on_board?(x,y)
+      return false
+    end
+
+    self.robber_x = x
+    self.robber_y = y
+    save
   end
 
   private
@@ -191,6 +199,10 @@ class Game < ActiveRecord::Base
     end
 
     development_cards.shuffle.each_with_index { |card, index| card.position = index }
+
+    desert_hex = map.hexes.find{|hex| hex.resource_type == DESERT}
+    self.robber_x = desert_hex.pos_x
+    self.robber_y = desert_hex.pos_y
 
     self.status = STATUS_PLACING_INITIAL_PIECES
     save
