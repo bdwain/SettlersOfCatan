@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140430035855) do
+ActiveRecord::Schema.define(version: 20140509204048) do
 
   create_table "chats", force: true do |t|
     t.text     "msg",        null: false
@@ -24,10 +24,11 @@ ActiveRecord::Schema.define(version: 20140430035855) do
 
   create_table "development_cards", force: true do |t|
     t.integer "player_id"
-    t.integer "game_id",                   null: false
-    t.integer "type",                      null: false
+    t.integer "game_id",     null: false
+    t.integer "type",        null: false
     t.integer "position"
-    t.boolean "was_used",  default: false, null: false
+    t.integer "turn_bought"
+    t.integer "turn_used"
   end
 
   add_index "development_cards", ["game_id"], name: "index_development_cards_on_game_id", using: :btree
