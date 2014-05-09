@@ -176,14 +176,14 @@ describe Player do
       end
     end
 
-    context "when x,y is not free for building" do
+    context "when x,y,side is not free for building" do
       let(:turn_status) {PLACING_INITIAL_SETTLEMENT}
       before(:each) {allow(board).to receive(:vertex_is_free_for_building?).and_return(false)}
 
       include_examples "add_settlement? failures"
     end
 
-    context "when x,y is free for building" do
+    context "when x,y,side is free for building" do
       before(:each) {allow(board).to receive(:vertex_is_free_for_building?).and_return(true)}
 
       context "when player is status PLACING_INITIAL_SETTLEMENT" do
@@ -303,7 +303,8 @@ describe Player do
   describe "add_road?" do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game, turn_status: turn_status})}
+    let(:player) {FactoryGirl.build(:player_with_items, {game: game, turn_status: turn_status, resources: starting_resources})}
+    let(:starting_resources) {Hash.new}
     before(:each) do
       allow(game).to receive(:game_board).and_return(board)
       allow(game).to receive(:current_player).and_return(player)
@@ -325,6 +326,8 @@ describe Player do
           player.add_road?(x, y, side)
         }.to_not change(player.roads, :count)
       end
+
+      include_examples "does not change the player's status"
     end
 
     shared_examples "does not call game.advance?" do
@@ -334,25 +337,57 @@ describe Player do
       end
     end
 
-    shared_examples "calls game.advance?" do
-      it "calls game.advance?" do
-        expect(game).to receive(:advance?)
+    shared_examples "does not change the player's status" do
+      it "does not change the player's status" do
+        expect{
+          player.add_road?(x, y, side)
+        }.to_not change(player, :turn_status)
+      end
+    end
+
+    shared_examples "add_road? successes" do
+      it "returns true" do
+        expect(player.add_road?(x, y, side)).to be_truthy
+      end
+
+      it "creates a new road with for the user at x,y,side" do
+        expect{
+          player.add_road?(x, y, side)
+        }.to change(player.roads, :count).by(1)
+
+        expect(player.roads.last.edge_x).to eq(x)
+        expect(player.roads.last.edge_y).to eq(y)
+        expect(player.roads.last.side).to eq(side)
+      end
+
+      it "saves" do
+        expect(player).to receive(:save).and_call_original
         player.add_road?(x, y, side)
       end
-    end    
+    end
 
-    context "when x,y is not free for building" do
+    context "when x,y,side is not free for building" do
       let(:x) {-10}
       let(:y) {-10}
       let(:side) {0}
-      let(:turn_status) {PLACING_INITIAL_ROAD}
       before(:each) {expect(board).to receive(:edge_is_free_for_building_by_player?).with(x, y, side, player).and_return(false)}
 
-      include_examples "add_road? failures"
-      include_examples "does not call game.advance?"
+      context "when status is PLACING_INITIAL_ROAD" do
+        let(:turn_status) {PLACING_INITIAL_ROAD}
+
+        include_examples "add_road? failures"
+        include_examples "does not call game.advance?"
+      end
+
+      context "when status is PLAYING_TURN" do
+        let(:turn_status) {PLAYING_TURN}
+
+        include_examples "add_road? failures"
+        include_examples "does not call game.advance?"
+      end
     end
 
-    context "when x,y is free for building" do
+    context "when x,y,side is free for building" do
       let(:x) {2}
       let(:y) {2}
       let(:side) {0}
@@ -390,11 +425,9 @@ describe Player do
           end
 
           context "when game.advance? returns true" do
-            before(:each) {allow(game).to receive(:advance?).and_return(true)}
+            before(:each) {expect(game).to receive(:advance?).and_return(true)}
 
-            it "returns true" do
-              expect(player.add_road?(x, y, side)).to be true
-            end
+            include_examples "add_road? successes"
 
             it "creates a new game_log with the game's turn number and proper text and self as current_player" do
               expect{
@@ -406,37 +439,61 @@ describe Player do
               expect(player.game_logs.last.current_player).to eq(player)
               expect(player.game_logs.last.is_private).to be_falsey
             end
-
-            it "creates a new road with for the user at x,y,side" do
-              expect{
-                player.add_road?(x, y, side)
-              }.to change(player.roads, :count).by(1)
-
-              expect(player.roads.last.edge_x).to eq(x)
-              expect(player.roads.last.edge_y).to eq(y)
-              expect(player.roads.last.side).to eq(side)
-            end
-
-            it "saves" do
-              expect(player).to receive(:save).and_call_original
-              player.add_road?(x, y, side)
-            end
-
-            include_examples "calls game.advance?"
           end
 
           context "when game.advance? returns false" do
             before(:each) {allow(game).to receive(:advance?).and_return(false)}
 
             include_examples "add_road? failures"
-            include_examples "calls game.advance?"
           end
         end
       end
 
-      #TODO: add in when player is playing turn
+      context "when player is status PLAYING_TURN" do
+        let(:turn_status) {PLAYING_TURN}
+
+        context "when the player doesn't have a WOOD" do
+          let(:starting_resources) {{WHEAT => 2, WOOL => 1, BRICK => 1, ORE => 1}}
+
+          include_examples "add_road? failures"
+        end
+
+        context "when the player doesn't have a BRICK" do
+          let(:starting_resources) {{WOOD => 2, WOOL => 1, WHEAT => 1, ORE => 1}}
+
+          include_examples "add_road? failures"
+        end
+
+        context "when the player has enough resources" do
+          let(:starting_resources) {{WHEAT => 1, WOOD => 1, WOOL => 2, BRICK => 3, ORE => 1}}
+
+          include_examples "add_road? successes"
+          include_examples "does not change the player's status"
+          include_examples "does not call game.advance?"
+
+          it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
+            expect{
+              player.add_road?(x, y, side)
+            }.to change(player.game_logs, :count).by(1)
+
+            expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+            expect(player.game_logs.last.msg).to eq("#{player.user.displayname} bought a road on (#{x},#{y},#{side})")
+            expect(player.game_logs.last.current_player).to eq(player)
+            expect(player.game_logs.last.is_private).to be_falsey
+          end
+
+          it "sets the player's resource counts properly" do
+            player.add_road?(x, y, side)
+            expect(player.resources.find{|resource| resource.type == WOOD}.count).to eq(0)
+            expect(player.resources.find{|resource| resource.type == WOOL}.count).to eq(2)
+            expect(player.resources.find{|resource| resource.type == ORE}.count).to eq(1)
+            expect(player.resources.find{|resource| resource.type == BRICK}.count).to eq(2)
+            expect(player.resources.find{|resource| resource.type == WHEAT}.count).to eq(1)
+          end
+        end
+      end
       
-      context "when player is not status PLACING_INITIAL_ROAD" do
+      context "when player is not status PLACING_INITIAL_ROAD or PLAYING_TURN" do
         let(:turn_status) {WAITING_FOR_TURN}
 
         include_examples "add_road? failures"

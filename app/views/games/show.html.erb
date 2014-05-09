@@ -94,6 +94,8 @@
         <div>
           Buy a settlement
           <%= render partial: "settlement_form", locals: {player: my_player} %>
+          Buy a road
+          <%= render partial: "road_form", locals: {player: my_player} %>
         </div>
       <% when WAITING_FOR_TRADE_RESPONSE %>
         Waiting for Trade Response

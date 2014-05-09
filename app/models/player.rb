@@ -31,7 +31,7 @@ class Player < ActiveRecord::Base
 
     case turn_status
     when PLACING_INITIAL_SETTLEMENT
-      msg << "placed a settlement on "
+      msg << "placed "
       if game.turn_num == 2
         game.game_board.get_hexes_from_vertex(x,y,side).each do |hex|
           if hex.resource_type != DESERT
@@ -45,7 +45,7 @@ class Player < ActiveRecord::Base
       if !game.game_board.vertex_is_connected_to_player?(x, y, side, self)
         return false
       end
-      msg << "bought a settlement on "
+      msg << "bought "
       wheat = get_resource(WHEAT)
       wood = get_resource(WOOD)
       wool = get_resource(WOOL)
@@ -63,7 +63,7 @@ class Player < ActiveRecord::Base
       return false
     end
 
-    msg << "(#{x},#{y},#{side})"
+    msg << "a settlement on (#{x},#{y},#{side})"
 
     build_game_log(msg)
     settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
@@ -72,16 +72,37 @@ class Player < ActiveRecord::Base
   end
 
   def add_road?(x, y, side)
-    last_settlement = settlements.last
     if !game.game_board.edge_is_free_for_building_by_player?(x, y, side, self)
-      return false
-    elsif turn_status != PLACING_INITIAL_ROAD # later make sure they're not buying either
-      return false
-    elsif !game.game_board.edge_is_connected_to_vertex?(x, y, side, last_settlement.vertex_x, last_settlement.vertex_y, last_settlement.side)
       return false
     end
 
-    build_game_log("#{user.displayname} placed a road on (#{x},#{y},#{side})")
+    msg = "#{user.displayname} "
+
+    case turn_status
+    when PLACING_INITIAL_ROAD
+      last_settlement = settlements.last
+      if !game.game_board.edge_is_connected_to_vertex?(x, y, side, last_settlement.vertex_x, last_settlement.vertex_y, last_settlement.side)
+        return false
+      end
+      msg << "placed "
+    when PLAYING_TURN
+      msg << "bought "
+      wood = get_resource(WOOD)
+      brick = get_resource(BRICK)
+
+      if wood.count == 0 || brick.count == 0
+        return false
+      end
+
+      wood.count -= 1
+      brick.count -= 1
+    else
+      return false
+    end
+
+    msg << "a road on (#{x},#{y},#{side})"
+
+    build_game_log(msg)
     roads.build(:edge_x => x, :edge_y => y, :side => side)
 
     return false unless turn_status != PLACING_INITIAL_ROAD || game.advance?
