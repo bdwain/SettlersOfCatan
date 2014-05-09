@@ -35,44 +35,10 @@
         Waiting For Turn
       <% when PLACING_INITIAL_SETTLEMENT %>
         Place a settlement
-        <%= form_tag(player_settlements_path(my_player), :method => "post") do %>
-          <%= hidden_field_tag(:player_id, my_player.id) %>
-          <div>
-            <%= label_tag(:vertex_x, "X Position: ") %>
-            <%= text_field_tag :vertex_x, nil, :required => true %>
-          </div>
-          <div>
-            <%= label_tag(:vertex_y, "Y Position: ") %>
-            <%= text_field_tag :vertex_y, nil, :required => true %>
-          </div>
-          <div>
-            <%= label_tag(:side, "Side: ") %>
-            <%= text_field_tag :side, nil, :required => true %>
-          </div>            
-          <div class="actions">
-            <%= submit_tag("Submit") %>
-          </div>            
-        <% end %>
+        <%= render partial: "settlement_form", locals: {player: my_player} %>
       <% when PLACING_INITIAL_ROAD %>
         Place a road
-        <%= form_tag(player_roads_path(my_player), :method => "post") do %>
-          <%= hidden_field_tag(:player_id, my_player.id) %>
-          <div>
-            <%= label_tag(:edge_x, "X Position: ") %>
-            <%= text_field_tag :edge_x, nil, :required => true %>
-          </div>
-          <div>
-            <%= label_tag(:edge_y, "Y Position: ") %>
-            <%= text_field_tag :edge_y, nil, :required => true %>
-          </div>
-          <div>
-            <%= label_tag(:side, "Side: ") %>
-            <%= text_field_tag :side, nil, :required => true %>
-          </div>                
-          <div class="actions">
-            <%= submit_tag("Submit") %>
-          </div>            
-        <% end %>
+        <%= render partial: "road_form", locals: {player: my_player} %>
       <% when READY_TO_ROLL %>
         <%= form_tag(player_dice_rolls_path(my_player), :method => "post") do %>
           <%= hidden_field_tag(:player_id, my_player.id) %>

@@ -1,0 +1,18 @@
+<%= form_tag(player_roads_path(player), :method => "post") do %>
+  <%= hidden_field_tag(:player_id, player.id) %>
+  <div>
+    <%= label_tag(:edge_x, "X Position: ") %>
+    <%= text_field_tag :edge_x, nil, :required => true %>
+  </div>
+  <div>
+    <%= label_tag(:edge_y, "Y Position: ") %>
+    <%= text_field_tag :edge_y, nil, :required => true %>
+  </div>
+  <div>
+    <%= label_tag(:side, "Side: ") %>
+    <%= text_field_tag :side, nil, :required => true %>
+  </div>                
+  <div class="actions">
+    <%= submit_tag("Submit") %>
+  </div>            
+<% end %>
