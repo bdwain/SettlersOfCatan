@@ -239,6 +239,7 @@ class Player < ActiveRecord::Base
 
     save
   end
+  before_save :move_robber
 
   def choose_robber_victim?(victim)
     if turn_status != CHOOSING_ROBBER_VICTIM || !game.game_board.get_settlements_touching_hex(game.robber_x, game.robber_y).any?{|s| s.player == victim}
@@ -251,7 +252,9 @@ class Player < ActiveRecord::Base
   end
 
   before_save :rob_players
-  before_save :move_robber
+
+  def buy_development_card?
+  end
 
   private
   def get_resource(type)

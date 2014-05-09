@@ -11,11 +11,11 @@ SettlersOfCatan::Application.routes.draw do
         resource :settlements, only: [:create]
         resource :resources, only: [:update], via: [:patch]
         match "robber_victim" => "players#choose_robber_victim", via: [:post]
+        resources :development_cards, only: [:create], via: [:post]
       end
 
       match "robber" => "games#move_robber", via: [:put]
       #resources :chats
-      #resources :development_cards
   end
   
   #resources :maps, :shallow: true do

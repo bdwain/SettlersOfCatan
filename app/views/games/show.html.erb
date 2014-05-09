@@ -90,12 +90,19 @@
           </div>
         <% end %>
       <% when PLAYING_TURN %>
-        Playing turn
         <div>
           Buy a settlement
           <%= render partial: "settlement_form", locals: {player: my_player} %>
+        </div>
+        <div>
           Buy a road
           <%= render partial: "road_form", locals: {player: my_player} %>
+        </div>
+        <div>
+          <%= form_tag(player_development_cards_path(my_player), :method => "post") do %>
+            <%= hidden_field_tag(:player_id, my_player.id) %>
+            <%= submit_tag("Buy a development card") %>
+          <% end %>
         </div>
       <% when WAITING_FOR_TRADE_RESPONSE %>
         Waiting for Trade Response
