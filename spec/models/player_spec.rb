@@ -91,7 +91,8 @@ describe Player do
   describe "add_settlement?" do
     let(:game) { FactoryGirl.build_stubbed(:game_turn_1) }
     let(:board) {double("GameBoard")}
-    let(:player) {FactoryGirl.build(:in_game_player, {game: game, turn_status: turn_status})}
+    let(:player) {FactoryGirl.build(:player_with_items, {game: game, turn_status: turn_status, resources: starting_resources})}
+    let(:starting_resources) {Hash.new}
     before(:each) do
       allow(game).to receive(:game_board).and_return(board)
       allow(game).to receive(:current_player).and_return(player)
@@ -100,12 +101,6 @@ describe Player do
     shared_examples "add_settlement? failures" do
       it "returns false" do
         expect(player.add_settlement?(1, 1, 0)).to be_falsey
-      end
-
-      it "does not change the player's turn_status" do
-        expect{
-          player.add_settlement?(1, 1, 0)
-        }.to_not change(player, :turn_status)
       end
 
       it "does not create a new game log" do
@@ -120,11 +115,20 @@ describe Player do
         }.to_not change(player.settlements, :count)
       end
 
-      include_examples "add_settlement? does not add new resources"
+      include_examples "add_settlement? does not change the player's resources"
+      include_examples "does not change the player's status"
     end
 
-    shared_examples "add_settlement? does not add new resources" do
-      it "does not add new resources" do
+    shared_examples "does not change the player's status" do
+      it "does not change the player's turn_status" do
+        expect{
+          player.add_settlement?(1, 1, 0)
+        }.to_not change(player, :turn_status)
+      end
+    end
+
+    shared_examples "add_settlement? does not change the player's resources" do
+      it "does not change the player's resources" do
         expect{
           player.add_settlement?(1, 1, 0)
         }.to_not change(player, :resources)
@@ -134,22 +138,6 @@ describe Player do
     shared_examples "add_settlement? successes" do
       it "returns true" do
         expect(player.add_settlement?(1, 1, 0)).to be true
-      end
-
-      it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
-        player.add_settlement?(1, 1, 0)
-        expect(player.turn_status).to eq(PLACING_INITIAL_ROAD)
-      end
-
-      it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
-        expect{
-          player.add_settlement?(1, 1, 0)
-        }.to change(player.game_logs, :count).by(1)
-
-        expect(player.game_logs.last.turn_num).to eq(game.turn_num)
-        expect(player.game_logs.last.msg).to eq("#{player.user.displayname} placed a settlement on (1,1,0)")
-        expect(player.game_logs.last.current_player).to eq(player)
-        expect(player.game_logs.last.is_private).to be_falsey
       end
 
       it "creates a new settlement for the user at x,y,side" do
@@ -165,6 +153,26 @@ describe Player do
       it "saves" do
         expect(player).to receive(:save).and_call_original
         player.add_settlement?(1,1,0)
+      end
+    end
+
+    shared_examples "add_settlement? sets status to PLACING_INITIAL_ROAD" do
+      it "sets the player's turn_status to PLACING_INITIAL_ROAD" do
+        player.add_settlement?(1, 1, 0)
+        expect(player.turn_status).to eq(PLACING_INITIAL_ROAD)
+      end
+    end
+
+    shared_examples "PLACING_INITIAL_ROAD game_log" do
+      it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
+        expect{
+          player.add_settlement?(1, 1, 0)
+        }.to change(player.game_logs, :count).by(1)
+
+        expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+        expect(player.game_logs.last.msg).to eq("#{player.user.displayname} placed a settlement on (1,1,0)")
+        expect(player.game_logs.last.current_player).to eq(player)
+        expect(player.game_logs.last.is_private).to be_falsey
       end
     end
 
@@ -189,14 +197,18 @@ describe Player do
           before(:each) {player.game.turn_num = 1}
 
           include_examples "add_settlement? successes"
-          include_examples "add_settlement? does not add new resources"
+          include_examples "add_settlement? sets status to PLACING_INITIAL_ROAD"
+          include_examples "PLACING_INITIAL_ROAD game_log"
+          include_examples "add_settlement? does not change the player's resources"
         end
 
         context "when turn number is 2" do
           before(:each) {player.game.turn_num = 2}
           
           include_examples "add_settlement? successes"
-          
+          include_examples "add_settlement? sets status to PLACING_INITIAL_ROAD"
+          include_examples "PLACING_INITIAL_ROAD game_log"
+
           it "sets the player's resource counts properly" do
             player.add_settlement?(1, 1, 0)
             expect(player.resources.find{|resource| resource.type == WOOD}.count).to eq(2)
@@ -208,10 +220,80 @@ describe Player do
         end        
       end
 
-      #TODO: add in when player is playing turn
+      context "when player is status PLAYING_TURN" do
+        let(:turn_status) {PLAYING_TURN}
+
+        it "calls game_board.vertex_is_connected_to_player? with proper arguments" do
+          expect(board).to receive(:vertex_is_connected_to_player?).with(1,1,0,player).and_return(false)
+          player.add_settlement?(1,1,0)
+        end
+
+        context "when the player isn't connected by road to the vertex" do
+          let(:starting_resources) {{WHEAT => 1, WOOD => 2, WOOL => 1, BRICK => 4, ORE => 1}}
+          before(:each) {allow(board).to receive(:vertex_is_connected_to_player?).and_return(false)}
+
+          include_examples "add_settlement? failures"
+        end
+
+        context "when the player is connected by road to the vertex" do
+          before(:each) {allow(board).to receive(:vertex_is_connected_to_player?).and_return(true)}
+
+          context "when the player doesn't have a WHEAT" do
+            let(:starting_resources) {{WOOD => 2, WOOL => 1, BRICK => 1}}
+
+            include_examples "add_settlement? failures"
+          end
+
+          context "when the player doesn't have a WOOD" do
+            let(:starting_resources) {{WHEAT => 2, WOOL => 1, BRICK => 1}}
+
+            include_examples "add_settlement? failures"
+          end
+
+          context "when the player doesn't have a WOOL" do
+            let(:starting_resources) {{WOOD => 2, WHEAT => 1, BRICK => 1}}
+
+            include_examples "add_settlement? failures"
+          end
+
+          context "when the player doesn't have a BRICK" do
+            let(:starting_resources) {{WOOD => 2, WOOL => 1, WHEAT => 1}}
+
+            include_examples "add_settlement? failures"
+          end
+
+          context "when the player has enough resources" do
+            let(:starting_resources) {{WHEAT => 1, WOOD => 2, WOOL => 1, BRICK => 4, ORE => 1}}
+
+            include_examples "add_settlement? successes"
+            include_examples "does not change the player's status"
+
+            it "creates a new game_log with the game's turn number and proper text and self as the current_player" do
+              expect{
+                player.add_settlement?(1, 1, 0)
+              }.to change(player.game_logs, :count).by(1)
+
+              expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+              expect(player.game_logs.last.msg).to eq("#{player.user.displayname} bought a settlement on (1,1,0)")
+              expect(player.game_logs.last.current_player).to eq(player)
+              expect(player.game_logs.last.is_private).to be_falsey
+            end
+
+            it "sets the player's resource counts properly" do
+              player.add_settlement?(1, 1, 0)
+              expect(player.resources.find{|resource| resource.type == WOOD}.count).to eq(1)
+              expect(player.resources.find{|resource| resource.type == WOOL}.count).to eq(0)
+              expect(player.resources.find{|resource| resource.type == ORE}.count).to eq(1)
+              expect(player.resources.find{|resource| resource.type == BRICK}.count).to eq(3)
+              expect(player.resources.find{|resource| resource.type == WHEAT}.count).to eq(0)
+            end
+          end
+        end
+      end
       
-      context "when player is not status PLACING_INITIAL_SETTLEMENT" do
+      context "when player is not status PLACING_INITIAL_SETTLEMENT or PLAYING_TURN" do
         let(:turn_status) {WAITING_FOR_TURN}
+        let(:starting_resources) {{WHEAT => 1, WOOD => 2, WOOL => 1, WHEAT => 4}}
 
         include_examples "add_settlement? failures"
       end

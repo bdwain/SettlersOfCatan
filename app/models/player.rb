@@ -25,23 +25,49 @@ class Player < ActiveRecord::Base
   def add_settlement?(x, y, side)
     if !game.game_board.vertex_is_free_for_building?(x, y, side)
       return false
-    elsif turn_status != PLACING_INITIAL_SETTLEMENT # later make sure they're not buying either
+    end
+
+    msg = "#{user.displayname} "
+
+    case turn_status
+    when PLACING_INITIAL_SETTLEMENT
+      msg << "placed a settlement on "
+      if game.turn_num == 2
+        game.game_board.get_hexes_from_vertex(x,y,side).each do |hex|
+          if hex.resource_type != DESERT
+            resource = get_resource(hex.resource_type)
+            resource.count += 1
+          end
+        end
+      end
+      self.turn_status = PLACING_INITIAL_ROAD
+    when PLAYING_TURN
+      if !game.game_board.vertex_is_connected_to_player?(x, y, side, self)
+        return false
+      end
+      msg << "bought a settlement on "
+      wheat = get_resource(WHEAT)
+      wood = get_resource(WOOD)
+      wool = get_resource(WOOL)
+      brick = get_resource(BRICK)
+
+      if wheat.count == 0 || wool.count == 0 || wood.count == 0 || brick.count == 0
+        return false
+      end
+
+      wheat.count -= 1
+      wool.count -= 1
+      wood.count -= 1
+      brick.count -= 1
+    else
       return false
     end
 
-    build_game_log("#{user.displayname} placed a settlement on (#{x},#{y},#{side})")
+    msg << "(#{x},#{y},#{side})"
+
+    build_game_log(msg)
     settlements.build(:vertex_x => x, :vertex_y => y, :side => side)
-
-    if turn_status == PLACING_INITIAL_SETTLEMENT && game.turn_num == 2
-      game.game_board.get_hexes_from_vertex(x,y,side).each do |hex|
-        if hex.resource_type != DESERT
-          resource = resources.find{|r| r.type == hex.resource_type}
-          resource.count += 1
-        end
-      end
-    end
-
-    self.turn_status = PLACING_INITIAL_ROAD
+    
     save
   end
 
@@ -84,7 +110,7 @@ class Player < ActiveRecord::Base
     msg = "#{user.displayname} got "
 
     resources_gained.each_with_index do |keyval, index|
-      resource = resources.find{|r| r.type == keyval[0]}
+      resource = get_resource(keyval[0])
       resource.count += keyval[1]
       
       if index != 0
@@ -109,7 +135,7 @@ class Player < ActiveRecord::Base
     msg = "#{user.displayname} discarded "
     start_using_and_in_msg = false
     resources_to_discard.each_with_index do |keyval, index|
-      resource = resources.find{|r| r.type == keyval[0]}
+      resource = get_resource(keyval[0])
       resource.count -= keyval[1]
       num_discarded += keyval[1]
 
@@ -146,7 +172,7 @@ class Player < ActiveRecord::Base
     types_to_lose = Hash[resource_array.sample(num).group_by {|x| x}.map {|k,v| [k,v.count]}]
 
     types_to_lose.each_with_index do |keyval, index|
-      resource = resources.find{|r| r.type == keyval[0]}
+      resource = get_resource(keyval[0])
       resource.count -= keyval[1]
 
       if index != 0
@@ -207,6 +233,10 @@ class Player < ActiveRecord::Base
   before_save :move_robber
 
   private
+  def get_resource(type)
+    resources.find{|r| r.type == type}
+  end
+
   def build_game_log(msg, is_private = false)
     game_logs.build(:turn_num => game.turn_num, :current_player => game.current_player, :msg => msg, :is_private => is_private)
   end
@@ -252,7 +282,7 @@ class Player < ActiveRecord::Base
     if new_resource_counts.count != 0
       msg = "You stole "
       new_resource_counts.each_with_index do |keyval, index|
-        resource = resources.find{|r| r.type == keyval[0]}
+        resource = get_resource(keyval[0])
         resource.count += keyval[1]
 
         if index != 0

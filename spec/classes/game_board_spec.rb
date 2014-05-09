@@ -156,7 +156,7 @@ describe GameBoard do
     let(:players) {[]}
 
     it "returns true when the edge is connected to the vertex" do
-      expect(board.edge_is_connected_to_vertex?(2,2,0,2,2,0)).to be true
+      expect(board.edge_is_connected_to_vertex?(2,2,0,2,2,0)).to be_truthy
     end
 
     it "returns false when the edge is not connected to the vertex" do
@@ -234,6 +234,36 @@ describe GameBoard do
 
     it "returns false when there is no hex with x,y" do
       expect(board.hex_is_on_board?(0, 0)).to be_falsey
+    end
+  end
+
+  describe "vertex_is_connected_to_player?" do
+    let(:x) {2}
+    let(:y) {2}
+    let(:side) {0}
+
+    context "when the player has a road touching the vertex" do
+      let(:players) {[FactoryGirl.build(:player_with_items, { road_points: [[2,2,0]]})]}
+
+      it "returns true" do
+        expect(board.vertex_is_connected_to_player?(x,y,side,players.first)).to be_truthy
+      end
+    end
+
+    context "when the player has no roads touching the vertex" do
+      let(:players) {[FactoryGirl.build(:in_game_player)]}
+
+      it "returns false" do
+        expect(board.vertex_is_connected_to_player?(x,y,side,players.first)).to be_falsey
+      end
+
+      context "when there are other players with roads touching the vertex" do
+        let(:players) {[FactoryGirl.build(:in_game_player), FactoryGirl.build(:player_with_items, { road_points: [[2,2,0]]})]}
+
+        it "returns false" do
+          expect(board.vertex_is_connected_to_player?(x,y,side,players.first)).to be_falsey
+        end
+      end
     end
   end
 end

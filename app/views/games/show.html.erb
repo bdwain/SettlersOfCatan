@@ -91,6 +91,10 @@
         <% end %>
       <% when PLAYING_TURN %>
         Playing turn
+        <div>
+          Buy a settlement
+          <%= render partial: "settlement_form", locals: {player: my_player} %>
+        </div>
       <% when WAITING_FOR_TRADE_RESPONSE %>
         Waiting for Trade Response
       <% when CONSIDERING_TRADE %>

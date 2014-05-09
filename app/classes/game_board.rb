@@ -53,6 +53,10 @@ module GameBoard
       @hexes[x] && @hexes[x][y]
     end
 
+    def vertex_is_connected_to_player?(x, y, side, player)
+      get_edge_points_from_vertex(x, y, side).any?{|pt| @roads.has_key?(pt) && @roads[pt].player == player}
+    end
+
     private
     def get_hexes_from_points(points)
       points.reject {|point| !hex_is_on_board?(point[0], point[1])}.collect{ |point| @hexes[point[0]][point[1]]}
