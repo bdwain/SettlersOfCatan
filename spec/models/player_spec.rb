@@ -608,16 +608,11 @@ describe Player do
     let(:player) {FactoryGirl.build(:in_game_player, {game: game})}
     before(:each) {allow(game).to receive(:current_player).and_return(player)}
 
-    shared_examples "returns true" do
-      it "returns true" do
-        expect(player.collect_resources?(resources)).to be true
+
+    shared_examples "collect_resources? failures" do
+      it "returns false" do
+        expect(player.collect_resources?(resources)).to be_falsey
       end
-    end
-
-    context "when resources is empty" do
-      let(:resources) {{}}
-
-      include_examples "returns true"
 
       it "does not create a game log" do
         expect{
@@ -626,40 +621,30 @@ describe Player do
       end
     end
 
+    context "when resources is empty" do
+      let(:resources) {{}}
+
+      include_examples "collect_resources? failures"
+    end
+
     context "when resources is not empty" do
-      let(:resources) {{WHEAT => 2}}
-      
-      include_examples "returns true"
+      context "when there are negative values in resources" do
+        let(:resources) {{WHEAT => -1}}
 
-      it "creates a correct game log" do
-        expect{
-          player.collect_resources?(resources)
-        }.to change(player.game_logs, :count).by(1)
-
-        expect(player.game_logs.last.turn_num).to eq(game.turn_num)
-        expect(player.game_logs.last.msg).to eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
-        expect(player.game_logs.last.current_player).to eq(player)
-        expect(player.game_logs.last.is_private).to be_falsey
+        include_examples "collect_resources? failures"
       end
 
-      it "adds the proper amounts to the resource totals" do
-        original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
-        player.collect_resources?(resources)
-        expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count + resources.first[1])
-      end
-
-      context "when another player's turn causes the player to get the resources" do
-        let(:other_player) {FactoryGirl.build(:in_game_player)}
-        before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
-
-        it "sets the game_log's current_player to the other player" do
-          player.collect_resources?(resources)
-          expect(player.game_logs.last.current_player).to eq(other_player)
+      context "when there are no negative values in resources" do
+        let(:resources) {{WHEAT => 2}}
+        
+        it "returns true" do
+          expect(player.collect_resources?(resources)).to be_truthy
         end
-      end
 
-      context "when there is more than one reosurce type being gained" do
-        let(:resources) {{WHEAT => 2, ORE => 3}}
+        it "saves" do
+          expect(player).to receive(:save).and_call_original
+          player.collect_resources?(resources)
+        end
 
         it "creates a correct game log" do
           expect{
@@ -667,24 +652,50 @@ describe Player do
           }.to change(player.game_logs, :count).by(1)
 
           expect(player.game_logs.last.turn_num).to eq(game.turn_num)
-          expected_msg = "#{player.user.displayname} got #{resources.first[1]} WHEAT and "
-          expected_msg << "#{resources.entries.last[1]} ORE"
-          expect(player.game_logs.last.msg).to eq(expected_msg)
+          expect(player.game_logs.last.msg).to eq("#{player.user.displayname} got #{resources.first[1]} WHEAT")
           expect(player.game_logs.last.current_player).to eq(player)
           expect(player.game_logs.last.is_private).to be_falsey
         end
 
         it "adds the proper amounts to the resource totals" do
-          original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
-          original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
+          original_resource_count = player.resources.find{|r| r.type == resources.first[0]}.count
           player.collect_resources?(resources)
-          expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count1 + resources.first[1])
-          expect(player.resources.find{|r| r.type == resources.entries.last[0]}.count).to eq(original_resource_count2 + resources.entries.last[1])
+          expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count + resources.first[1])
         end
 
-        it "saves" do
-          expect(player).to receive(:save).and_call_original
-          player.collect_resources?(resources)
+        context "when another player's turn causes the player to get the resources" do
+          let(:other_player) {FactoryGirl.build(:in_game_player)}
+          before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
+
+          it "sets the game_log's current_player to the other player" do
+            player.collect_resources?(resources)
+            expect(player.game_logs.last.current_player).to eq(other_player)
+          end
+        end
+
+        context "when there is more than one reosurce type being gained" do
+          let(:resources) {{WHEAT => 2, ORE => 3}}
+
+          it "creates a correct game log" do
+            expect{
+              player.collect_resources?(resources)
+            }.to change(player.game_logs, :count).by(1)
+
+            expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+            expected_msg = "#{player.user.displayname} got #{resources.first[1]} WHEAT and "
+            expected_msg << "#{resources.entries.last[1]} ORE"
+            expect(player.game_logs.last.msg).to eq(expected_msg)
+            expect(player.game_logs.last.current_player).to eq(player)
+            expect(player.game_logs.last.is_private).to be_falsey
+          end
+
+          it "adds the proper amounts to the resource totals" do
+            original_resource_count1 = player.resources.find{|r| r.type == resources.first[0]}.count
+            original_resource_count2 = player.resources.find{|r| r.type == resources.entries.last[0]}.count
+            player.collect_resources?(resources)
+            expect(player.resources.find{|r| r.type == resources.first[0]}.count).to eq(original_resource_count1 + resources.first[1])
+            expect(player.resources.find{|r| r.type == resources.entries.last[0]}.count).to eq(original_resource_count2 + resources.entries.last[1])
+          end
         end
       end
     end
@@ -740,91 +751,100 @@ describe Player do
     context "when turn_status is DISCARDING_CARDS_DUE_TO_ROBBER" do
       let(:turn_status) {DISCARDING_CARDS_DUE_TO_ROBBER}
 
-      context "when the total number of resources to discard is less than half of the current total" do
-        let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
-
+      context "when some the resources to discard are negative" do
+        let(:resources_to_discard) {{WHEAT => 6, WOOD => -1, WOOL => 1, ORE => 0, BRICK => 0}}
+        
         include_examples "discard_half_resources failures"
         include_examples "does not call game.player_finished_discarding?"
       end
 
-      context "when the total number of resources to discard is greater than half of the current total" do
-        let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 2, ORE => 1, BRICK => 0}}
-
-        include_examples "discard_half_resources failures"
-        include_examples "does not call game.player_finished_discarding?"
-
-        context "when player has an odd number of resources and we should round down when dividing by 2" do
-          let(:original_resources) {{WHEAT => 6, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 1}}
+      context "when all of the resources to discard are non-negative" do
+        context "when the total number of resources to discard is less than half of the current total" do
+          let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
 
           include_examples "discard_half_resources failures"
           include_examples "does not call game.player_finished_discarding?"
         end
-      end
 
-      context "when the total number of resources to discard is equal to half of the current total" do
-        let(:resources_to_discard) {{WHEAT => 6, WOOD => 0, WOOL => 0, ORE => 0, BRICK => 0}}
-
-        context "when game.player_finished_discarding? returns false" do
-          before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(false)}
+        context "when the total number of resources to discard is greater than half of the current total" do
+          let(:resources_to_discard) {{WHEAT => 3, WOOD => 1, WOOL => 2, ORE => 1, BRICK => 0}}
 
           include_examples "discard_half_resources failures"
+          include_examples "does not call game.player_finished_discarding?"
+
+          context "when player has an odd number of resources and we should round down when dividing by 2" do
+            let(:original_resources) {{WHEAT => 6, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 1}}
+
+            include_examples "discard_half_resources failures"
+            include_examples "does not call game.player_finished_discarding?"
+          end
         end
 
-        context "when game.player_finished_discarding? returns true" do
-          before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(true)}
+        context "when the total number of resources to discard is equal to half of the current total" do
+          let(:resources_to_discard) {{WHEAT => 6, WOOD => 0, WOOL => 0, ORE => 0, BRICK => 0}}
 
-          it "returns true" do
-            expect(player.discard_half_resources?(resources_to_discard)).to be true
+          context "when game.player_finished_discarding? returns false" do
+            before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(false)}
+
+            include_examples "discard_half_resources failures"
           end
 
-          it "discards the proper amounts of resources" do
-            player.discard_half_resources?(resources_to_discard)
+          context "when game.player_finished_discarding? returns true" do
+            before(:each) {allow(game).to receive(:player_finished_discarding?).and_return(true)}
 
-            original_resources.each do |type, amount|
-              expect(player.resources.find{|r| r.type == type}.count).to eq(amount - resources_to_discard[type])
-            end
-          end
-
-          it "creates a new game_log with the game's turn number and proper text and correct current_player" do
-            expect{
-              player.discard_half_resources?(resources_to_discard)
-            }.to change(player.game_logs, :count).by(1)
-
-            expect(player.game_logs.last.turn_num).to eq(game.turn_num)
-            expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 6 WHEAT")
-            expect(player.game_logs.last.current_player).to eq(player)
-            expect(player.game_logs.last.is_private).to be_falsey
-          end
-
-          it "saves" do
-            expect(player).to receive(:save).and_call_original
-            player.discard_half_resources?(resources_to_discard)
-          end
-
-          context "when it's another player's turn" do
-            let(:other_player) {FactoryGirl.build(:in_game_player)}
-            before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
-
-            it "sets the game_log's current_player to the other player" do
-              player.discard_half_resources?(resources_to_discard)
-              expect(player.game_logs.last.current_player).to eq(other_player)
-            end
-          end
-
-          context "when there is more than one resource being discarded" do
-            let(:resources_to_discard) {{WHEAT => 4, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
-
-            it "properly formats the game_log msg" do
-              player.discard_half_resources?(resources_to_discard)
-              expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 4 WHEAT and 1 WOOD and 1 WOOL")
+            it "returns true" do
+              expect(player.discard_half_resources?(resources_to_discard)).to be true
             end
 
-            context "when the first resource in the hash is not discarded" do
-              let(:resources_to_discard) {{WHEAT => 0, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 0}}
+            it "discards the proper amounts of resources" do
+              player.discard_half_resources?(resources_to_discard)
 
-              it "does not say \"and\" before the first resource in the message" do
+              original_resources.each do |type, amount|
+                expect(player.resources.find{|r| r.type == type}.count).to eq(amount - resources_to_discard[type])
+              end
+            end
+
+            it "creates a new game_log with the game's turn number and proper text and correct current_player" do
+              expect{
                 player.discard_half_resources?(resources_to_discard)
-                expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 1 WOOD and 2 WOOL and 3 ORE")
+              }.to change(player.game_logs, :count).by(1)
+
+              expect(player.game_logs.last.turn_num).to eq(game.turn_num)
+              expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 6 WHEAT")
+              expect(player.game_logs.last.current_player).to eq(player)
+              expect(player.game_logs.last.is_private).to be_falsey
+            end
+
+            it "saves" do
+              expect(player).to receive(:save).and_call_original
+              player.discard_half_resources?(resources_to_discard)
+            end
+
+            context "when it's another player's turn" do
+              let(:other_player) {FactoryGirl.build(:in_game_player)}
+              before(:each) {allow(game).to receive(:current_player).and_return(other_player)}
+
+              it "sets the game_log's current_player to the other player" do
+                player.discard_half_resources?(resources_to_discard)
+                expect(player.game_logs.last.current_player).to eq(other_player)
+              end
+            end
+
+            context "when there is more than one resource being discarded" do
+              let(:resources_to_discard) {{WHEAT => 4, WOOD => 1, WOOL => 1, ORE => 0, BRICK => 0}}
+
+              it "properly formats the game_log msg" do
+                player.discard_half_resources?(resources_to_discard)
+                expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 4 WHEAT and 1 WOOD and 1 WOOL")
+              end
+
+              context "when the first resource in the hash is not discarded" do
+                let(:resources_to_discard) {{WHEAT => 0, WOOD => 1, WOOL => 2, ORE => 3, BRICK => 0}}
+
+                it "does not say \"and\" before the first resource in the message" do
+                  player.discard_half_resources?(resources_to_discard)
+                  expect(player.game_logs.last.msg).to eq("#{player.user.displayname} discarded 1 WOOD and 2 WOOL and 3 ORE")
+                end
               end
             end
           end

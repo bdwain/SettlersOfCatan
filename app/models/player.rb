@@ -124,8 +124,8 @@ class Player < ActiveRecord::Base
   end
 
   def collect_resources?(resources_gained)
-    if resources_gained.empty?
-      return true
+    if resources_gained.empty? || resources_gained.values.any?{|amt| amt < 0}
+      return false
     end
 
     msg = "#{user.displayname} got "
@@ -146,7 +146,7 @@ class Player < ActiveRecord::Base
   end
 
   def discard_half_resources?(resources_to_discard)
-    if turn_status != DISCARDING_CARDS_DUE_TO_ROBBER
+    if turn_status != DISCARDING_CARDS_DUE_TO_ROBBER || resources_to_discard.values.any?{|amt| amt < 0}
       return false
     end
 
